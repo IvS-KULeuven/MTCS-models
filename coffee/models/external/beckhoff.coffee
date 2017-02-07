@@ -596,8 +596,7 @@ beckhoff.ADD IO_MODULE_TYPE(
         7  : -> symbol: "+Uv"   , comment: "Supply voltage output = 5V"
         8  : -> symbol: "S"     , comment: "Shield"
     channels:
-        1  : -> terminals: [ self.terminals[0],
-                             self.terminals[1],
+        1  : -> terminals: [ self.terminals[1],
                              self.terminals[2],
                              self.terminals[3],
                              self.terminals[4],
@@ -625,8 +624,7 @@ beckhoff.ADD IO_MODULE_TYPE(
         7  : -> symbol: "1A"    , comment: "1 Amp input"
         8  : -> symbol: "S"     , comment: "Shield"
     channels:
-        1  : -> terminals: [ self.terminals[0],
-                             self.terminals[1],
+        1  : -> terminals: [ self.terminals[1],
                              self.terminals[2],
                              self.terminals[3],
                              self.terminals[4],
