@@ -5,7 +5,8 @@
 .metadata/
 .project
 *.map
-**/
-jsonld/**/*.jsonld
-*.topbraid.header
-**.topbraid.header
+*.xml
+**/*.xml
+**/*.jsonld
+**/*.topbraid.header
+**/*.topbraid.header
