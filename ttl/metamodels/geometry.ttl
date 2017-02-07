@@ -1,0 +1,1499 @@
+# baseURI: http://www.mercator.iac.es/onto/metamodels/geometry
+# imports: http://www.mercator.iac.es/onto/metamodels/mathematics
+# imports: http://www.mercator.iac.es/onto/metamodels/systems
+
+@prefix : <http://www.mercator.iac.es/onto/metamodels/geometry#> .
+@prefix arg: <http://spinrdf.org/arg#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix geom: <http://www.mercator.iac.es/onto/metamodels/geometry#> .
+@prefix math: <http://www.mercator.iac.es/onto/metamodels/mathematics#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix qudt: <http://qudt.org/schema/qudt#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rules: <http://www.mercator.iac.es/onto/metamodels/rules#> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix spin: <http://spinrdf.org/spin#> .
+@prefix spinx: <http://spinrdf.org/spinx#> .
+@prefix spl: <http://spinrdf.org/spl#> .
+@prefix sys: <http://www.mercator.iac.es/onto/metamodels/systems#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.mercator.iac.es/onto/metamodels/geometry>
+  rdf:type owl:Ontology ;
+  rdfs:comment "Carthesian geometry" ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/mathematics> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/systems> ;
+.
+geom:Acceleration
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Artifact ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:hasValue <http://qudt.org/vocab/quantity#Acceleration> ;
+      owl:onProperty qudt:quantityKind ;
+    ] ;
+.
+geom:AngularAcceleration
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Acceleration ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:hasValue <http://qudt.org/vocab/quantity#AngularAcceleration> ;
+      owl:onProperty qudt:quantityKind ;
+    ] ;
+.
+geom:AngularVelocity
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# an angular velocity vector is parallel to the axis of the associated rotation
+CONSTRUCT {
+    ?this geom:isParallelTo ?ax .
+}
+WHERE {
+    ?rot geom:hasAngularVelocity ?this .
+    ?rot geom:hasRotationAxis ?ax .
+}""" ;
+    ] ;
+  rdfs:subClassOf geom:Velocity ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:hasValue <http://qudt.org/vocab/quantity#AngularVelocity> ;
+      owl:onProperty qudt:quantityKind ;
+    ] ;
+.
+geom:Artifact
+  rdf:type owl:Class ;
+  rdfs:label "Artifact"^^xsd:string ;
+  rdfs:subClassOf owl:Thing ;
+.
+geom:Axis
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Line ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          geom:Line
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasOrigin ;
+            owl:someValuesFrom geom:Origin ;
+          ]
+        ) ;
+    ] ;
+.
+geom:ComposedTransformation
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Transformation ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasFirstTransformation ;
+            owl:someValuesFrom geom:Transformation ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasSecondTransformation ;
+            owl:someValuesFrom geom:Transformation ;
+          ]
+        ) ;
+    ] ;
+.
+geom:ComputeDistance
+  rdf:type spin:Function ;
+  spin:constraint [
+      rdf:type spl:Argument ;
+      spl:predicate sp:arg1 ;
+    ] ;
+  spin:constraint [
+      rdf:type spl:Argument ;
+      spl:predicate sp:arg2 ;
+    ] ;
+  spin:constraint [
+      rdf:type spl:Argument ;
+      spl:predicate sp:arg3 ;
+    ] ;
+  spin:constraint [
+      rdf:type spl:Argument ;
+      spl:predicate sp:arg4 ;
+    ] ;
+  spin:constraint [
+      rdf:type spl:Argument ;
+      spl:predicate sp:arg5 ;
+    ] ;
+  spin:constraint [
+      rdf:type spl:Argument ;
+      spl:predicate sp:arg6 ;
+    ] ;
+  spin:returnType xsd:double ;
+  spinx:javaScriptCode "return Math.sqrt( (arg4-arg1)*(arg4-arg1) + (arg5-arg2)*(arg5-arg2) + (arg6-arg3)*(arg6-arg3) );"^^xsd:string ;
+  rdfs:subClassOf spl:MathematicalFunctions ;
+.
+geom:Coordinate
+  rdf:type owl:Class ;
+  dc:description "A Coordinate can have only one unit, it is therefore a QuantityValue! "^^xsd:string ;
+  rdfs:subClassOf geom:Magnitude ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty geom:isMagnitudeAlong ;
+      owl:someValuesFrom geom:Axis ;
+    ] ;
+.
+geom:CoordinateSystem
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# all axes of a coordinate system intersect each other orthogonally
+CONSTRUCT {
+    ?ax0 geom:intersectsOrthogonally ?ax1 .
+}
+WHERE {
+    ?this geom:hasAxis ?ax0 .
+    ?this geom:hasAxis ?ax1 .
+    FILTER (?ax0 != ?ax1) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# the origin of a coordinate system is also the origin of all axes of this coordinate system
+CONSTRUCT {
+    ?axis geom:hasOrigin ?origin .
+}
+WHERE {
+    ?this geom:hasAxis ?axis .
+    ?this geom:hasOrigin ?origin .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# the origin of an axis of a coordinate system, is also the origin of that coordinate system
+CONSTRUCT {
+    ?this geom:hasOrigin ?origin .
+}
+WHERE {
+    ?this geom:hasAxis/geom:hasOrigin ?origin .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# two coordinate systems with only parallel axes have the same orientation
+CONSTRUCT {
+    ?this geom:hasSameOrientationAs ?cs1 .
+}
+WHERE {
+    ?this geom:hasXAxis/geom:isParallelTo ?x1 .
+    ?this geom:hasYAxis/geom:isParallelTo ?y1 .
+    ?this geom:hasZAxis/geom:isParallelTo ?z1 .
+    ?cs1 geom:hasXAxis ?x1 .
+    ?cs1 geom:hasYAxis ?y1 .
+    ?cs1 geom:hasZAxis ?z1 .
+    FILTER (?this != ?cs1) .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf geom:Shape ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty geom:hasAxis ;
+      owl:someValuesFrom geom:Axis ;
+    ] ;
+.
+geom:Direction
+  rdf:type owl:Class ;
+  dc:description """From Wikipedia: \"In mathematics, any vector used to represent spatial direction is a direction vector. By convention, direction vectors have magnitude = 1\". 
+Translated to our ontology, we can define a Direction as a UnitVector that is used to describe a direction (by the hasDirection/isDirectionOf property)."""^^xsd:string ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# if two directions are parallel, then they are the same 
+CONSTRUCT {
+    ?this owl:sameAs ?direction1 .
+}
+WHERE {
+    ?this geom:isDirectionOf ?shape0 .
+    ?shape0 geom:isParallelTo ?shape1 .
+    ?shape1 geom:hasDirection ?direction1 .
+    FILTER (?shape0 != ?shape1) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# if two directions are the same, then they are parallel 
+CONSTRUCT {
+    ?shape0 geom:isParallelTo ?shape1 .
+}
+WHERE {
+    ?this geom:isDirectionOf ?shape0 .
+    ?this owl:sameAs ?direction1 .
+    ?direction1 geom:isDirectionOf ?shape1 .
+    FILTER (?shape0 != ?shape1) .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:seeAlso <http://en.wikipedia.org/wiki/Direction_vector> ;
+  rdfs:subClassOf geom:UnitVector ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          geom:UnitVector
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:isDirectionOf ;
+            owl:someValuesFrom geom:LinearShape ;
+          ]
+        ) ;
+    ] ;
+.
+geom:FixedTransformation
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    ?x geom:isFixedTo ?y .
+}
+WHERE {
+    # rule only matches rotations 
+    ?x geom:hasRotation ?this .
+    ?this geom:hasRotationAxis ?ax .
+    ?y geom:hasCoordinateSystem/geom:hasAxis ?ax
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf geom:Transformation ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          geom:Transformation
+          [
+            rdf:type owl:Restriction ;
+            owl:allValuesFrom [
+                rdf:type owl:Restriction ;
+                owl:allValuesFrom math:NullValue ;
+                owl:onProperty qudt:quantityValue ;
+              ] ;
+            owl:onProperty geom:hasVelocity ;
+          ]
+        ) ;
+    ] ;
+.
+geom:Length
+  rdf:type owl:Class ;
+  dc:description "A Length represents the length of a line segment. This length can be defined within multiple coordinate systems (each with their own unit). For instance, the length of a line segment can be 1 meter or 1000 millimeter. It is therefore a Quantity."^^xsd:string ;
+  rdfs:subClassOf geom:Artifact ;
+  rdfs:subClassOf qudt:Quantity ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty geom:isLengthOf ;
+      owl:someValuesFrom geom:LineSegment ;
+    ] ;
+.
+geom:LengthFormula
+  rdf:type owl:Class ;
+  rdfs:subClassOf <http://www.mercator.iac.es/onto/metamodels/expressions#Expression> ;
+.
+geom:Line
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# if a point is collinear with a line (which is a linear shape unbound in each direction), it owns the point
+CONSTRUCT {
+    ?this geom:containsPoint ?somePoint .
+}
+WHERE {
+    ?somePoint geom:isCollinearWith ?this .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf geom:LinearShape ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          geom:LinearShape
+          [
+            rdf:type owl:Restriction ;
+            owl:maxQualifiedCardinality "0"^^xsd:nonNegativeInteger ;
+            owl:onClass geom:Point ;
+            owl:onProperty geom:hasEndPoint ;
+          ]
+        ) ;
+    ] ;
+.
+geom:LineSegment
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:LinearShape ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty geom:hasLength ;
+      owl:someValuesFrom geom:Length ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          geom:LinearShape
+          [
+            rdf:type owl:Restriction ;
+            owl:onClass geom:Point ;
+            owl:onProperty geom:hasEndPoint ;
+            owl:qualifiedCardinality "2"^^xsd:nonNegativeInteger ;
+          ]
+        ) ;
+    ] ;
+.
+geom:LinearAcceleration
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Acceleration ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:hasValue <http://qudt.org/vocab/quantity#LinearAcceleration> ;
+      owl:onProperty qudt:quantityKind ;
+    ] ;
+.
+geom:LinearShape
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# if a linear shape is parallel to shape1 which has a non-trivial angle with shape2, the linear shape has a non-trivial angle with shape 2
+CONSTRUCT {
+    ?this geom:hasNonTrivialAngleWith ?shape2 .
+}
+WHERE {
+    ?this geom:isParallelTo ?shape1 . 
+    ?shape1 geom:hasNonTrivialAngleWith ?shape2 .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# if a linear shape is parallel to shape1 which is anti-parallel with shape2, the linear shape is anti-parallel with shape 2
+CONSTRUCT {
+    ?this geom:isAntiParallelTo ?shape2 .
+}
+WHERE {
+    ?this geom:isParallelTo ?shape1 .
+    ?shape1 geom:isAntiParallelTo ?shape2 .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# if a linear shape is parallel to shape1 which is not parallel with shape2, the linear shape is not parallel with shape 2
+CONSTRUCT {
+    ?this geom:isNotParallelTo ?shape2 .
+}
+WHERE {
+    ?this geom:isParallelTo ?shape1 .
+    ?shape1 geom:isNotParallelTo ?shape2 .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# if a linear shape is parallel to shape1 which is orthogonal to shape2, the linear shape is orthogonal to shape 2
+CONSTRUCT {
+    ?this geom:isOrthogonalTo ?shape2 .
+}
+WHERE {
+    ?this geom:isParallelTo ?shape1 .
+    ?shape1 geom:isOrthogonalTo ?shape2
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# parallelism is transitive for a linear shape to other shapes
+CONSTRUCT {
+    ?this geom::isParallelTo ?shape2 .
+}
+WHERE {
+    ?this geom::isParallelTo ?shape1 .
+    ?shape1 geom::isParallelTo ?shape2 .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf geom:Shape ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onClass geom:Direction ;
+      owl:onProperty geom:hasDirection ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:maxQualifiedCardinality "2"^^xsd:nonNegativeInteger ;
+      owl:onClass geom:Direction ;
+      owl:onProperty geom:hasDirection ;
+    ] ;
+.
+geom:LinearVelocity
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Velocity ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:hasValue <http://qudt.org/vocab/quantity#LinearVelocity> ;
+      owl:onProperty qudt:quantityKind ;
+    ] ;
+.
+geom:Magnitude
+  rdf:type owl:Class ;
+  dc:description "A Distance represents the distance between 2 positions within the same coordinate system. A distance does not necessarily have a unit (and if it has one, it has only one at most!),"^^xsd:string ;
+  spin:constraint [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    _:b0 a spin:ConstraintViolation .
+    _:b0 spin:violationRoot ?this .
+    _:b0 rdfs:label \"The magnitude can't be expressed as the distance between points that belong to different coordinate systems\" .
+}
+WHERE {
+    ?this geom:isMagnitudeBetween ?pos0 .
+    ?this geom:isMagnitudeBetween ?pos1 .
+    ?pos0 geom:hasXCoordinate ?x0 .
+    ?pos0 geom:hasYCoordinate ?y0 .
+    ?pos0 geom:hasZCoordinate ?z0 .
+    ?x0 geom:isMagnitudeAlong ?x0Axis .
+    ?y0 geom:isMagnitudeAlong ?y0Axis .
+    ?z0 geom:isMagnitudeAlong ?z0Axis .
+    ?pos1 geom:hasXCoordinate ?x1 .
+    ?pos1 geom:hasYCoordinate ?y1 .
+    ?pos1 geom:hasZCoordinate ?z1 .
+    ?x1 geom:isMagnitudeAlong ?x1Axis .
+    ?y1 geom:isMagnitudeAlong ?y1Axis .
+    ?z1 geom:isMagnitudeAlong ?z1Axis .
+    FILTER (((?x0Axis != ?x1Axis) || (?y0Axis != ?y1Axis)) || (?z0Axis != ?z1Axis)) .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf geom:Artifact ;
+  rdfs:subClassOf qudt:QuantityValue ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onClass geom:Position ;
+      owl:onProperty geom:isMagnitudeBetween ;
+      owl:qualifiedCardinality "2"^^xsd:nonNegativeInteger ;
+    ] ;
+.
+geom:NullRotation
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Rotation ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty geom:hasRotationAngle ;
+      owl:someValuesFrom [
+          rdf:type owl:Class ;
+          owl:intersectionOf (
+              [
+                rdf:type owl:Restriction ;
+                owl:onProperty qudt:quantityValue ;
+                owl:someValuesFrom math:NullValue ;
+              ]
+              [
+                rdf:type owl:Restriction ;
+                owl:hasValue <http://qudt.org/vocab/unit#Radian> ;
+                owl:onProperty qudt:unit ;
+              ]
+            ) ;
+        ] ;
+    ] ;
+.
+geom:Origin
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Point ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty geom:hasPosition ;
+      owl:someValuesFrom geom:OriginPosition ;
+    ] ;
+.
+geom:OriginPosition
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Position ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          geom:Position
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasXCoordinate ;
+            owl:someValuesFrom math:NullValue ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasYCoordinate ;
+            owl:someValuesFrom math:NullValue ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasZCoordinate ;
+            owl:someValuesFrom math:NullValue ;
+          ]
+        ) ;
+    ] ;
+.
+geom:PlanarShape
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# a planar shape is orthogonal to a shape, if it has two non-parallel linear shapes that are also orthogonal to that shape
+CONSTRUCT {
+    ?this geom:isOrthogonalTo ?someLine .
+}
+WHERE {
+    ?this geom:contains ?line1 .
+    ?this geom:contains ?line2 .
+    FILTER (?line1 != ?line2) .
+    ?line1 rdf:type/(rdfs:subClassOf)* geom:LinearShape .
+    ?line2 rdf:type/(rdfs:subClassOf)* geom:LinearShape .
+    ?line1 geom:isNotParallelTo ?line2 .
+    ?line1 geom:isOrthogonalTo ?someLine .
+    ?line2 geom:isOrthogonalTo ?someLine .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# a planar shape is orthogonal to another planar shape, if it has a linear shape that is orthogonal to that other planar shape
+CONSTRUCT {
+    ?this geom:isOrthogonalTo ?plan .
+}
+WHERE {
+    ?this geom:contains ?lin .
+    ?lin geom:isOrthogonalTo ?plan .
+    ?lin rdf:type/(rdfs:subClassOf)* geom:LinearShape .
+    ?plan rdf:type/(rdfs:subClassOf)* geom:PlanarShape .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# find the normal directions of a planar shape
+CONSTRUCT {
+    ?this geom:hasNormalDirection ?direction .
+}
+WHERE {
+    ?this geom:isOrthogonalTo ?normal .
+    ?normal geom:hasDirection ?direction .
+    ?normal rdf:type/(rdfs:subClassOf)* geom:LinearShape .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# if two planar shapes are parallel, then they have the same normal directions
+CONSTRUCT {
+    ?this geom:hasNormalDirection ?direction1 .
+}
+WHERE {
+    ?this geom:hasNormalDirection ?direction0 .
+    ?this geom:isParallelTo ?shape1 .
+    ?shape1 geom:hasNormalDirection ?direction1 .
+    FILTER (?this != ?shape1) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# if two planar shapes have parallel normals, then they are parallel
+CONSTRUCT {
+    ?this geom:isParallelTo ?shape1 .
+}
+WHERE {
+    ?this geom:hasNormalDirection ?direction0 .
+    ?direction0 geom:isParallelTo ?direction1 .
+    ?shape1 geom:hasNormalDirection ?direction1 .
+    FILTER (?this != ?shape1) .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf geom:Shape ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:maxQualifiedCardinality "2"^^xsd:nonNegativeInteger ;
+      owl:onClass geom:Direction ;
+      owl:onProperty geom:hasNormalDirection ;
+    ] ;
+.
+geom:Plane
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:PlanarShape ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          geom:PlanarShape
+          [
+            rdf:type owl:Restriction ;
+            owl:maxQualifiedCardinality "0"^^xsd:nonNegativeInteger ;
+            owl:onClass geom:Point ;
+            owl:onProperty geom:hasEndPoint ;
+          ]
+        ) ;
+    ] ;
+.
+geom:Point
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# if a point is part of a linear shape, it is collinear to that shape 
+CONSTRUCT {
+    ?this geom:isCollinearWith ?someLinearShape .
+}
+WHERE {
+    ?this geom:isPointOf ?someLinearShape .
+    ?someLinearShape rdf:type/(rdfs:subClassOf)* geom:LinearShape .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf geom:Shape ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty geom:hasPosition ;
+      owl:someValuesFrom geom:Position ;
+    ] ;
+.
+geom:PointVector
+  rdf:type owl:Class ;
+  dc:description "From wikipedia: In the Cartesian coordinate system, the simplest type of vector is a point vector (or position vector). It represents the displacement going from the origin O = (0,0,0) out to the point P = (x,y,z), and is equivalent numerically to point P's Cartesian coordinates (x,y,z). Point vectors are the starting point in vector geometry, i.e., other vector concepts assume point vectors as foundational objects."^^xsd:string ;
+  rdfs:subClassOf geom:Vector ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasFromPoint ;
+            owl:someValuesFrom geom:Origin ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasToPoint ;
+            owl:someValuesFrom geom:Point ;
+          ]
+        ) ;
+    ] ;
+.
+geom:Position
+  rdf:type owl:Class ;
+  spin:constraint [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    _:b0 a spin:ConstraintViolation .
+    _:b0 spin:violationRoot ?this .
+    _:b0 rdfs:label \"The X, Y and Z coordinates of a Position must belong to the same CoordinateSystem\" .
+}
+WHERE {
+    ?this geom:hasXCoordinate ?x .
+    ?this geom:hasYCoordinate ?y .
+    ?this geom:hasZCoordinate ?z .
+    ?x geom:isMagnitudeAlong ?xAxis .
+    ?y geom:isMagnitudeAlong ?yAxis .
+    ?z geom:isMagnitudeAlong ?zAxis .
+    ?cs0 geom:hasXAxis ?xAxis .
+    ?cs1 geom:hasYAxis ?yAxis .
+    ?cs2 geom:hasZAxis ?zAxis .
+    FILTER (((?cs0 != ?cs1) || (?cs1 != ?cs2)) || (?cs0 != ?cs2)) .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf geom:Artifact ;
+  rdfs:subClassOf qudt:Quantity ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onClass geom:Coordinate ;
+      owl:onProperty geom:hasXCoordinate ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onClass geom:Coordinate ;
+      owl:onProperty geom:hasYCoordinate ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onClass geom:Coordinate ;
+      owl:onProperty geom:hasZCoordinate ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onClass [
+          rdf:type owl:Class ;
+          owl:intersectionOf (
+              geom:Coordinate
+              [
+                rdf:type owl:Restriction ;
+                owl:onClass [
+                    rdf:type owl:Class ;
+                    owl:intersectionOf (
+                        geom:Coordinate
+                        [
+                          rdf:type owl:Restriction ;
+                          owl:onClass geom:Coordinate ;
+                          owl:onProperty geom:hasZCoordinate ;
+                          owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                        ]
+                      ) ;
+                  ] ;
+                owl:onProperty geom:hasYCoordinate ;
+                owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+              ]
+            ) ;
+        ] ;
+      owl:onProperty geom:hasXCoordinate ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+    ] ;
+.
+geom:Rotation
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Transformation ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty geom:hasRotationAngle ;
+      owl:someValuesFrom math:Angle ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          geom:Transformation
+          [
+            rdf:type owl:Restriction ;
+            owl:onClass geom:Axis ;
+            owl:onProperty geom:hasRotationAxis ;
+            owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+          ]
+        ) ;
+    ] ;
+.
+geom:Shape
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# a shape is an intersection of two shapes, if these two shapes both contain the point, and if they intersect each other
+CONSTRUCT {
+    ?this geom:isIntersectionOf ?shape0 .
+    ?this geom:isIntersectionOf ?shape1 .
+}
+WHERE {
+    ?shape0 geom:contains ?this .
+    ?shape1 geom:contains ?this .
+    ?shape0 geom:intersects ?shape1 .
+    FILTER (?shape0 != ?shape1) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# if a shape has the same origin as another shape, these origins are the same
+CONSTRUCT {
+    ?origin0 owl:sameAs ?origin1 .
+}
+WHERE {
+    ?this geom:hasSameOriginAs ?shape1 .
+    ?this geom:hasOrigin ?origin0 .
+    ?shape1 geom:hasOrigin ?origin1 .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# two shapes with the same origin are related by the geom:hasSameOriginAs property
+CONSTRUCT {
+    ?this geom:hasSameOriginAs ?shape1 .
+}
+WHERE {
+    ?this geom:hasOrigin ?origin .
+    ?shape1 geom:hasOrigin ?origin .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf geom:Artifact ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty geom:containsPoint ;
+      owl:someValuesFrom geom:Point ;
+    ] ;
+.
+geom:SpatialShape
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Shape ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:minQualifiedCardinality "3"^^xsd:nonNegativeInteger ;
+      owl:onClass geom:Direction ;
+      owl:onProperty geom:hasNormalDirection ;
+    ] ;
+.
+geom:Transformation
+  rdf:type owl:Class ;
+  rdfs:subClassOf <http://www.mercator.iac.es/onto/metamodels/expressions#Operation> ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/expressions#hasOperand> ;
+      owl:someValuesFrom geom:CoordinateSystem ;
+    ] ;
+.
+geom:UnitVector
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:PointVector ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          geom:PointVector
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasMagnitude ;
+            owl:someValuesFrom math:UnitValue ;
+          ]
+        ) ;
+    ] ;
+.
+geom:Vector
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:LineSegment ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          geom:LineSegment
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasDirection ;
+            owl:someValuesFrom geom:Direction ;
+          ]
+        ) ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          [
+            rdf:type owl:Restriction ;
+            owl:onClass geom:Point ;
+            owl:onProperty geom:hasFromPoint ;
+            owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onClass geom:Point ;
+            owl:onProperty geom:hasToPoint ;
+            owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+          ]
+        ) ;
+    ] ;
+.
+geom:Velocity
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Artifact ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:hasValue <http://qudt.org/vocab/quantity#Velocity> ;
+      owl:onProperty qudt:quantityKind ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty geom:hasDirection ;
+      owl:someValuesFrom geom:Direction ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty geom:hasMagnitude ;
+      owl:someValuesFrom geom:Magnitude ;
+    ] ;
+.
+geom:XAxis
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Axis ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          geom:Line
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasDirection ;
+            owl:someValuesFrom geom:XDirection ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasOrigin ;
+            owl:someValuesFrom geom:Origin ;
+          ]
+        ) ;
+    ] ;
+.
+geom:XCoordinate
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Coordinate ;
+  owl:disjointWith geom:YCoordinate ;
+  owl:disjointWith geom:ZCoordinate ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty geom:isMagnitudeAlong ;
+      owl:someValuesFrom geom:XAxis ;
+    ] ;
+.
+geom:XDirection
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Direction ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          geom:Direction
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasToPoint ;
+            owl:someValuesFrom [
+                rdf:type owl:Restriction ;
+                owl:onProperty geom:hasPosition ;
+                owl:someValuesFrom geom:XUnitPosition ;
+              ] ;
+          ]
+        ) ;
+    ] ;
+.
+geom:XUnitPosition
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Position ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          geom:Position
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasXCoordinate ;
+            owl:someValuesFrom math:UnitValue ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasYCoordinate ;
+            owl:someValuesFrom math:NullValue ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasZCoordinate ;
+            owl:someValuesFrom math:NullValue ;
+          ]
+        ) ;
+    ] ;
+.
+geom:YAxis
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Axis ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          geom:Line
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasDirection ;
+            owl:someValuesFrom geom:YDirection ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasOrigin ;
+            owl:someValuesFrom geom:Origin ;
+          ]
+        ) ;
+    ] ;
+.
+geom:YCoordinate
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Coordinate ;
+  owl:disjointWith geom:XCoordinate ;
+  owl:disjointWith geom:ZCoordinate ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty geom:isMagnitudeAlong ;
+      owl:someValuesFrom geom:YAxis ;
+    ] ;
+.
+geom:YDirection
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Direction ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          geom:Direction
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasToPoint ;
+            owl:someValuesFrom [
+                rdf:type owl:Restriction ;
+                owl:onProperty geom:hasPosition ;
+                owl:someValuesFrom geom:YUnitPosition ;
+              ] ;
+          ]
+        ) ;
+    ] ;
+.
+geom:YUnitPosition
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Position ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          geom:Position
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasXCoordinate ;
+            owl:someValuesFrom math:NullValue ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasYCoordinate ;
+            owl:someValuesFrom math:UnitValue ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasZCoordinate ;
+            owl:someValuesFrom math:NullValue ;
+          ]
+        ) ;
+    ] ;
+.
+geom:ZAxis
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Axis ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          geom:Line
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasDirection ;
+            owl:someValuesFrom geom:ZDirection ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasOrigin ;
+            owl:someValuesFrom geom:Origin ;
+          ]
+        ) ;
+    ] ;
+.
+geom:ZCoordinate
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Coordinate ;
+  owl:disjointWith geom:XCoordinate ;
+  owl:disjointWith geom:YCoordinate ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty geom:isMagnitudeAlong ;
+      owl:someValuesFrom geom:ZAxis ;
+    ] ;
+.
+geom:ZDirection
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Direction ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          geom:Direction
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasToPoint ;
+            owl:someValuesFrom [
+                rdf:type owl:Restriction ;
+                owl:onProperty geom:hasPosition ;
+                owl:someValuesFrom geom:ZUnitPosition ;
+              ] ;
+          ]
+        ) ;
+    ] ;
+.
+geom:ZUnitPosition
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Position ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          geom:Position
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasXCoordinate ;
+            owl:someValuesFrom math:NullValue ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasYCoordinate ;
+            owl:someValuesFrom math:NullValue ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasZCoordinate ;
+            owl:someValuesFrom math:UnitValue ;
+          ]
+        ) ;
+    ] ;
+.
+geom:contains
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:Shape ;
+.
+geom:containsLine
+  rdf:type owl:ObjectProperty ;
+  rdfs:subPropertyOf geom:contains ;
+.
+geom:containsPlane
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:Plane ;
+  rdfs:subPropertyOf geom:contains ;
+.
+geom:containsPoint
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:Point ;
+  rdfs:subPropertyOf geom:contains ;
+  owl:inverseOf geom:isPointOf ;
+.
+geom:hasAcceleration
+  rdf:type owl:ObjectProperty ;
+  rdfs:range geom:Acceleration ;
+  rdfs:subPropertyOf qudt:quantity ;
+.
+geom:hasAngleWith
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:Shape ;
+.
+geom:hasAngularAcceleration
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Rotation ;
+  rdfs:range geom:AngularAcceleration ;
+  rdfs:subPropertyOf geom:hasAcceleration ;
+.
+geom:hasAngularVelocity
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Rotation ;
+  rdfs:range geom:AngularVelocity ;
+  rdfs:subPropertyOf geom:hasVelocity ;
+.
+geom:hasAxis
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:Axis ;
+  rdfs:subPropertyOf geom:contains ;
+  owl:inverseOf geom:isAxisOf ;
+.
+geom:hasCoordinate
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Position ;
+  rdfs:range geom:Coordinate ;
+.
+geom:hasCoordinateSystem
+  rdf:type owl:FunctionalProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:range geom:CoordinateSystem ;
+.
+geom:hasDirection
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:Direction ;
+.
+geom:hasEndPoint
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:Point ;
+  rdfs:subPropertyOf geom:containsPoint ;
+.
+geom:hasFirstTransformation
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:ComposedTransformation ;
+  rdfs:range geom:Transformation ;
+.
+geom:hasFromPoint
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:Point ;
+  rdfs:subPropertyOf geom:hasEndPoint ;
+.
+geom:hasLength
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:LineSegment ;
+  rdfs:range geom:Length ;
+  owl:inverseOf geom:isLengthOf ;
+.
+geom:hasLinearAcceleration
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Rotation ;
+  rdfs:range geom:LinearAcceleration ;
+  rdfs:subPropertyOf geom:hasAcceleration ;
+.
+geom:hasLinearVelocity
+  rdf:type owl:ObjectProperty ;
+  rdfs:range geom:Velocity ;
+  rdfs:subPropertyOf geom:hasVelocity ;
+.
+geom:hasMagnitude
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:LineSegment ;
+  rdfs:range geom:Magnitude ;
+  rdfs:subPropertyOf qudt:quantityValue ;
+  owl:inverseOf geom:isMagnitudeOf ;
+.
+geom:hasNonTrivialAngleWith
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:Shape ;
+  rdfs:subPropertyOf geom:isNotParallelTo ;
+.
+geom:hasNormalDirection
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:Direction ;
+  owl:inverseOf geom:isNormalDirectionOf ;
+.
+geom:hasOrigin
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:Origin ;
+  rdfs:subPropertyOf geom:containsPoint ;
+.
+geom:hasPosition
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Point ;
+  rdfs:range geom:Position ;
+.
+geom:hasRotation
+  rdf:type owl:ObjectProperty ;
+  rdfs:range geom:Rotation ;
+.
+geom:hasRotationAngle
+  rdf:type owl:ObjectProperty ;
+  rdfs:range math:Angle ;
+  rdfs:subPropertyOf math:hasAngle ;
+.
+geom:hasRotationAxis
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Rotation ;
+  rdfs:range geom:Axis ;
+.
+geom:hasSameOrientationAs
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:CoordinateSystem ;
+  rdfs:range geom:CoordinateSystem ;
+.
+geom:hasSameOriginAs
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:CoordinateSystem ;
+  rdfs:range geom:CoordinateSystem ;
+.
+geom:hasSecondTransformation
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:ComposedTransformation ;
+  rdfs:range geom:Transformation ;
+.
+geom:hasToPoint
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:Point ;
+  rdfs:subPropertyOf geom:hasEndPoint ;
+.
+geom:hasTransformation
+  rdf:type owl:ObjectProperty ;
+.
+geom:hasVelocity
+  rdf:type owl:ObjectProperty ;
+  rdfs:range geom:Velocity ;
+  rdfs:subPropertyOf qudt:quantity ;
+.
+geom:hasXAxis
+  rdf:type owl:FunctionalProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:XAxis ;
+  rdfs:subPropertyOf geom:hasAxis ;
+  owl:propertyDisjointWith geom:hasYAxis ;
+  owl:propertyDisjointWith geom:hasZAxis ;
+.
+geom:hasXCoordinate
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Position ;
+  rdfs:range geom:XCoordinate ;
+  rdfs:subPropertyOf geom:hasCoordinate ;
+.
+geom:hasYAxis
+  rdf:type owl:FunctionalProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:YAxis ;
+  rdfs:subPropertyOf geom:hasAxis ;
+  owl:propertyDisjointWith geom:hasXAxis ;
+  owl:propertyDisjointWith geom:hasZAxis ;
+.
+geom:hasYCoordinate
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Position ;
+  rdfs:range geom:YCoordinate ;
+  rdfs:subPropertyOf geom:hasCoordinate ;
+.
+geom:hasZAxis
+  rdf:type owl:FunctionalProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:ZAxis ;
+  rdfs:subPropertyOf geom:hasAxis ;
+  owl:propertyDisjointWith geom:hasXAxis ;
+  owl:propertyDisjointWith geom:hasYAxis ;
+.
+geom:hasZCoordinate
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Position ;
+  rdfs:range geom:Coordinate ;
+  rdfs:subPropertyOf geom:hasCoordinate ;
+.
+geom:intersects
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:Shape ;
+  rdfs:subPropertyOf geom:isNotParallelTo ;
+.
+geom:intersectsOrthogonally
+  rdf:type owl:IrreflexiveProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdf:type owl:SymmetricProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:Shape ;
+  rdfs:subPropertyOf geom:intersects ;
+  rdfs:subPropertyOf geom:isOrthogonalTo ;
+.
+geom:isAlignedWith
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:CoordinateSystem ;
+  rdfs:range geom:CoordinateSystem ;
+  rdfs:subPropertyOf geom:hasSameOrientationAs ;
+  rdfs:subPropertyOf geom:hasSameOriginAs ;
+.
+geom:isAntiParallelTo
+  rdf:type owl:ObjectProperty ;
+  rdf:type owl:SymmetricProperty ;
+  rdf:type owl:TransitiveProperty ;
+  rdfs:subPropertyOf geom:isNotParallelTo ;
+.
+geom:isAxisOf
+  rdf:type owl:AsymmetricProperty ;
+  rdfs:domain geom:Axis ;
+  rdfs:range geom:Shape ;
+  owl:inverseOf geom:hasAxis ;
+.
+geom:isCollinearWith
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Point ;
+  rdfs:range geom:LinearShape ;
+.
+geom:isContainedBy
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:Shape ;
+  owl:inverseOf geom:contains ;
+.
+geom:isDirectionOf
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:Shape ;
+  rdfs:subPropertyOf geom:isParallelTo ;
+  owl:inverseOf geom:hasDirection ;
+.
+geom:isFixedTo
+  rdf:type owl:SymmetricProperty ;
+  rdf:type owl:TransitiveProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:Shape ;
+.
+geom:isIntersectionOf
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:Shape ;
+  rdfs:subPropertyOf geom:isContainedBy ;
+.
+geom:isLengthOf
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Length ;
+  rdfs:range geom:LineSegment ;
+  owl:inverseOf geom:hasLength ;
+.
+geom:isMagnitudeAlong
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Magnitude ;
+  rdfs:range geom:LinearShape ;
+.
+geom:isMagnitudeBetween
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Magnitude ;
+  rdfs:range geom:Position ;
+.
+geom:isMagnitudeOf
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Magnitude ;
+  rdfs:range geom:LineSegment ;
+  rdfs:subPropertyOf qudt:valueQuantity ;
+.
+geom:isNormalDirectionOf
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Direction ;
+  rdfs:range geom:Shape ;
+  owl:inverseOf geom:hasNormalDirection ;
+.
+geom:isNotParallelTo
+  rdf:type owl:IrreflexiveProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdf:type owl:SymmetricProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:Shape ;
+  rdfs:subPropertyOf geom:hasAngleWith ;
+.
+geom:isOriginOf
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Origin ;
+  rdfs:range geom:Shape ;
+  rdfs:subPropertyOf geom:isPointOf ;
+  owl:inverseOf geom:hasOrigin ;
+.
+geom:isOrthogonalTo
+  rdf:type owl:IrreflexiveProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdf:type owl:SymmetricProperty ;
+  rdfs:subPropertyOf geom:isNotParallelTo ;
+.
+geom:isParallelTo
+  rdf:type owl:ObjectProperty ;
+  rdf:type owl:SymmetricProperty ;
+  rdf:type owl:TransitiveProperty ;
+  rdfs:domain geom:Shape ;
+  rdfs:range geom:Shape ;
+  rdfs:subPropertyOf geom:hasAngleWith ;
+.
+geom:isPointOf
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Point ;
+  rdfs:range geom:Shape ;
+  rdfs:subPropertyOf geom:isContainedBy ;
+.
+geom:isRotationAxisOf
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain geom:Axis ;
+  rdfs:range geom:Rotation ;
+.
+geom:numericUnion_1
+  rdf:type qudt:numericUnion ;
+.
+geom:numericUnion_2
+  rdf:type xsd:double ;
+.
+arg:x0
+  rdf:type rdf:Property ;
+  rdfs:subPropertyOf sp:arg ;
+.
+arg:x1
+  rdf:type rdf:Property ;
+  rdfs:subPropertyOf sp:arg ;
+.
+arg:y0
+  rdf:type rdf:Property ;
+  rdfs:subPropertyOf sp:arg ;
+.
+arg:y1
+  rdf:type rdf:Property ;
+  rdfs:subPropertyOf sp:arg ;
+.
+arg:z0
+  rdf:type rdf:Property ;
+  rdfs:subPropertyOf sp:arg ;
+.
+arg:z1
+  rdf:type rdf:Property ;
+  rdfs:subPropertyOf sp:arg ;
+.
+sp:arg6
+  rdf:type rdf:Property ;
+  rdfs:subPropertyOf sp:arg ;
+.
+[
+  rdf:type owl:AllDisjointClasses ;
+  owl:members (
+      geom:XAxis
+      geom:YAxis
+      geom:ZAxis
+    ) ;
+].

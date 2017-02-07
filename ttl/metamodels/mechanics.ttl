@@ -1,0 +1,436 @@
+# baseURI: http://www.mercator.iac.es/onto/metamodels/mechanics
+# imports: http://www.mercator.iac.es/onto/metamodels/controlsystems
+# imports: http://www.mercator.iac.es/onto/metamodels/finitestatemachines
+# imports: http://www.mercator.iac.es/onto/metamodels/geometry
+
+@prefix : <http://www.mercator.iac.es/onto/metamodels/mechanics#> .
+@prefix expr: <http://www.mercator.iac.es/onto/metamodels/expressions#> .
+@prefix fsm: <http://www.mercator.iac.es/onto/metamodels/finitestatemachines#> .
+@prefix geom: <http://www.mercator.iac.es/onto/metamodels/geometry#> .
+@prefix math: <http://www.mercator.iac.es/onto/metamodels/mathematics#> .
+@prefix mech: <http://www.mercator.iac.es/onto/metamodels/mechanics#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rules: <http://www.mercator.iac.es/onto/metamodels/rules#> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix spin: <http://spinrdf.org/spin#> .
+@prefix spl: <http://spinrdf.org/spl#> .
+@prefix sys: <http://www.mercator.iac.es/onto/metamodels/systems#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.mercator.iac.es/onto/metamodels/mechanics>
+  rdf:type owl:Ontology ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/controlsystems> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/finitestatemachines> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/geometry> ;
+  owl:versionInfo "Created with TopBraid Composer"^^xsd:string ;
+.
+mech:Assembly
+  rdf:type owl:Class ;
+  rdfs:subClassOf mech:Part ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty mech:hasPart ;
+      owl:someValuesFrom mech:Part ;
+    ] ;
+.
+mech:BackToFrontAxis
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Axis ;
+  owl:disjointWith mech:BottomToTopAxis ;
+  owl:disjointWith mech:LeftToRightAxis ;
+.
+mech:BottomToTopAxis
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Axis ;
+  owl:disjointWith mech:BackToFrontAxis ;
+  owl:disjointWith mech:LeftToRightAxis ;
+.
+mech:LeftToRightAxis
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Axis ;
+  owl:disjointWith mech:BackToFrontAxis ;
+  owl:disjointWith mech:BottomToTopAxis ;
+.
+mech:Load
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/controlsystems#consumes> ;
+      owl:someValuesFrom mech:Power ;
+    ] ;
+.
+mech:Motor
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/controlsystems#produces> ;
+      owl:someValuesFrom mech:Power ;
+    ] ;
+.
+mech:MotorStateMachine
+  rdf:type owl:Class ;
+  rdfs:subClassOf fsm:StateMachine ;
+.
+mech:Part
+  rdf:type owl:Class ;
+  rdfs:subClassOf geom:Shape ;
+  rdfs:subClassOf sys:Element ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty mech:isPartOf ;
+      owl:someValuesFrom mech:Part ;
+    ] ;
+.
+mech:Power
+  rdf:type owl:Class ;
+  rdfs:subClassOf <http://qudt.org/schema/qudt#Quantity> ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue <http://qudt.org/vocab/quantity#Power> ;
+      owl:onProperty <http://qudt.org/schema/qudt#quantityKind> ;
+    ] ;
+.
+mech:ReferenceSystem
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    ?xAxis a mech:BackToFrontAxis .
+    ?yAxis a mech:LeftToRightAxis .
+    ?zAxis a mech:BottomToTopAxis .
+}
+WHERE {
+    ?this geom:hasXAxis ?xAxis .
+    ?this geom:hasYAxis ?yAxis .
+    ?this geom:hasZAxis ?zAxis .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf geom:CoordinateSystem ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasXAxis ;
+            owl:someValuesFrom mech:BackToFrontAxis ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasYAxis ;
+            owl:someValuesFrom mech:LeftToRightAxis ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasZAxis ;
+            owl:someValuesFrom mech:BottomToTopAxis ;
+          ]
+        ) ;
+    ] ;
+.
+mech:RotaryLoad
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          mech:Load
+          [
+            rdf:type owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty mech:hasStator ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty mech:hasRotor ;
+          ]
+        ) ;
+    ] ;
+.
+mech:RotaryMotor
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          mech:Motor
+          [
+            rdf:type owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty mech:hasStator ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty mech:hasRotor ;
+          ]
+        ) ;
+    ] ;
+.
+mech:RotaryTransmission
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+      ?this mech:hasInputRotor ?inputRotor .
+      ?this mech:hasOutputRotor ?outputRotor
+} WHERE {
+      ?this mech:hasRotor ?inputRotor .
+      ?this mech:hasRotor ?outputRotor .
+      FILTER(?inputRotor != ?outputRotor) .
+      ?inputRotor  geom:hasCoordinateSystem ?inputRotorCS .
+      ?outputRotor geom:hasCoordinateSystem ?outputRotorCS .
+      ?rotation expr:hasOperand ?outputRotorCS .
+      ?inputRotorCS geom:hasAxis/geom:isRotationAxisOf ?rotation
+}"""^^xsd:string ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          mech:Transmission
+          [
+            rdf:type owl:Restriction ;
+            owl:cardinality "2"^^xsd:nonNegativeInteger ;
+            owl:onProperty mech:hasRotor ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty mech:hasStator ;
+          ]
+        ) ;
+    ] ;
+.
+mech:Rotor
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          mech:Part
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasCoordinateSystem ;
+            owl:someValuesFrom [
+                rdf:type owl:Restriction ;
+                owl:onProperty expr:isOperandOf ;
+                owl:someValuesFrom geom:Rotation ;
+              ] ;
+          ]
+        ) ;
+    ] ;
+.
+mech:Stator
+  rdf:type owl:Class ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          mech:Part
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty geom:hasCoordinateSystem ;
+            owl:someValuesFrom [
+                rdf:type owl:Restriction ;
+                owl:onProperty geom:hasAxis ;
+                owl:someValuesFrom [
+                    rdf:type owl:Restriction ;
+                    owl:onProperty geom:isRotationAxisOf ;
+                    owl:someValuesFrom geom:Rotation ;
+                  ] ;
+              ] ;
+          ]
+        ) ;
+    ] ;
+.
+mech:Torque
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# torque is transferred when things are fixed to each other 
+CONSTRUCT {
+    ?somethingElse mech:hasOutputTorque ?this .
+}
+WHERE {
+    ?something mech:hasOutputTorque ?this .
+    ?something mech:isFixedTo ?somethingElse .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    ?this geom:isParallelTo ?ax .
+}
+WHERE {
+    ?rot mech:hasTorque ?this .
+    ?rot geom:isRotationAround ?ax .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf math:DefaultQuantity ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:hasValue <http://qudt.org/vocab/quantity#Torque> ;
+      owl:onProperty <http://qudt.org/schema/qudt#quantityKind> ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty geom:hasDirection ;
+      owl:someValuesFrom geom:Direction ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty geom:hasMagnitude ;
+      owl:someValuesFrom geom:Magnitude ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue <http://qudt.org/vocab/unit#NewtonMeter> ;
+      owl:onProperty math:defaultUnit ;
+    ] ;
+.
+mech:Transmission
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:cardinality "1"^^xsd:nonNegativeInteger ;
+      owl:onProperty mech:hasTransmissionEfficiency ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:cardinality "1"^^xsd:nonNegativeInteger ;
+      owl:onProperty mech:hasTransmissionRatio ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty <http://www.mercator.iac.es/onto/metamodels/controlsystems#consumes> ;
+            owl:someValuesFrom mech:Power ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty <http://www.mercator.iac.es/onto/metamodels/controlsystems#produces> ;
+            owl:someValuesFrom mech:Power ;
+          ]
+        ) ;
+    ] ;
+.
+mech:TransmissionEfficiency
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """    CONSTRUCT {
+      ?this expr:hasLeftOperand ?inputPower .
+      ?this expr:hasRightOperand ?outputPower
+    } WHERE {
+      ?transmission mech:hasTransmissionEfficiency ?this .
+      ?transmission ctrl:produces ?outputPower .
+      ?transmission ctrl:consumes ?inputPower .
+      ?outputPower rdf:type mech:Power .
+      ?inputPower rdf:type mech:Power
+    }"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf math:Division ;
+  rdfs:subClassOf <http://qudt.org/schema/qudt#Quantity> ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:hasValue <http://qudt.org/vocab/quantity#DimensionlessRatio> ;
+      owl:onProperty <http://qudt.org/schema/qudt#quantityKind> ;
+    ] ;
+.
+mech:TransmissionRatio
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """    # rule only matching rotary tranmsissions:
+    CONSTRUCT {
+      ?this expr:hasLeftOperand ?inputVelocity .
+      ?this expr:hasRightOperand ?outputVelocity
+    } WHERE {
+      ?tranmsission mech:hasTransmissionRatio ?this .
+      ?transmission mech:hasInputRotor/geom:hasCoordinateSystem ?inputRotorCS .
+      ?transmission mech:hasOutputRotor/geom:hasCoordinateSystem ?outputRotorCS .
+      ?transmission mech:hasStator ?stator .
+      ?inputRotation expr:hasOperand ?inputRotorCS .
+      ?outputRotation expr:hasOperand ?outputRotorCS .
+      ?inputRotation geom:hasRotationAxis ?ax .
+      ?outputRotation geom:hasRotationAxis ?ax .
+      ?stator geom:hasCoordinateSystem/geom:hasAxis ?ax .
+      ?inputRotation geom:hasAngularVelocity ?inputVelocity .
+      ?outputRotation geom:hasAngularVelocity ?outputVelocity
+    }"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf math:Division ;
+  rdfs:subClassOf <http://qudt.org/schema/qudt#Quantity> ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:hasValue <http://qudt.org/vocab/quantity#DimensionlessRatio> ;
+      owl:onProperty <http://qudt.org/schema/qudt#quantityKind> ;
+    ] ;
+.
+mech:hasInputRotor
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain mech:Assembly ;
+  rdfs:range mech:Rotor ;
+  rdfs:subPropertyOf mech:hasRotor ;
+.
+mech:hasOutputRotor
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain mech:Assembly ;
+  rdfs:range mech:Rotor ;
+  rdfs:subPropertyOf mech:hasRotor ;
+.
+mech:hasPart
+  rdf:type owl:AsymmetricProperty ;
+  rdf:type owl:IrreflexiveProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain mech:Assembly ;
+  rdfs:range mech:Part ;
+  rdfs:subPropertyOf sys:hasPart ;
+.
+mech:hasRotor
+  rdf:type owl:ObjectProperty ;
+  rdfs:range mech:Rotor ;
+  rdfs:subPropertyOf mech:hasPart ;
+.
+mech:hasStator
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain mech:Part ;
+  rdfs:range mech:Stator ;
+  rdfs:subPropertyOf mech:hasPart ;
+.
+mech:hasTransmissionEfficiency
+  rdf:type owl:ObjectProperty ;
+.
+mech:hasTransmissionRatio
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain mech:RotaryTransmission ;
+  rdfs:range geom:Rotation ;
+  rdfs:subPropertyOf geom:hasRotation ;
+.
+mech:isFixedTo
+  rdf:type owl:SymmetricProperty ;
+  rdf:type owl:TransitiveProperty ;
+  rdfs:domain mech:Part ;
+  rdfs:range mech:Part ;
+  rdfs:subPropertyOf geom:isFixedTo ;
+.
+mech:isPartOf
+  rdf:type owl:ObjectProperty ;
+  rdfs:subPropertyOf sys:isPartOf ;
+  owl:inverseOf mech:hasPart ;
+.
+<http://spinrdf.org/arg#predicate>
+  rdf:type rdf:Property ;
+  rdfs:subPropertyOf sp:arg ;
+.
+spl:max
+  spin:abstract "true"^^xsd:boolean ;
+.

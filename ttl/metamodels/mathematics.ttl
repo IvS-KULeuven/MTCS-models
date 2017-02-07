@@ -1,0 +1,1284 @@
+# baseURI: http://www.mercator.iac.es/onto/metamodels/mathematics
+# imports: http://www.mercator.iac.es/onto/metamodels/expressions
+# imports: http://qudt.org/spin/unitconversion
+# imports: http://qudt.org/vocab/dimensionalunit
+# imports: http://spinrdf.org/spin
+
+@prefix : <http://www.mercator.iac.es/onto/metamodels/mathematics#> .
+@prefix afn: <http://jena.hpl.hp.com/ARQ/function#> .
+@prefix arg: <http://spinrdf.org/arg#> .
+@prefix expr: <http://www.mercator.iac.es/onto/metamodels/expressions#> .
+@prefix fn: <http://www.w3.org/2005/xpath-functions#> .
+@prefix math: <http://www.mercator.iac.es/onto/metamodels/mathematics#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix qudt: <http://qudt.org/schema/qudt#> .
+@prefix qudtspin: <http://qudt.org/spin/qudtspin#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rules: <http://www.mercator.iac.es/onto/metamodels/rules#> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix spin: <http://spinrdf.org/spin#> .
+@prefix spinx: <http://spinrdf.org/spinx#> .
+@prefix spl: <http://spinrdf.org/spl#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+expr:LessThan
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    ?this expr:excludes ?other
+}
+WHERE {
+    ?this expr:hasRightOperand ?minusy .
+    ?minusy math:unaryMinus ?y .
+    ?this expr:hasLeftOperand ?x .
+    ?other expr:hasRightOperand ?y .
+    ?other expr:hasLeftOperand ?x .
+    ?other expr:hasOperator expr:isGreaterThan .
+}"""^^xsd:string ;
+    ] ;
+.
+expr:hasLeftOperand
+  rdfs:domain expr:Expression ;
+  rdfs:range expr:Operand ;
+.
+expr:hasRightOperand
+  rdfs:domain expr:Expression ;
+  rdfs:range expr:Operand ;
+.
+expr:isLeftOperandOf
+  rdfs:domain expr:Operand ;
+  rdfs:range expr:Expression ;
+.
+expr:x_gt_y
+  rdf:type expr:GreaterThan ;
+  expr:hasLeftOperand math:x ;
+  expr:hasRightOperand math:y ;
+.
+expr:x_lt_minusy
+  rdf:type expr:LessThan ;
+  expr:hasLeftOperand math:x ;
+  expr:hasRightOperand math:minusy ;
+.
+<http://www.mercator.iac.es/onto/metamodels/mathematics>
+  rdf:type owl:Ontology ;
+  rdfs:seeAlso "http://www.factmonster.com/ipka/A0881931.html"^^xsd:string ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/expressions> ;
+  owl:imports <http://qudt.org/spin/unitconversion> ;
+  owl:imports <http://qudt.org/vocab/dimensionalunit> ;
+  owl:imports <http://spinrdf.org/spin> ;
+.
+math:Abs
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the ABS of a Quantity
+CONSTRUCT {
+    ?thisQv qudt:numericValue ?resultValue .
+}
+WHERE {
+    ?this (expr:hasOperand/qudt:quantityValue)/qudt:numericValue ?value .
+    FILTER isNumeric(?value) .
+    BIND (fn:abs(?value) AS ?resultValue) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the ABS of a QuantityValue
+CONSTRUCT {
+    ?this qudt:numericValue ?resultValue .
+    ?this a qudt:QuantityValue .
+}
+WHERE {
+    ?this expr:hasOperand/qudt:numericValue ?argValue .
+    FILTER isNumeric(?argValue) .
+    BIND (fn:abs(?argValue) AS ?resultValue) .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:UnaryOperation ;
+  rdfs:subClassOf math:PositiveNumber ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          expr:UnaryOperation
+          [
+            rdf:type owl:Restriction ;
+            owl:hasValue math:absOf ;
+            owl:onProperty expr:hasOperator ;
+          ]
+        ) ;
+    ] ;
+.
+math:Addend
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the addend of Quantities
+CONSTRUCT {
+    ?thisQV qudt:numericValue ?thisV .
+}
+WHERE {
+    ?this expr:isOperandOf ?operation .
+    ?operation expr:hasOperator math:plus .
+    ?operation expr:hasOperand ?other .
+    FILTER (?this != ?other) .
+    ?operation qudt:quantityValue ?operationQV .
+    ?this qudt:quantityValue ?thisQV .
+    ?other qudt:quantityValue ?otherQV .
+    # check if the units are coherent
+    ?operation qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?this qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?other qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    # calculate the numerical value
+    ?operationQV qudt:numericValue ?operationV .
+    ?otherQV qudt:numericValue ?otherV .
+    BIND ((?operationV - ?otherV) AS ?thisV) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the addend of QuantityValues
+CONSTRUCT {
+    ?this qudt:numericValue ?thisV .
+}
+WHERE {
+    ?this expr:isOperandOf ?operation .
+    ?operation expr:hasOperator math:plus .
+    ?operation expr:hasOperand ?other .
+    FILTER (?this != ?other) .
+    # check if the units are coherent
+    ?operation qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?this qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?other qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    # calculate the numerical value
+    ?operation qudt:numericValue ?operationV .
+    ?other qudt:numericValue ?otherV .
+    BIND ((?operationV - ?otherV) AS ?thisV) .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:Operand ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty expr:isOperandOf ;
+      owl:someValuesFrom math:Addition ;
+    ] ;
+.
+math:Addition
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the sum of DefaultQuantities
+CONSTRUCT {
+    ?thisQV qudt:numericValue ?thisV .
+}
+WHERE {
+    ?this expr:hasLeftOperand/qudt:quantityValue ?LQV .
+    ?this expr:hasRightOperand/qudt:quantityValue ?RQV .
+    ?this qudt:quantityValue ?thisQV .
+    ?LQV qudt:coherentUnitSystem ?coherentUnitSystem .
+    ?RQV qudt:coherentUnitSystem ?coherentUnitSystem .
+    ?thisQV qudt:coherentUnitSystem ?coherentUnitSystem .
+    ?LQV qudt:numericValue ?LV .
+    ?RQV qudt:numericValue ?RV .
+    BIND ((?LV + ?RV) AS ?thisV) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the sum of QuantityValues
+CONSTRUCT {
+    ?this qudt:numericValue ?resultV .
+    ?this a qudt:QuantityValue .
+    ?this qudt:unit ?unit .
+}
+WHERE {
+    ?this expr:hasLeftOperand ?LQV .
+    ?this expr:hasRightOperand ?RQV .
+    ?LQV qudt:numericValue ?LV .
+    ?RQV qudt:numericValue ?RV .
+    BIND ((?LV + ?RV) AS ?resultV) .
+    OPTIONAL {
+        ?LQV qudt:unit ?unit .
+        ?RQV qudt:unit ?unit .
+    } .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:BinaryOperation ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:hasValue math:plus ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue math:plus ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+.
+math:Angle
+  rdf:type owl:Class ;
+  rdfs:subClassOf qudt:Quantity ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue <http://qudt.org/vocab/quantity#Angle> ;
+      owl:onProperty qudt:quantityKind ;
+    ] ;
+.
+math:ArcCosine
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:UnaryOperation ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          expr:UnaryOperation
+          [
+            rdf:type owl:Restriction ;
+            owl:hasValue math:arcCosineOf ;
+            owl:onProperty expr:hasOperator ;
+          ]
+        ) ;
+    ] ;
+.
+math:ArcCotangent
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:UnaryOperation ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          expr:UnaryOperation
+          [
+            rdf:type owl:Restriction ;
+            owl:hasValue math:arcCotangentOf ;
+            owl:onProperty expr:hasOperator ;
+          ]
+        ) ;
+    ] ;
+.
+math:ArcSine
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:UnaryOperation ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          expr:UnaryOperation
+          [
+            rdf:type owl:Restriction ;
+            owl:hasValue math:arcSineOf ;
+            owl:onProperty expr:hasOperator ;
+          ]
+        ) ;
+    ] ;
+.
+math:ArcTangent
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:UnaryOperation ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          expr:UnaryOperation
+          [
+            rdf:type owl:Restriction ;
+            owl:hasValue math:arcTangentOf ;
+            owl:onProperty expr:hasOperator ;
+          ]
+        ) ;
+    ] ;
+.
+math:Construct_1
+  rdf:type sp:Construct ;
+.
+math:Cosine
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:UnaryOperation ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          expr:UnaryOperation
+          [
+            rdf:type owl:Restriction ;
+            owl:hasValue math:cosineOf ;
+            owl:onProperty expr:hasOperator ;
+          ]
+        ) ;
+    ] ;
+.
+math:Cotangent
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:UnaryOperation ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          expr:UnaryOperation
+          [
+            rdf:type owl:Restriction ;
+            owl:hasValue math:cotangentOf ;
+            owl:onProperty expr:hasOperator ;
+          ]
+        ) ;
+    ] ;
+.
+math:Dividend
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the dividend of Quantities
+CONSTRUCT {
+    ?thisQV qudt:numericValue ?thisV .
+}
+WHERE {
+    ?this expr:isLeftOperandOf ?operation .
+    ?operation expr:hasOperator math:dividedBy .
+    ?operation expr:hasRightOperand ?other .
+    FILTER (?this != ?other) .
+    ?operation qudt:quantityValue ?operationQV .
+    ?this qudt:quantityValue ?thisQV .
+    ?other qudt:quantityValue ?otherQV .
+    # check if the units are coherent
+    ?operationQV qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?thisQV qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?otherQV qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    # calculate the numerical value
+    ?operationQV qudt:numericValue ?operationV .
+    ?otherQV qudt:numericValue ?otherV .
+    BIND ((?operationV * ?otherV) AS ?thisV) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the dividend of QuantityValues
+CONSTRUCT {
+    ?this qudt:numericValue ?thisV .
+    ?this a qudt:QuantityValue .
+}
+WHERE {
+    ?this expr:isLeftOperandOf ?operation .
+    ?operation expr:hasOperator math:dividedBy .
+    ?operation expr:hasRightOperand ?other .
+    FILTER (?this != ?other) .
+    # check if the units are coherent
+    ?operation qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?this qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?other qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    # calculate the numerical value
+    ?operation qudt:numericValue ?operationV .
+    ?other qudt:numericValue ?otherV .
+    BIND ((?operationV * ?otherV) AS ?thisV) .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:Operand ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty expr:isLeftOperandOf ;
+      owl:someValuesFrom math:Division ;
+    ] ;
+.
+math:Division
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the quotient of DefaultQuantities
+CONSTRUCT {
+    ?thisQV qudt:numericValue ?thisV .
+}
+WHERE {
+    ?this expr:hasLeftOperand/qudt:quantityValue ?LQV .
+    ?this expr:hasRightOperand/qudt:quantityValue ?RQV .
+    ?this qudt:quantityValue ?thisQV .
+    ?LQV qudt:coherentUnitSystem ?coherentUnitSystem .
+    ?RQV qudt:coherentUnitSystem ?coherentUnitSystem .
+    ?thisQV qudt:coherentUnitSystem ?coherentUnitSystem .
+    ?LQV qudt:numericValue ?LV .
+    ?RQV qudt:numericValue ?RV .
+    BIND ((?LV / ?RV) AS ?thisV) 
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the quotient of QuantityValues
+CONSTRUCT {
+    ?this qudt:numericValue ?resultV .
+    ?this a qudt:QuantityValue .
+}
+WHERE {
+    ?this expr:hasLeftOperand ?LQV .
+    ?this expr:hasRightOperand ?RQV .
+    ?LQV qudt:numericValue ?LV .
+    ?RQV qudt:numericValue ?RV .
+    BIND ((?LV / ?RV) AS ?resultV) .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:BinaryOperation ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:hasValue math:dividedBy ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue math:dividedBy ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+.
+math:Divisor
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the dividend of Quantities
+CONSTRUCT {
+    ?thisQV qudt:numericValue ?thisV .
+}
+WHERE {
+    ?this expr:isOperandOf ?operation .
+    ?operation expr:hasOperator math:dividedBy .
+    ?operation expr:hasOperand ?other .
+    FILTER (?this != ?other) .
+    ?operation qudt:quantityValue ?operationQV .
+    ?this qudt:quantityValue ?thisQV .
+    ?other qudt:quantityValue ?otherQV .
+    # check if the units are coherent
+    ?operationQV qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?thisQV qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?otherQV qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    # calculate the numerical value
+    ?operationQV qudt:numericValue ?operationV .
+    ?otherQV qudt:numericValue ?otherV .
+    BIND ((?otherV / ?operationV) AS ?thisV) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the dividend of QuantityValues
+CONSTRUCT {
+    ?this qudt:numericValue ?thisV .
+    ?this a qudt:QuantityValue .
+}
+WHERE {
+    ?this expr:isOperandOf ?operation .
+    ?operation expr:hasOperator math:dividedBy .
+    ?operation expr:hasOperand ?other .
+    FILTER (?this != ?other) .
+    # check if the units are coherent
+    ?operation qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?this qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?other qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    # calculate the numerical value
+    ?operation qudt:numericValue ?operationV .
+    ?other qudt:numericValue ?otherV .
+    BIND ((?otherV / ?operationV) AS ?thisV) .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:Operand ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty expr:isRightOperandOf ;
+      owl:someValuesFrom math:Division ;
+    ] ;
+.
+math:Minuend
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the minuend of Quantities
+CONSTRUCT {
+    ?thisQV qudt:numericValue ?thisV .
+}
+WHERE {
+    ?this expr:isLeftOperandOf ?operation .
+    ?operation expr:hasOperator math:minus .
+    ?operation expr:hasRightOperand ?other .
+    FILTER (?this != ?other) .
+    ?operation qudt:quantityValue ?operationQV .
+    ?this qudt:quantityValue ?thisQV .
+    ?other qudt:quantityValue ?otherQV .
+    # check if the units are coherent
+    ?operationQV qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?thisQV qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?otherQV qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    # calculate the numerical value
+    ?operationQV qudt:numericValue ?operationV .
+    ?otherQV qudt:numericValue ?otherV .
+    BIND ((?operationV + ?otherV) AS ?thisV) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the minuend of QuantityValues
+CONSTRUCT {
+    ?this qudt:numericValue ?thisV .
+    ?this a qudt:QuantityValue .
+}
+WHERE {
+    ?this expr:isLeftOperandOf ?operation .
+    ?operation expr:hasOperator math:minus .
+    ?operation expr:hasRightOperand ?other .
+    FILTER (?this != ?other) .
+    # check if the units are coherent
+    ?operation qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?this qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?other qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    # calculate the numerical value
+    ?operation qudt:numericValue ?operationV .
+    ?other qudt:numericValue ?otherV .
+    BIND ((?operationV + ?otherV) AS ?thisV) .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:Operand ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty expr:isLeftOperandOf ;
+      owl:someValuesFrom math:Subtraction ;
+    ] ;
+.
+math:Multiplicand
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the multiplicand of Quantities
+CONSTRUCT {
+    ?thisQV qudt:numericValue ?thisV .
+}
+WHERE {
+    ?this expr:isOperandOf ?operation .
+    ?operation expr:hasOperator math:times .
+    ?operation expr:hasOperand ?other .
+    FILTER (?this != ?other) .
+    ?operation qudt:quantityValue ?operationQV .
+    ?this qudt:quantityValue ?thisQV .
+    ?other qudt:quantityValue ?otherQV .
+    # check if the units are coherent
+    ?operationQV qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?thisQV qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?otherQV qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    # calculate the numerical value
+    ?operationQV qudt:numericValue ?operationV .
+    ?otherQV qudt:numericValue ?otherV .
+    BIND ((?operationV / ?otherV) AS ?thisV) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the multiplicand of QuantityValues
+CONSTRUCT {
+    ?this qudt:numericValue ?thisV .
+    ?this a qudt:QuantityValue .
+}
+WHERE {
+    ?this expr:isOperandOf ?operation .
+    ?operation expr:hasOperator math:times .
+    ?operation expr:hasOperand ?other .
+    FILTER (?this != ?other) .
+    # check if the units are coherent
+    ?operation qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?this qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?other qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    # calculate the numerical value
+    ?operation qudt:numericValue ?operationV .
+    ?other qudt:numericValue ?otherV .
+    BIND ((?operationV / ?otherV) AS ?thisV) .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:Operand ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty expr:isOperandOf ;
+      owl:someValuesFrom math:Multiplication ;
+    ] ;
+.
+math:Multiplication
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the Multiplication of Quantities
+CONSTRUCT {
+    ?thisQV qudt:numericValue ?thisV .
+}
+WHERE {
+    ?this expr:hasLeftOperand/qudt:quantityValue ?LQV .
+    ?this expr:hasRightOperand/qudt:quantityValue ?RQV .
+    ?this qudt:quantityValue ?thisQV .
+    ?LQV qudt:coherentUnitSystem ?coherentUnitSystem .
+    ?RQV qudt:coherentUnitSystem ?coherentUnitSystem .
+    ?thisQV qudt:coherentUnitSystem ?coherentUnitSystem .
+    ?LQV qudt:numericValue ?LV .
+    ?RQV qudt:numericValue ?RV .
+    BIND ((?LV * ?RV) AS ?thisV)
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the quotient of QuantityValues
+CONSTRUCT {
+    ?this qudt:numericValue ?resultV .
+    ?this a qudt:QuantityValue .
+}
+WHERE {
+    ?this expr:hasLeftOperand ?LQV .
+    ?this expr:hasRightOperand ?RQV .
+    ?LQV qudt:numericValue ?LV .
+    ?RQV qudt:numericValue ?RV .
+    BIND ((?LV * ?RV) AS ?resultV) .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:BinaryOperation ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:hasValue math:times ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue math:times ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+.
+math:NegativeNumber
+  rdf:type owl:Class ;
+  spin:constraint [
+      rdf:type sp:Construct ;
+      sp:text """# Check if the quantity is negative
+CONSTRUCT {
+    _:b0 a spin:ConstraintViolation .
+    _:b0 spin:violationRoot ?this .
+    _:b0 spin:violationPath qudt:quantityValue .
+    _:b0 spin:violationLevel spin:Error .
+    _:b0 rdfs:label \"Not a negative number!\" .
+}
+WHERE {
+    ?this qudt:quantityValue ?qv .
+    ?qv qudt:numericValue ?value .
+    FILTER (?value > 0) .
+}"""^^xsd:string ;
+    ] ;
+  spin:constraint [
+      rdf:type sp:Construct ;
+      sp:text """# Check if the quantity value is negative
+CONSTRUCT {
+    _:b0 a spin:ConstraintViolation .
+    _:b0 spin:violationRoot ?this .
+    _:b0 spin:violationPath qudt:quantityValue .
+    _:b0 spin:violationLevel spin:Error .
+    _:b0 rdfs:label \"Not a negative number!\" .
+}
+WHERE {
+    ?this qudt:quantityValue ?qv .
+    ?qv qudt:numericValue ?value .
+    FILTER (?value > 0) .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:label "Negative number"^^xsd:string ;
+  rdfs:subClassOf expr:Expression ;
+  owl:disjointWith math:PositiveNumber ;
+.
+math:NullValue
+  rdf:type owl:Class ;
+  rdfs:subClassOf qudt:ConstantValue ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue "0.0"^^xsd:double ;
+      owl:onProperty qudt:numericValue ;
+    ] ;
+.
+math:Number
+  rdf:type owl:Class ;
+  rdfs:subClassOf qudt:Quantity ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue <http://qudt.org/vocab/quantity#Dimensionless> ;
+      owl:onProperty qudt:quantityKind ;
+    ] ;
+.
+math:PositiveNumber
+  rdf:type owl:Class ;
+  spin:constraint [
+      rdf:type sp:Construct ;
+      sp:text """# Check if the quantity value is positive
+CONSTRUCT {
+    _:b0 a spin:ConstraintViolation .
+    _:b0 spin:violationRoot ?this .
+    _:b0 spin:violationPath qudt:numericValue .
+    _:b0 spin:violationLevel spin:Error .
+    _:b0 rdfs:label \"Not a positive number!\" .
+}
+WHERE {
+    ?this qudt:numericValue ?value .
+    FILTER (?value < 0) .
+}"""^^xsd:string ;
+    ] ;
+  spin:constraint [
+      rdf:type sp:Construct ;
+      sp:text """# check if the quantity is positive
+CONSTRUCT {
+    _:b0 a spin:ConstraintViolation .
+    _:b0 spin:violationRoot ?this .
+    _:b0 spin:violationPath qudt:quantityValue .
+    _:b0 spin:violationLevel spin:Error .
+    _:b0 rdfs:label \"Not a positive number!\" .
+}
+WHERE {
+    ?this qudt:quantityValue ?qv .
+    ?qv qudt:numericValue ?value .
+    FILTER (?value < 0) .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:label "Positive number"^^xsd:string ;
+  rdfs:subClassOf expr:Expression ;
+.
+math:Power
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:BinaryOperation ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:hasValue math:exponent ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue math:exponent ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+.
+math:RadianValue
+  rdf:type owl:Class ;
+  rdfs:subClassOf qudt:QuantityValue ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          qudt:QuantityValue
+          [
+            rdf:type owl:Restriction ;
+            owl:hasValue <http://qudt.org/vocab/unit#Radian> ;
+            owl:onProperty qudt:unit ;
+          ]
+        ) ;
+    ] ;
+.
+math:Sine
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:UnaryOperation ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          expr:UnaryOperation
+          [
+            rdf:type owl:Restriction ;
+            owl:hasValue math:sineOf ;
+            owl:onProperty expr:hasOperator ;
+          ]
+        ) ;
+    ] ;
+.
+math:Square
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the square of a Quantity
+CONSTRUCT {
+    ?thisQv qudt:numericValue ?resultValue .
+}
+WHERE {
+    ?this (expr:hasOperand/qudt:quantityValue)/qudt:numericValue ?value .
+    FILTER isNumeric(?value) .
+    BIND ((?value * ?value) AS ?resultValue) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the square of a QuantityValue
+CONSTRUCT {
+    ?this qudt:numericValue ?resultValue .
+    ?this a qudt:QuantityValue .
+}
+WHERE {
+    ?this expr:hasOperand/qudt:numericValue ?argValue .
+    FILTER isNumeric(?argValue) .
+    BIND ((?argValue * ?argValue) AS ?resultValue) .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:UnaryOperation ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          expr:UnaryOperation
+          [
+            rdf:type owl:Restriction ;
+            owl:hasValue math:squareOf ;
+            owl:onProperty expr:hasOperator ;
+          ]
+        ) ;
+    ] ;
+.
+math:SquareRoot
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the square of a QuantityValue
+CONSTRUCT {
+    ?this qudt:numericValue ?resultValue .
+    ?this a qudt:QuantityValue .
+}
+WHERE {
+    ?this expr:hasOperand/qudt:numericValue ?argValue .
+    FILTER isNumeric(?argValue) .
+    BIND (afn:sqrt(?argValue) AS ?resultValue) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the square root of a Quantity
+CONSTRUCT {
+    ?thisQv qudt:numericValue ?resultValue .
+}
+WHERE {
+    ?this (expr:hasOperand/qudt:quantityValue)/qudt:numericValue ?value .
+    FILTER (isNumeric(?value) && (?value >= 0.0)) .
+    BIND (afn:sqrt(?value) AS ?resultValue) .
+    OPTIONAL {
+        ?this math:defaultQuantityValue ?thisQv .
+    } .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:UnaryOperation ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          expr:UnaryOperation
+          [
+            rdf:type owl:Restriction ;
+            owl:hasValue math:squareRootOf ;
+            owl:onProperty expr:hasOperator ;
+          ]
+        ) ;
+    ] ;
+.
+math:Subtraction
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the difference of Quantities
+CONSTRUCT {
+    ?resultQV qudt:numericValue ?thisV .
+}
+WHERE {
+    ?this expr:hasLeftOperand/qudt:quantityValue ?LQV .
+    ?this expr:hasRightOperand/qudt:quantityValue ?RQV .
+    ?this qudt:quantityValue ?thisQV .
+    ?LQV qudt:coherentUnitSystem ?coherentUnitSystem .
+    ?RQV qudt:coherentUnitSystem ?coherentUnitSystem .
+    ?thisQV qudt:coherentUnitSystem ?coherentUnitSystem .
+    ?LQV qudt:numericValue ?LV .
+    ?RQV qudt:numericValue ?RV .
+    BIND ((?LV - ?RV) AS ?thisV) 
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the difference of QuantityValues
+CONSTRUCT {
+    ?this qudt:numericValue ?resultV .
+    ?this a qudt:QuantityValue .
+    ?this qudt:unit ?unit .
+}
+WHERE {
+    ?this expr:hasLeftOperand ?LQV .
+    ?this expr:hasRightOperand ?RQV .
+    ?LQV qudt:numericValue ?LV .
+    ?RQV qudt:numericValue ?RV .
+    BIND ((?LV - ?RV) AS ?resultV) .
+    OPTIONAL {
+        ?LQV qudt:unit ?unit .
+        ?RQV qudt:unit ?unit .
+    } .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:BinaryOperation ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:hasValue math:minus ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue math:minus ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+.
+math:Subtrahend
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the subtrahend of Quantities
+CONSTRUCT {
+    ?thisQV qudt:numericValue ?thisV
+}
+WHERE {
+    ?this expr:isOperandOf ?operation .
+    ?operation expr:hasOperator math:minus .
+    ?operation expr:hasOperand ?other .
+    FILTER (?this != ?other) .
+    ?operation qudt:quantityValue ?operationQV .
+    ?this qudt:quantityValue ?thisQV .
+    ?other qudt:quantityValue ?otherQV .
+    # check if the units are coherent
+    ?operationQV qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?thisQV qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?otherQV qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    # calculate the numerical value
+    ?operationQV qudt:numericValue ?operationV .
+    ?otherQV qudt:numericValue ?otherV .
+    BIND ((?otherV - ?operationV) AS ?thisV) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the subtrahend of QuantityValues
+CONSTRUCT {
+    ?this qudt:numericValue ?thisV .
+    ?this a qudt:QuantityValue .
+    ?this qudt:unit ?unit .
+}
+WHERE {
+    ?this expr:isOperandOf ?operation .
+    ?operation expr:hasOperator math:minus .
+    ?operation expr:hasOperand ?other .
+    FILTER (?this != ?other) .
+    # check if the units are coherent
+    ?operation qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?this qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    ?other qudt:unit/qudt:coherentUnitOfSystem ?coherentUnitSystem .
+    # calculate the numerical value
+    ?operation qudt:numericValue ?operationV .
+    ?other qudt:numericValue ?otherV .
+    BIND ((?otherV - ?operationV) AS ?thisV) .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:Operand ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty expr:isRightOperandOf ;
+      owl:someValuesFrom math:Subtraction ;
+    ] ;
+.
+math:Tangent
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:UnaryOperation ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          expr:UnaryOperation
+          [
+            rdf:type owl:Restriction ;
+            owl:hasValue math:tangentOf ;
+            owl:onProperty expr:hasOperator ;
+          ]
+        ) ;
+    ] ;
+.
+math:UnaryMinus
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the unary minus of a Quantity
+CONSTRUCT {
+    ?thisQv qudt:numericValue ?resultValue .
+}
+WHERE {
+    ?this (expr:hasOperand/qudt:quantityValue)/qudt:numericValue ?value .
+    FILTER isNumeric(?value) .
+    BIND ((-1 * ?value) AS ?resultValue)
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the unary minus of a QuantityValue
+CONSTRUCT {
+    ?this qudt:numericValue ?resultValue .
+    ?this a qudt:QuantityValue .
+}
+WHERE {
+    ?this expr:hasOperand/qudt:numericValue ?argValue .
+    FILTER isNumeric(?argValue) .
+    BIND ((-1 * ?argValue) AS ?resultValue) .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:UnaryOperation ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue math:unaryMinus ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+.
+math:UnitValue
+  rdf:type owl:Class ;
+  rdfs:subClassOf qudt:ConstantValue ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue "1.0"^^xsd:double ;
+      owl:onProperty qudt:numericValue ;
+    ] ;
+.
+math:UnitlessUnityValue
+  rdf:type owl:Class ;
+  rdfs:subClassOf math:UnitlessValue ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          math:UnitlessValue
+          math:UnitValue
+        ) ;
+    ] ;
+.
+math:UnitlessValue
+  rdf:type owl:Class ;
+  rdfs:subClassOf qudt:QuantityValue ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          qudt:QuantityValue
+          [
+            rdf:type owl:Restriction ;
+            owl:hasValue <http://qudt.org/vocab/unit#Unitless> ;
+            owl:onProperty qudt:unit ;
+          ]
+        ) ;
+    ] ;
+.
+math:absOf
+  rdf:type expr:UnaryOperator ;
+.
+math:arcCosineOf
+  rdf:type expr:UnaryOperator ;
+  expr:isInverseOperatorOf math:cosineOf ;
+.
+math:arcCotangentOf
+  rdf:type expr:UnaryOperator ;
+.
+math:arcSineOf
+  rdf:type expr:UnaryOperator ;
+  expr:isInverseOperatorOf math:sineOf ;
+.
+math:arcTangentOf
+  rdf:type expr:UnaryOperator ;
+.
+math:cosPi
+  rdf:type math:Cosine ;
+  expr:hasOperand math:radPi ;
+  expr:isAssignedTo math:cosPi ;
+  expr:isAssignedTo math:unitlessMinusOne ;
+.
+math:cosPiAngle
+  rdf:type math:Cosine ;
+  expr:hasOperand math:straightAngle ;
+  expr:isAssignedTo math:minusOne ;
+.
+math:cosPiOverTwo
+  rdf:type math:Cosine ;
+  expr:hasOperand math:radPiOverTwo ;
+  expr:isAssignedTo math:zero ;
+.
+math:cosTwoPi
+  rdf:type math:Cosine ;
+  expr:hasOperand math:radTwoPi ;
+  expr:isAssignedTo math:unitlessOne ;
+.
+math:cosZeroPi
+  rdf:type math:Cosine ;
+  expr:hasOperand math:radZero ;
+  expr:isAssignedTo math:unitlessOne ;
+.
+math:cosineOf
+  rdf:type expr:UnaryOperator ;
+.
+math:cotangentOf
+  rdf:type expr:UnaryOperator ;
+.
+math:dividedBy
+  rdf:type expr:BinaryOperator ;
+.
+math:exponent
+  rdf:type expr:BinaryOperator ;
+  rdfs:label "exponent"^^xsd:string ;
+.
+math:hasAngle
+  rdf:type owl:ObjectProperty ;
+  rdfs:range math:Angle ;
+  rdfs:subPropertyOf qudt:quantity ;
+.
+math:minus
+  rdf:type expr:BinaryOperator ;
+.
+math:minusOne
+  rdf:type math:Number ;
+.
+math:minusy
+  rdf:type math:UnaryMinus ;
+  expr:hasOperand math:y ;
+.
+math:nullAngle
+  rdf:type math:Angle ;
+.
+math:plus
+  rdf:type expr:BinaryOperator ;
+  expr:isInverseOperatorOf math:minus ;
+.
+math:radPi
+  rdf:type math:RadianValue ;
+  qudt:numericValue "3.1415926535897931159979634685441851615905761718750"^^xsd:double ;
+  qudt:unit <http://qudt.org/vocab/unit#Radian> ;
+.
+math:radPiOverTwo
+  rdf:type math:RadianValue ;
+  qudt:numericValue "1.5707963267948965579989817342720925807952880859375"^^xsd:double ;
+  qudt:unit <http://qudt.org/vocab/unit#Radian> ;
+.
+math:radTwoPi
+  rdf:type math:RadianValue ;
+  qudt:numericValue "6.28318530717958623199592693708837032318115234375"^^xsd:double ;
+  qudt:unit <http://qudt.org/vocab/unit#Radian> ;
+.
+math:radZero
+  rdf:type math:RadianValue ;
+  qudt:numericValue "0.0"^^xsd:double ;
+  qudt:unit <http://qudt.org/vocab/unit#Radian> ;
+.
+math:rightAngle
+  rdf:type math:Angle ;
+.
+math:shiftLeft
+  rdf:type expr:UnaryOperator ;
+.
+math:shiftRight
+  rdf:type expr:UnaryOperator ;
+.
+math:sineOf
+  rdf:type expr:UnaryOperator ;
+  expr:isInverseOperatorOf math:arcSineOf ;
+.
+math:squareOf
+  rdf:type expr:UnaryOperator ;
+.
+math:squareRootOf
+  rdf:type expr:UnaryOperator ;
+.
+math:straightAngle
+  rdf:type math:Angle ;
+.
+math:tangentOf
+  rdf:type expr:UnaryOperator ;
+.
+math:times
+  rdf:type expr:BinaryOperator ;
+  expr:isInverseOperatorOf math:dividedBy ;
+.
+math:unaryMinus
+  rdf:type expr:UnaryOperator ;
+.
+math:unitlessMinusOne
+  rdf:type expr:AssignmentOperand ;
+  qudt:numericValue "-1.0"^^xsd:double ;
+  qudt:unit <http://qudt.org/vocab/unit#Unitless> ;
+.
+math:unitlessOne
+  expr:isAssignedTo math:unitlessOne ;
+  qudt:numericValue "1.0"^^xsd:double ;
+  qudt:unit <http://qudt.org/vocab/unit#Unitless> ;
+.
+math:unitlessTwo
+  rdf:type expr:AssignmentOperand ;
+  qudt:numericValue "2.0"^^xsd:double ;
+  qudt:unit <http://qudt.org/vocab/unit#Unitless> ;
+.
+math:x
+  rdf:type expr:Operand ;
+.
+math:y
+  rdf:type expr:Operand ;
+.
+math:zero
+  rdf:type expr:AssignmentOperand ;
+  qudt:numericValue "0.0"^^xsd:double ;
+  qudt:unit <http://qudt.org/vocab/unit#Unitless> ;
+.
+qudt:Quantity
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# calculate the numericValue of all QuantityValues of this Quantity
+CONSTRUCT {
+    ?qv2 qudt:numericValue ?v .
+}
+WHERE {
+    ?this qudt:quantityValue ?qv1 .
+    ?this qudt:quantityValue ?qv2 .
+    FILTER (?qv1 != ?qv2) .
+    ?qv1 qudt:unit ?unit1 .
+    ?qv2 qudt:unit ?unit2 .
+    ?qv1 qudt:numericValue ?v1 .
+    OPTIONAL {
+        ?qv2 qudt:numericValue ?v2 .
+    } .
+    FILTER (!bound(?v2)) .
+    BIND (qudtspin:convert(?v1, ?unit1, ?unit2) AS ?v) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# when a := b, a inherits the quantityKind and quantityValue
+CONSTRUCT {
+    ?other qudt:quantityKind ?kind .
+    ?other qudt:quantityValue ?qVal .
+    ?other a qudt:QuantityValue .
+}
+WHERE {
+    ?this expr:isAssignedTo ?other .
+    OPTIONAL {
+        ?this qudt:quantityKind ?kind .
+    } .
+    OPTIONAL {
+        ?this qudt:quantityValue ?qVal .
+    } .
+}"""^^xsd:string ;
+    ] ;
+.
+qudt:QuantityValue
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# when a := b, then a inherits the numeric value, unit, relative standard uncertainty, and standard uncertainty from b
+CONSTRUCT {
+    ?other qudt:numericValue ?numVal .
+    ?other qudt:relativeStandardUncertainty ?relStdUnc .
+    ?other qudt:standardUncertainty ?stdUnc .
+    ?other qudt:unit ?un .
+    ?other a qudt:QuantityValue .
+}
+WHERE {
+    ?this expr:isAssignedTo ?other .
+    OPTIONAL {
+        ?this qudt:numericValue ?numVal .
+    } .
+    OPTIONAL {
+        ?this qudt:relativeStandardUncertainty ?relStdUnc .
+    } .
+    OPTIONAL {
+        ?this qudt:standardUncertainty ?stdUnc .
+    } .
+    OPTIONAL {
+        ?this qudt:unit ?un .
+    } .
+}"""^^xsd:string ;
+    ] ;
+.
+qudt:numericValue
+  rdfs:subPropertyOf expr:hasValue ;
+.
+arg:arg
+  rdf:type rdf:Property ;
+  rdfs:subPropertyOf sp:arg ;
+.
+arg:quantityValue1
+  rdf:type rdf:Property ;
+  rdfs:subPropertyOf sp:arg ;
+.
+arg:quantityValue2
+  rdf:type rdf:Property ;
+  rdfs:subPropertyOf sp:arg ;
+.

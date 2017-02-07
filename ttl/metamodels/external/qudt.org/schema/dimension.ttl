@@ -1,0 +1,173 @@
+# baseURI: http://qudt.org/schema/dimension
+# imports: http://qudt.org/schema/qudt
+# imports: http://www.linkedmodel.org/schema/dtype
+# imports: http://www.linkedmodel.org/schema/vaem
+
+@prefix arg: <http://spinrdf.org/arg#> .
+@prefix catalog: <http://www.linkedmodel.org/schema/catalog#> .
+@prefix catalog-1.0: <http://www.linkedmodel.org/1.2/schema/catalog#> .
+@prefix composite: <http://www.topbraid.org/2007/05/composite.owl#> .
+@prefix creativecommons: <http://creativecommons.org/ns#> .
+@prefix css: <http://uispin.org/css#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix dimension: <http://qudt.org/schema/dimension#> .
+@prefix dimension-1.1: <http://qudt.org/1.1/schema/dimension#> .
+@prefix dtype: <http://www.linkedmodel.org/schema/dtype#> .
+@prefix dtype-1.0: <http://www.linkedmodel.org/1.0/schema/dtype#> .
+@prefix fn: <http://www.w3.org/2005/xpath-functions#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix html: <http://uispin.org/html#> .
+@prefix let: <http://uispin.org/let#> .
+@prefix letrs: <http://uispin.org/letrs#> .
+@prefix lm-cat: <http://www.linkedmodel.org/catalog/lm#> .
+@prefix lm-cat-1.2: <http://www.linkedmodel.org/1.2/catalog/lm#> .
+@prefix lmdoc: <http://www.linkedmodel.org/oui/lmdoc#> .
+@prefix omv: <http://omv.ontoware.org/2005/05/ontology#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix quantity: <http://qudt.org/schema/quantity#> .
+@prefix quantity-1.1: <http://qudt.org/1.1/schema/quantity#> .
+@prefix qudt: <http://qudt.org/schema/qudt#> .
+@prefix qudt-1.1: <http://qudt.org/1.1/schema/qudt#> .
+@prefix qudt-cat: <http://qudt.org/catalog/qudt#> .
+@prefix qudt-cat-11: <http://qudt.org/1.1/catalog/qudt#> .
+@prefix qudt-dimension: <http://qudt.org/vocab/dimension#> .
+@prefix qudt-dimension-1.1: <http://qudt.org/1.1/vocab/dimension#> .
+@prefix qudt-dimensionalunit-1.1: <http://qudt.org/1.1/vocab/dimensionalunit#> .
+@prefix qudt-quantity: <http://qudt.org/vocab/quantity#> .
+@prefix qudt-quantity-1.1: <http://qudt.org/1.1/vocab/quantity#> .
+@prefix qudt-unit-1.1: <http://qudt.org/1.1/vocab/unit#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix smf: <http://topbraid.org/sparqlmotionfunctions#> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix spin: <http://spinrdf.org/spin#> .
+@prefix spl: <http://spinrdf.org/spl#> .
+@prefix spr: <http://spinrdf.org/spr#> .
+@prefix spra: <http://spinrdf.org/spra#> .
+@prefix style: <http://uispin.org/style#> .
+@prefix sxml: <http://topbraid.org/sxml#> .
+@prefix tui: <http://uispin.org/tui#> .
+@prefix ui: <http://uispin.org/ui#> .
+@prefix unit: <http://qudt.org/vocab/unit#> .
+@prefix vaem: <http://www.linkedmodel.org/schema/vaem#> .
+@prefix vaem-1.2: <http://www.linkedmodel.org/1.2/schema/vaem#> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix voag: <http://voag.linkedmodel.org/schema/voag#> .
+@prefix voag-1.0: <http://voag.linkedmodel.org/1.0/schema/voag#> .
+@prefix void: <http://rdfs.org/ns/void#> .
+@prefix xhtml: <http://topbraid.org/xhtml#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://qudt.org/schema/dimension>
+  rdf:type owl:Ontology ;
+  dc:contributor "David Price"^^xsd:string ;
+  dc:contributor "Irene Polikoff"^^xsd:string ;
+  dc:contributor "Ralph Hodgson"^^xsd:string ;
+  dc:creator "James E. Masters"^^xsd:string ;
+  dc:rights "The QUDT Ontologies are issued under a Creative Commons Attribution Share Alike 3.0 United States License. Attribution should be made to NASA Ames Research Center and TopQuadrant, Inc."^^xsd:string ;
+  dc:subject "Quantities, Units, and Dimensions"^^xsd:string ;
+  dc:title "QUDT Dimension Ontology Version 1.1"^^xsd:string ;
+  voag:hasCatalogEntry qudt-cat:QUDT-DIMENSION-SchemaCatalogEntry ;
+  voag:hasLicenseType <voag:CC-SHAREALIKE_3PT0-US> ;
+  voag:withAttributionTo qudt:NASA-ARC-Attribution ;
+  voag:withAttributionTo voag:TopQuadrantAttribution ;
+  vaem:acronym "QUDT"^^xsd:string ;
+  vaem:dateCreated "2010-12-30T11:17:52"^^xsd:dateTime ;
+  vaem:description "QUDT, or the 'Quantity, Unit, Dimension and Types' ontology defines the base classes properties, and restrictions used for modeling physical quantities, units of measure, and their dimensions in various measurement systems. In physics and science, dimensional analysis is a tool to find or check relations among physical quantities by using their dimensions. The dimension of a physical quantity is the combination of the basic physical dimensions (usually mass, length, time, electric charge, and temperature) which describe it; for example, speed has the dimension length / time, and may be measured in meters per second, miles per hour, or other units."^^xsd:string ;
+  vaem:hasAspectScope "Basic treatment of quantities and units. No dimensional treatment in this graph."^^xsd:string ;
+  vaem:hasDisciplineScope "All disciplines"^^xsd:string ;
+  vaem:hasDomainScope "Science, Medicine and Engineering"^^xsd:string ;
+  vaem:hasRole vaem:SchemaGraph ;
+  vaem:intent "The intent of the QUDT Dimensions Ontology is to provide an OWL Schema for dimensional specificaiton and analysis of units of measure."^^xsd:string ;
+  vaem:lastUpdated "$LastChangedDate: 2011-06-01 13:34:19 -0700 (Wed, 01 Jun 2011) $"^^xsd:string ;
+  vaem:namespace "http://qudt.org/schema/dimension"^^xsd:string ;
+  vaem:namespacePrefix "dimension"^^xsd:string ;
+  vaem:revisionNumber "1.1"^^xsd:string ;
+  vaem:specificity 1 ;
+  vaem:usesNonImportedResource dc:author ;
+  vaem:usesNonImportedResource dc:contributor ;
+  vaem:usesNonImportedResource dc:creator ;
+  vaem:usesNonImportedResource dc:description ;
+  vaem:usesNonImportedResource dc:rights ;
+  vaem:usesNonImportedResource dc:subject ;
+  vaem:usesNonImportedResource dc:title ;
+  vaem:usesNonImportedResource skos:closeMatch ;
+  vaem:usesNonImportedResource skos:exactMatch ;
+  vaem:usesNonImportedResource <voag:CC-SHAREALIKE_3PT0-US> ;
+  rdfs:label "QUDT Dimension Ontology"^^xsd:string ;
+  owl:imports <http://qudt.org/schema/qudt> ;
+  owl:imports <http://www.linkedmodel.org/schema/dtype> ;
+  owl:imports <http://www.linkedmodel.org/schema/vaem> ;
+  owl:versionIRI <http://qudt.org/1.1/schema/dimension> ;
+  owl:versionIRI <http://qudt.org/1.1/schema/quantity> ;
+  owl:versionInfo "$Id: OSG_dimension-(v1.1).ttl 4988 2011-06-01 20:34:19Z RalphHodgson $"^^xsd:string ;
+.
+qudt:Dimension
+  rdf:type owl:Class ;
+  dc:description "A dimension is a relationship between a quantity system, a quantity kind of that system, and one or more dimension vectors. There is one dimension vector for each of the system's base quantity kinds. The vector's magnitude determines the exponent of the base dimension for the referenced quantity kind."^^xsd:string ;
+  rdfs:label "Dimension"^^xsd:string ;
+  rdfs:subClassOf qudt:EnumeratedValue ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:allValuesFrom qudt:DimensionVector ;
+      owl:onProperty qudt:dimensionVector ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:allValuesFrom qudt:QuantityKind ;
+      owl:onProperty qudt:referenceQuantity ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:minCardinality "1"^^xsd:int ;
+      owl:onProperty qudt:dimensionVector ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:minCardinality "1"^^xsd:int ;
+      owl:onProperty qudt:referenceQuantity ;
+    ] ;
+.
+qudt:DimensionVector
+  rdf:type owl:Class ;
+  dc:description "A dimension vector is an association between a quantity kind and a rational number. The quantity kind serves as the basis vector in an abstract vector space, and the rational number is the vector magnitude. The abstract vector space is determined by the chosen set of base quantity kinds for a quantity system."^^xsd:string ;
+  rdfs:label "Dimension Vector"^^xsd:string ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:allValuesFrom qudt:QuantityKind ;
+      owl:onProperty qudt:basisElement ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:allValuesFrom xsd:float ;
+      owl:onProperty qudt:vectorMagnitude ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:cardinality "1"^^xsd:int ;
+      owl:onProperty qudt:basisElement ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:cardinality "1"^^xsd:int ;
+      owl:onProperty qudt:vectorMagnitude ;
+    ] ;
+.
+qudt:dimensionInverse
+  rdf:type owl:FunctionalProperty ;
+  rdf:type owl:InverseFunctionalProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdf:type owl:SymmetricProperty ;
+  rdfs:label "dimension inverse"^^xsd:string ;
+  owl:inverseOf qudt:dimensionInverse ;
+.
+qudt:dimensionVector
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "dimension vector"^^xsd:string ;
+.
+qudt:referenceQuantity
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "reference quantity"^^xsd:string ;
+  rdfs:subPropertyOf qudt:referenceThing ;
+.

@@ -1,0 +1,226 @@
+# baseURI: http://www.mercator.iac.es/onto/metamodels/controlsystems
+# imports: http://www.mercator.iac.es/onto/metamodels/mathematics
+# imports: http://www.mercator.iac.es/onto/metamodels/systems
+# imports: http://qudt.org/vocab/dimensionalunit
+
+@prefix ctrl: <http://www.mercator.iac.es/onto/metamodels/controlsystems#> .
+@prefix mathematics: <http://www.mercator.iac.es/onto/metamodels/mathematics#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix spin: <http://spinrdf.org/spin#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.mercator.iac.es/onto/metamodels/controlsystems>
+  rdf:type owl:Ontology ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/mathematics> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/systems> ;
+  owl:imports <http://qudt.org/vocab/dimensionalunit> ;
+  owl:versionInfo "Created with TopBraid Composer"^^xsd:string ;
+.
+ctrl:Actuator
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty ctrl:consumes ;
+            owl:someValuesFrom ctrl:ControllerSignal ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty ctrl:produces ;
+            owl:someValuesFrom ctrl:ActuatorSignal ;
+          ]
+        ) ;
+    ] ;
+.
+ctrl:ActuatorSignal
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          <http://qudt.org/schema/qudt#Quantity>
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty ctrl:isProducedBy ;
+            owl:someValuesFrom ctrl:Actuator ;
+          ]
+        ) ;
+    ] ;
+.
+ctrl:Consumer
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+      ?this ctrl:produces ?negativeSignal
+}
+WHERE {
+      ?this ctrl:consumes ?signal .
+      ?negativeSignal expr:hasOperand ?signal .
+      ?negativeSignal expr:hasOperator math:unaryMinus
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:minCardinality "1"^^xsd:nonNegativeInteger ;
+      owl:onProperty ctrl:consumes ;
+    ] ;
+.
+ctrl:ControlledSystem
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty ctrl:consumes ;
+      owl:someValuesFrom ctrl:ActuatorSignal ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#hasProperty> ;
+      owl:someValuesFrom [
+          rdf:type owl:Restriction ;
+          owl:minCardinality "1"^^xsd:nonNegativeInteger ;
+          owl:onProperty ctrl:isControlledBy ;
+        ] ;
+    ] ;
+.
+ctrl:Controller
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty ctrl:produces ;
+      owl:someValuesFrom ctrl:ControllerSignal ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty ctrl:controls ;
+      owl:someValuesFrom <http://www.mercator.iac.es/onto/metamodels/systems#Property> ;
+    ] ;
+.
+ctrl:ControllerSignal
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          <http://qudt.org/schema/qudt#Quantity>
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty ctrl:isProducedBy ;
+            owl:someValuesFrom ctrl:Controller ;
+          ]
+        ) ;
+    ] ;
+.
+ctrl:Producer
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+      ?this ctrl:consumes ?negativeSignal
+}
+WHERE {
+      ?this ctrl:produces ?signal .
+      ?negativeSignal expr:hasOperand ?signal .
+      ?negativeSignal expr:hasOperator math:unaryMinus
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:minCardinality "1"^^xsd:nonNegativeInteger ;
+      owl:onProperty ctrl:produces ;
+    ] ;
+.
+ctrl:Sensor
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty ctrl:produces ;
+      owl:someValuesFrom ctrl:SensorSignal ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty ctrl:senses ;
+      owl:someValuesFrom <http://www.mercator.iac.es/onto/metamodels/systems#Property> ;
+    ] ;
+.
+ctrl:SensorSignal
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          <http://qudt.org/schema/qudt#Quantity>
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty ctrl:isProducedBy ;
+            owl:someValuesFrom ctrl:Sensor ;
+          ]
+        ) ;
+    ] ;
+.
+ctrl:Signal
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          <http://qudt.org/schema/qudt#Quantity>
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty ctrl:isProducedBy ;
+            owl:someValuesFrom owl:Thing ;
+          ]
+        ) ;
+    ] ;
+.
+ctrl:consumes
+  rdf:type owl:AsymmetricProperty ;
+  rdf:type owl:IrreflexiveProperty ;
+  rdfs:domain ctrl:Consumer ;
+  rdfs:range <http://qudt.org/schema/qudt#Quantity> ;
+.
+ctrl:controls
+  rdf:type owl:AsymmetricProperty ;
+  rdf:type owl:IrreflexiveProperty ;
+  rdfs:domain ctrl:Controller ;
+  rdfs:range <http://www.mercator.iac.es/onto/metamodels/systems#Property> ;
+.
+ctrl:isConsumedBy
+  rdf:type owl:ObjectProperty ;
+  owl:inverseOf ctrl:consumes ;
+.
+ctrl:isControlledBy
+  rdf:type owl:ObjectProperty ;
+  owl:inverseOf ctrl:controls ;
+.
+ctrl:isProducedBy
+  rdf:type owl:ObjectProperty ;
+  owl:inverseOf ctrl:produces ;
+.
+ctrl:isSensedBy
+  rdf:type owl:ObjectProperty ;
+  owl:inverseOf ctrl:senses ;
+.
+ctrl:produces
+  rdf:type owl:AsymmetricProperty ;
+  rdf:type owl:IrreflexiveProperty ;
+  rdfs:domain ctrl:Producer ;
+  rdfs:range <http://qudt.org/schema/qudt#Quantity> ;
+.
+ctrl:senses
+  rdf:type owl:AsymmetricProperty ;
+  rdf:type owl:IrreflexiveProperty ;
+  rdfs:domain ctrl:Sensor ;
+  rdfs:range <http://www.mercator.iac.es/onto/metamodels/systems#Property> ;
+.

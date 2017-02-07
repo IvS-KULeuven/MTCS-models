@@ -1,0 +1,382 @@
+# baseURI: http://www.mercator.iac.es/onto/metamodels/iec61131
+# imports: http://www.mercator.iac.es/onto/metamodels/software
+# imports: http://spinrdf.org/spin
+
+@prefix : <http://www.mercator.iac.es/onto/metamodels/iec61131#> .
+@prefix expr: <http://www.mercator.iac.es/onto/metamodels/expressions#> .
+@prefix iec61131: <http://www.mercator.iac.es/onto/metamodels/iec61131#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix soft: <http://www.mercator.iac.es/onto/metamodels/software#> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix spin: <http://spinrdf.org/spin#> .
+@prefix spl: <http://spinrdf.org/spl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+expr:and
+  iec61131:hasSymbol "AND"^^xsd:string ;
+.
+expr:false
+  expr:hasValue "false"^^xsd:boolean ;
+.
+expr:isAssignedTo
+  iec61131:hasSymbol ":="^^xsd:string ;
+.
+expr:isEqualTo
+  iec61131:hasSymbol "="^^xsd:string ;
+.
+expr:isGreaterThan
+  iec61131:hasSymbol ">"^^xsd:string ;
+.
+expr:isGreaterThanOrEqualTo
+  iec61131:hasSymbol ">="^^xsd:string ;
+.
+expr:isLessThan
+  iec61131:hasSymbol "<"^^xsd:string ;
+.
+expr:isLessThanOrEqualTo
+  iec61131:hasSymbol "<="^^xsd:string ;
+.
+expr:not
+  iec61131:hasSymbol "NOT"^^xsd:string ;
+.
+expr:or
+  iec61131:hasSymbol "OR"^^xsd:string ;
+.
+expr:shiftLeft
+  iec61131:hasSymbol "SHL"^^xsd:string ;
+.
+expr:shiftRight
+  iec61131:hasSymbol "SHR"^^xsd:string ;
+.
+expr:true
+  expr:hasValue "true"^^xsd:boolean ;
+.
+<http://www.mercator.iac.es/onto/metamodels/iec61131>
+  rdf:type owl:Ontology ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/software> ;
+  owl:imports <http://spinrdf.org/spin> ;
+  owl:versionInfo "Created with TopBraid Composer"^^xsd:string ;
+.
+iec61131:BOOL
+  rdf:type iec61131:DataType ;
+  iec61131:hasSymbol "BOOL"^^xsd:string ;
+  rdfs:label "BOOL"^^xsd:string ;
+  owl:sameAs expr:t_bool ;
+.
+iec61131:BYTE
+  rdf:type iec61131:DataType ;
+  iec61131:hasSymbol "BYTE"^^xsd:string ;
+  rdfs:label "BYTE"^^xsd:string ;
+.
+iec61131:DINT
+  rdf:type iec61131:DataType ;
+  iec61131:hasSymbol "DINT"^^xsd:string ;
+  rdfs:label "DINT"^^xsd:string ;
+  owl:sameAs expr:t_int32 ;
+.
+iec61131:DWORD
+  rdf:type iec61131:DataType ;
+  iec61131:hasSymbol "DWORD"^^xsd:string ;
+  rdfs:label "DWORD"^^xsd:string ;
+.
+iec61131:DataType
+  rdf:type owl:Class ;
+  rdfs:subClassOf soft:DataType ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          soft:DataType
+          iec61131:IEC61131Element
+        ) ;
+    ] ;
+.
+iec61131:Dereference
+  rdf:type owl:Class ;
+  rdfs:label "Dereference"^^xsd:string ;
+  rdfs:subClassOf expr:UnaryOperation ;
+.
+iec61131:Enum
+  rdf:type owl:Class ;
+  rdfs:label "Enum"^^xsd:string ;
+  rdfs:subClassOf iec61131:DataType ;
+  rdfs:subClassOf soft:Enumeration ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          iec61131:DataType
+          soft:Enumeration
+        ) ;
+    ] ;
+.
+iec61131:Function
+  rdf:type owl:Class ;
+  rdfs:subClassOf iec61131:ProgramOrganisationUnit ;
+.
+iec61131:FunctionBlock
+  rdf:type owl:Class ;
+  rdfs:subClassOf iec61131:ProgramOrganisationUnit ;
+.
+iec61131:IEC61131Element
+  rdf:type owl:Class ;
+  rdfs:subClassOf soft:LanguageElement ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue iec61131:iec61131 ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#isElementOf> ;
+    ] ;
+.
+iec61131:INT
+  rdf:type iec61131:DataType ;
+  iec61131:hasSymbol "INT"^^xsd:string ;
+  rdfs:label "INT"^^xsd:string ;
+  owl:sameAs expr:t_int16 ;
+.
+iec61131:InOutVariable
+  rdf:type owl:Class ;
+  rdfs:subClassOf iec61131:IEC61131Element ;
+  rdfs:subClassOf soft:Variable ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty iec61131:isInOutVariableOf ;
+      owl:someValuesFrom iec61131:ProgramOrganisationUnit ;
+    ] ;
+  owl:disjointWith iec61131:InputVariable ;
+  owl:disjointWith iec61131:LocalVariable ;
+  owl:disjointWith iec61131:Method ;
+  owl:disjointWith iec61131:OutputVariable ;
+.
+iec61131:InputVariable
+  rdf:type owl:Class ;
+  rdfs:subClassOf iec61131:IEC61131Element ;
+  rdfs:subClassOf soft:Variable ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty iec61131:isInputVariableOf ;
+      owl:someValuesFrom iec61131:ProgramOrganisationUnit ;
+    ] ;
+  owl:disjointWith iec61131:InOutVariable ;
+  owl:disjointWith iec61131:LocalVariable ;
+  owl:disjointWith iec61131:Method ;
+  owl:disjointWith iec61131:OutputVariable ;
+.
+iec61131:LINT
+  rdf:type iec61131:DataType ;
+  iec61131:hasSymbol "LINT"^^xsd:string ;
+  rdfs:label "LINT"^^xsd:string ;
+  owl:sameAs expr:t_int64 ;
+.
+iec61131:LREAL
+  rdf:type iec61131:DataType ;
+  iec61131:hasSymbol "LREAL"^^xsd:string ;
+  rdfs:label "LREAL"^^xsd:string ;
+  owl:sameAs expr:t_double ;
+.
+iec61131:LocalVariable
+  rdf:type owl:Class ;
+  rdfs:subClassOf iec61131:IEC61131Element ;
+  rdfs:subClassOf soft:Variable ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty iec61131:isLocalVariableOf ;
+      owl:someValuesFrom iec61131:ProgramOrganisationUnit ;
+    ] ;
+  owl:disjointWith iec61131:InOutVariable ;
+  owl:disjointWith iec61131:InputVariable ;
+  owl:disjointWith iec61131:Method ;
+  owl:disjointWith iec61131:OutputVariable ;
+.
+iec61131:Method
+  rdf:type owl:Class ;
+  rdfs:subClassOf iec61131:IEC61131Element ;
+  rdfs:subClassOf soft:CallableType ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty soft:isVariableOf ;
+      owl:someValuesFrom iec61131:FunctionBlock ;
+    ] ;
+.
+iec61131:MethodInstance
+  rdf:type owl:Class ;
+  rdfs:label "Method instance"^^xsd:string ;
+  rdfs:subClassOf soft:Callable ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty soft:hasType ;
+      owl:someValuesFrom iec61131:Method ;
+    ] ;
+.
+iec61131:OutputVariable
+  rdf:type owl:Class ;
+  rdfs:subClassOf iec61131:IEC61131Element ;
+  rdfs:subClassOf soft:Variable ;
+  owl:disjointWith iec61131:InOutVariable ;
+  owl:disjointWith iec61131:InputVariable ;
+  owl:disjointWith iec61131:LocalVariable ;
+  owl:disjointWith iec61131:Method ;
+.
+iec61131:Program
+  rdf:type owl:Class ;
+  rdfs:subClassOf iec61131:ProgramOrganisationUnit ;
+.
+iec61131:ProgramOrganisationUnit
+  rdf:type owl:Class ;
+  rdfs:subClassOf iec61131:IEC61131Element ;
+  rdfs:subClassOf soft:CallableType ;
+.
+iec61131:REAL
+  rdf:type iec61131:DataType ;
+  iec61131:hasSymbol "REAL"^^xsd:string ;
+  rdfs:label "REAL"^^xsd:string ;
+  owl:sameAs expr:t_float ;
+.
+iec61131:SINT
+  rdf:type iec61131:DataType ;
+  iec61131:hasSymbol "SINT"^^xsd:string ;
+  rdfs:label "SINT"^^xsd:string ;
+  owl:sameAs expr:t_int8 ;
+.
+iec61131:STRING
+  rdf:type iec61131:DataType ;
+  iec61131:hasSymbol "STRING"^^xsd:string ;
+  rdfs:label "STRING"^^xsd:string ;
+  owl:sameAs expr:t_string ;
+.
+iec61131:Struct
+  rdf:type owl:Class ;
+  rdfs:subClassOf soft:Type ;
+.
+iec61131:UDINT
+  rdf:type iec61131:DataType ;
+  iec61131:hasSymbol "UDINT"^^xsd:string ;
+  rdfs:label "UDINT"^^xsd:string ;
+  owl:sameAs expr:t_uint32 ;
+.
+iec61131:UINT
+  rdf:type iec61131:DataType ;
+  iec61131:hasSymbol "UINT"^^xsd:string ;
+  rdfs:label "UINT"^^xsd:string ;
+  owl:sameAs expr:t_uint16 ;
+.
+iec61131:ULINT
+  rdf:type iec61131:DataType ;
+  iec61131:hasSymbol "ULINT"^^xsd:string ;
+  rdfs:label "ULINT"^^xsd:string ;
+  owl:sameAs expr:t_uint64 ;
+.
+iec61131:USINT
+  rdf:type iec61131:DataType ;
+  iec61131:hasSymbol "USINT"^^xsd:string ;
+  rdfs:label "USINT"^^xsd:string ;
+  owl:sameAs expr:t_uint8 ;
+.
+iec61131:WORD
+  rdf:type iec61131:DataType ;
+  iec61131:hasSymbol "WORD"^^xsd:string ;
+  rdfs:label "WORD"^^xsd:string ;
+.
+iec61131:dereference
+  rdf:type expr:UnaryOperator ;
+  rdf:type owl:ObjectProperty ;
+  iec61131:hasSymbol "^"^^xsd:string ;
+  rdfs:label "dereference"^^xsd:string ;
+.
+iec61131:hasInOutVariable
+  rdf:type owl:ObjectProperty ;
+  rdfs:range iec61131:InOutVariable ;
+  rdfs:subPropertyOf soft:hasArgument ;
+  rdfs:subPropertyOf soft:hasAttribute ;
+  owl:inverseOf iec61131:isInOutVariableOf ;
+.
+iec61131:hasInputVariable
+  rdf:type owl:ObjectProperty ;
+  rdfs:range iec61131:InputVariable ;
+  rdfs:subPropertyOf soft:hasArgument ;
+  rdfs:subPropertyOf soft:hasAttribute ;
+  owl:inverseOf iec61131:isInputVariableOf ;
+.
+iec61131:hasLocalVariable
+  rdf:type owl:ObjectProperty ;
+  rdfs:range iec61131:LocalVariable ;
+  rdfs:subPropertyOf soft:hasArgument ;
+  rdfs:subPropertyOf soft:hasAttribute ;
+  owl:inverseOf iec61131:isLocalVariableOf ;
+.
+iec61131:hasMethod
+  rdf:type soft:LanguageProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:range iec61131:Method ;
+  rdfs:subPropertyOf iec61131:hasMethodInstance ;
+.
+iec61131:hasMethodInstance
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "has method instance"^^xsd:string ;
+  rdfs:range iec61131:MethodInstance ;
+  rdfs:subPropertyOf soft:hasCallable ;
+.
+iec61131:hasOutputVariable
+  rdf:type owl:ObjectProperty ;
+  rdfs:range iec61131:OutputVariable ;
+  rdfs:subPropertyOf soft:hasArgument ;
+  rdfs:subPropertyOf soft:hasAttribute ;
+  owl:inverseOf iec61131:isOutputVariableOf ;
+.
+iec61131:hasSymbol
+  rdf:type owl:DatatypeProperty ;
+  rdfs:label "has symbol"^^xsd:string ;
+  rdfs:range xsd:string ;
+  rdfs:subPropertyOf soft:hasSymbol ;
+.
+iec61131:iec61131
+  rdf:type soft:Language ;
+.
+iec61131:isInOutVariableOf
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain iec61131:InOutVariable ;
+  rdfs:subPropertyOf soft:isArgumentOf ;
+  rdfs:subPropertyOf soft:isAttributeOf ;
+  owl:inverseOf iec61131:hasInOutVariable ;
+.
+iec61131:isInputVariableOf
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain iec61131:InputVariable ;
+  rdfs:subPropertyOf soft:isArgumentOf ;
+  rdfs:subPropertyOf soft:isAttributeOf ;
+  owl:inverseOf iec61131:hasInputVariable ;
+.
+iec61131:isLocalVariableOf
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain iec61131:LocalVariable ;
+  rdfs:subPropertyOf soft:isArgumentOf ;
+  rdfs:subPropertyOf soft:isAttributeOf ;
+  owl:inverseOf iec61131:hasLocalVariable ;
+.
+iec61131:isOutputVariableOf
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain iec61131:OutputVariable ;
+  rdfs:subPropertyOf soft:isArgumentOf ;
+  rdfs:subPropertyOf soft:isAttributeOf ;
+  owl:inverseOf iec61131:hasOutputVariable ;
+.
+<http://www.mercator.iac.es/onto/metamodels/mathematics#absOf>
+  iec61131:hasSymbol "ABS"^^xsd:string ;
+.
+<http://www.mercator.iac.es/onto/metamodels/mathematics#dividedBy>
+  iec61131:hasSymbol "/"^^xsd:string ;
+.
+<http://www.mercator.iac.es/onto/metamodels/mathematics#minus>
+  iec61131:hasSymbol "-"^^xsd:string ;
+.
+<http://www.mercator.iac.es/onto/metamodels/mathematics#plus>
+  iec61131:hasSymbol "+"^^xsd:string ;
+.
+<http://www.mercator.iac.es/onto/metamodels/mathematics#times>
+  iec61131:hasSymbol "*"^^xsd:string ;
+.
+<http://www.mercator.iac.es/onto/metamodels/mathematics#unaryMinus>
+  iec61131:hasSymbol "-"^^xsd:string ;
+.
+soft:adr
+  iec61131:hasSymbol "ADR"^^xsd:string ;
+.

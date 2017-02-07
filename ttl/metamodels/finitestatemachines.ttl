@@ -1,0 +1,263 @@
+# baseURI: http://www.mercator.iac.es/onto/metamodels/finitestatemachines
+# imports: http://www.mercator.iac.es/onto/metamodels/containers
+# imports: http://www.mercator.iac.es/onto/metamodels/expressions
+# imports: http://www.mercator.iac.es/onto/metamodels/systems
+
+@prefix : <http://www.mercator.iac.es/onto/metamodels/finitestatemachines#> .
+@prefix expr: <http://www.mercator.iac.es/onto/metamodels/expressions#> .
+@prefix fsm: <http://www.mercator.iac.es/onto/metamodels/finitestatemachines#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix spin: <http://spinrdf.org/spin#> .
+@prefix spl: <http://spinrdf.org/spl#> .
+@prefix sys: <http://www.mercator.iac.es/onto/metamodels/systems#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.mercator.iac.es/onto/metamodels/finitestatemachines>
+  rdf:type owl:Ontology ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/containers> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/expressions> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/systems> ;
+  owl:versionInfo "Created with TopBraid Composer"^^xsd:string ;
+.
+fsm:ActiveState
+  rdf:type owl:Class ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          fsm:State
+          expr:True
+        ) ;
+    ] ;
+.
+fsm:State
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          expr:BoolExpression
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty fsm:isStateOf ;
+            owl:someValuesFrom fsm:StateMachine ;
+          ]
+        ) ;
+    ] ;
+.
+fsm:StateMachine
+  rdf:type owl:Class ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty fsm:hasState ;
+      owl:someValuesFrom fsm:State ;
+    ] ;
+.
+fsm:StateVariable
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty sys:isPropertyOf ;
+      owl:someValuesFrom sys:System ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:unionOf (
+          fsm:State
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty expr:isOperandOf ;
+            owl:someValuesFrom fsm:StateVariable ;
+          ]
+        ) ;
+    ] ;
+.
+fsm:Status
+  rdf:type owl:Class ;
+  spin:constraint [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    _:b0 a spin:ConstraintViolation .
+    _:b0 spin:violationLevel spin:Warning .
+    _:b0 spin:violationRoot ?this .
+    _:b0 spin:violationPath cont:contains .
+    _:b0 spin:violationValue ?state1 .
+    _:b0 rdfs:label ?msg
+} WHERE {
+    ?this cont:contains ?state1 .
+    ?this cont:contains ?state2 .
+    FILTER( ?state1 != ?state2 ) .
+    FILTER NOT EXISTS { ?state1 expr:excludes ?state2 } 
+    BIND(fn:concat(\"Status warning: \", ?state1, \" may not exclude \", ?state2) AS ?msg) 
+}"""^^xsd:string ;
+    ] ;
+  rdfs:comment "A set of States that always has one ActiveState."^^xsd:string ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty fsm:hasState ;
+      owl:someValuesFrom fsm:State ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onClass fsm:ActiveState ;
+      owl:onProperty fsm:hasState ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+    ] ;
+.
+fsm:SuperState
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          fsm:State
+          fsm:StateMachine
+        ) ;
+    ] ;
+.
+fsm:Transition
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+      ?this fsm:transitsFrom ?fromState .
+      ?this fsm:transitsTo   ?toState .
+      ?this fsm:hasCondition ?condition .
+      ?this expr:hasInterval ?interval
+}
+WHERE {
+      ?this expr:isEquivalentTo ?implication .
+      ?implication expr:hasOperator expr:implies .
+      ?implication expr:hasLeftOperand ?and .
+      ?implication expr:hasRightOperand ?eventually .
+      ?and expr:hasOperator expr:and .
+      ?and expr:hasLeftOperand ?fromState .
+      ?and expr:hasRightOperand ?condition .
+      ?eventually expr:hasOperator expr:eventually .
+      ?eventually expr:hasOperand ?toState .
+      ?eventually expr:hasInterval ?interval
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf owl:Thing ;
+  rdfs:subClassOf [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty fsm:transitsFrom ;
+            owl:someValuesFrom fsm:State ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty fsm:transitsTo ;
+            owl:someValuesFrom fsm:State ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty fsm:hasCondition ;
+            owl:someValuesFrom expr:BoolExpression ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty expr:hasInterval ;
+            owl:someValuesFrom expr:Interval ;
+          ]
+        ) ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty expr:isEquivalentTo ;
+            owl:someValuesFrom expr:Implication ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty expr:hasLeftOperand ;
+            owl:someValuesFrom [
+                rdf:type owl:Class ;
+                owl:intersectionOf (
+                    expr:And
+                    [
+                      rdf:type owl:Restriction ;
+                      owl:onProperty expr:hasLeftOperand ;
+                      owl:someValuesFrom fsm:State ;
+                    ]
+                    [
+                      rdf:type owl:Restriction ;
+                      owl:onProperty expr:hasRightOperand ;
+                      owl:someValuesFrom expr:BoolExpression ;
+                    ]
+                  ) ;
+              ] ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty expr:hasRightOperand ;
+            owl:someValuesFrom [
+                rdf:type owl:Class ;
+                owl:intersectionOf (
+                    expr:Eventually
+                    [
+                      rdf:type owl:Restriction ;
+                      owl:onProperty expr:hasOperand ;
+                      owl:someValuesFrom fsm:State ;
+                    ]
+                  ) ;
+              ] ;
+          ]
+        ) ;
+    ] ;
+.
+fsm:hasCondition
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain fsm:Transition ;
+  rdfs:range expr:BoolExpression ;
+.
+fsm:hasState
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain fsm:Status ;
+  rdfs:range fsm:State ;
+  rdfs:subPropertyOf sys:hasProperty ;
+  owl:inverseOf fsm:isStateOf ;
+.
+fsm:hasStatus
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain fsm:StateMachine ;
+  rdfs:range fsm:Status ;
+  rdfs:subPropertyOf sys:hasProperty ;
+.
+fsm:hasTransition
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain fsm:StateMachine ;
+  rdfs:range fsm:Transition ;
+  rdfs:subPropertyOf sys:hasProperty ;
+.
+fsm:isStateOf
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain fsm:State ;
+  rdfs:range fsm:Status ;
+  rdfs:subPropertyOf sys:isPropertyOf ;
+  owl:inverseOf fsm:hasState ;
+.
+fsm:isStatusOf
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain fsm:Status ;
+  rdfs:range fsm:StateMachine ;
+  rdfs:subPropertyOf sys:isFeatureOf ;
+  owl:inverseOf fsm:hasStatus ;
+.
+fsm:transitsFrom
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain fsm:Transition ;
+  rdfs:range fsm:State ;
+.
+fsm:transitsTo
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain fsm:Transition ;
+  rdfs:range fsm:State ;
+.

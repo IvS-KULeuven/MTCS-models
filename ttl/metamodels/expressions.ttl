@@ -1,0 +1,1530 @@
+# baseURI: http://www.mercator.iac.es/onto/metamodels/expressions
+# imports: http://www.mercator.iac.es/onto/metamodels/systems
+# imports: http://qudt.org/vocab/dimensionalunit
+
+@prefix : <http://www.mercator.iac.es/onto/metamodels/expressions#> .
+@prefix afn: <http://jena.hpl.hp.com/ARQ/function#> .
+@prefix expr: <http://www.mercator.iac.es/onto/metamodels/expressions#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix spif: <http://spinrdf.org/spif#> .
+@prefix spin: <http://spinrdf.org/spin#> .
+@prefix spl: <http://spinrdf.org/spl#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.mercator.iac.es/onto/metamodels/expressions>
+  rdf:type owl:Ontology ;
+  spin:imports <http://topbraid.org/spin/owlrl-all> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/systems> ;
+  owl:imports <http://qudt.org/vocab/dimensionalunit> ;
+.
+expr:Always
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:UnaryOperation ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:maxCardinality "1"^^xsd:nonNegativeInteger ;
+      owl:onProperty expr:hasInterval ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty expr:always ;
+      owl:someValuesFrom expr:Expression ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:always ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+.
+expr:And
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# \"xANDy = x AND y\" and \"y excludes z\"   ==>   \"xANDy excludes z\"
+CONSTRUCT {
+    ?this expr:excludes ?z .
+}
+WHERE {
+    ?this expr:hasOperand/expr:excludes ?z .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# \"xANDy = x AND y\" and \"y excludes z\"   ==>   \"xANDy excludes z\"
+CONSTRUCT {
+    ?this expr:excludes ?z .
+}
+WHERE {
+    ?this expr:hasOperand/expr:excludes ?z .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# Conjunction elimination: (p AND q) ==> p   and    (p AND q) ==> q
+CONSTRUCT {
+    ?left expr:hasValue true .
+    ?right expr:hasValue true .
+}
+WHERE {
+    ?this expr:hasValue true .
+    ?this expr:hasLeftOperand ?left .
+    ?this expr:hasRightOperand ?right .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# Conjunction introduction: true AND true = true
+CONSTRUCT {
+    ?this expr:hasValue true .
+}
+WHERE {
+    ?this expr:hasLeftOperand/expr:hasValue true .
+    ?this expr:hasRightOperand/expr:hasValue true .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# false AND x  =  false
+CONSTRUCT {
+    ?this expr:hasValue false .
+}
+WHERE {
+    {
+        ?this expr:hasLeftOperand/expr:hasValue false .
+    }
+    UNION
+    {
+        ?this expr:hasLeftOperand/expr:hasValue false .
+    } .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:BinaryOperation ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:and ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+.
+expr:Assignment
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:BinaryOperation ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:isAssignedTo ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+.
+expr:AssignmentOperand
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# if \"this := x\" then \"this\" has the same value as \"x\"
+CONSTRUCT {
+    ?this expr:hasValue ?value .
+}
+WHERE {
+    ?this expr:isAssignedTo/expr:hasValue ?value .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    ?this expr:excludes ?e .
+}
+WHERE {
+    ?this expr:excludes/expr:isAssignedTo ?e .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    ?this expr:excludes ?e .
+}
+WHERE {
+    ?this expr:isAssignedTo/expr:excludes ?e .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    ?this expr:implies ?i .
+}
+WHERE {
+    ?this expr:implies/expr:isAssignedTo ?i .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    ?this expr:implies ?i .
+}
+WHERE {
+    ?this expr:isAssignedTo/expr:implies ?i .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:label "Assignment operand"^^xsd:string ;
+  rdfs:subClassOf expr:Operand ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty expr:isAssignedTo ;
+      owl:someValuesFrom expr:Expression ;
+    ] ;
+.
+expr:BinaryOperation
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# in a binary operation with operands \"left\", \"right\" and operator \"operator\", we can say \"left operator right\"
+CONSTRUCT {
+    ?left ?operator ?right .
+}
+WHERE {
+    ?this expr:hasLeftOperand ?left .
+    ?this expr:hasRightOperand ?right .
+    ?this expr:hasOperator ?operator .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:Operation ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onClass expr:BinaryOperator ;
+      owl:onProperty expr:hasOperator ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:cardinality "2"^^xsd:nonNegativeInteger ;
+      owl:onProperty expr:hasOperand ;
+    ] ;
+.
+expr:BinaryOperator
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:Operator ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty expr:isOperatorOf ;
+      owl:someValuesFrom expr:BinaryOperation ;
+    ] ;
+.
+expr:Bool
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:Primitive ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:t_bool ;
+      owl:onProperty expr:hasDataType ;
+    ] ;
+.
+expr:BoolExpression
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:Expression ;
+.
+expr:ByteString
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:Primitive ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:t_bytestring ;
+      owl:onProperty expr:hasDataType ;
+    ] ;
+.
+expr:DataType
+  rdf:type owl:Class ;
+  rdfs:label "Data type"^^xsd:string ;
+  rdfs:subClassOf owl:Thing ;
+.
+expr:Double
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:Primitive ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:t_double ;
+      owl:onProperty expr:hasDataType ;
+    ] ;
+.
+expr:Equality
+  rdf:type owl:Class ;
+  spin:constraint [
+      rdf:type sp:Construct ;
+      sp:text """# both operands of a true equality must have the same values
+CONSTRUCT {
+    _:b0 a spin:ConstraintViolation .
+    _:b0 spin:violationRoot ?this .
+    _:b0 spin:violationPath expr:hasLeftOperand .
+    _:b0 spin:violationValue ?leftValue .
+    _:b0 spin:violationLevel spin:Error .
+    _:b0 rdfs:label \"both operands of a true equality must have the same values!\" .
+} WHERE {
+    ?this expr:hasValue true .
+    ?this expr:hasLeftOperand/expr:hasValue ?leftValue .
+    ?this expr:hasRightOperand/expr:hasValue ?rightValue .
+    FILTER (?leftValue != ?rightValue) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# both operands of a true equality have the same values
+CONSTRUCT {
+    ?left expr:hasValue ?rightValue .
+    ?right expr:hasValue ?leftValue .
+}
+WHERE {
+    ?this expr:hasValue true .
+    ?this expr:hasLeftOperand ?left .
+    ?left expr:hasValue ?leftValue .
+    ?this expr:hasRightOperand ?right .
+    ?right expr:hasValue ?rightValue .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# if both values of an equality are equal, then the equality is true
+CONSTRUCT {
+    ?this expr:hasValue true .
+}
+WHERE {
+    ?this expr:hasLeftOperand/expr:hasValue ?leftValue .
+    ?this expr:hasRightOperand/expr:hasValue ?rightValue .
+    FILTER (?leftValue = ?rightValue) .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:BinaryOperation ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:isEqualTo ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+.
+expr:Equivalence
+  rdf:type owl:Class ;
+  rdfs:label "coimplication"^^xsd:string ;
+  rdfs:subClassOf expr:BinaryOperation ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:isEquivalentTo ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+.
+expr:EquivalenceOperand
+  rdf:type owl:Class ;
+  rdfs:label "Coimplication operand"^^xsd:string ;
+  rdfs:subClassOf expr:Operand ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty expr:isEquivalentTo ;
+      owl:someValuesFrom expr:Expression ;
+    ] ;
+.
+expr:Eventually
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:UnaryOperation ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:maxCardinality "1"^^xsd:nonNegativeInteger ;
+      owl:onProperty expr:hasInterval ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty expr:eventually ;
+      owl:someValuesFrom expr:Expression ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:eventually ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+.
+expr:Expression
+  rdf:type owl:Class ;
+  spin:constraint [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+   _:b0 a spin:ConstraintViolation .
+   _:b0 spin:violationRoot ?this . 
+   _:b0 spin:violationPath expr:hasValue .
+   _:b0 spin:violationValue ?v0 .
+   _:b0 spin:violationLevel spin:Error .
+   _:b0 rdfs:label \"Expression error: expression has different values\"        
+} WHERE {
+    ?this expr:hasValue ?v0 .
+    ?this expr:hasValue ?v1 .
+    FILTER (?v0 != ?v1) .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf owl:Thing ;
+.
+expr:False
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:Bool ;
+  rdfs:subClassOf expr:BoolExpression ;
+  owl:disjointWith expr:True ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue "false"^^xsd:boolean ;
+      owl:onProperty expr:hasValue ;
+    ] ;
+.
+expr:Float
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:Primitive ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:t_float ;
+      owl:onProperty expr:hasDataType ;
+    ] ;
+.
+expr:GreaterThan
+  rdf:type owl:Class ;
+  spin:constraint [
+      rdf:type sp:Construct ;
+      sp:text """# the left operand a true GreaterThan-expression must be not be <= right operand
+CONSTRUCT {
+    _:b0 a spin:ConstraintViolation .
+    _:b0 spin:violationRoot ?this .
+    _:b0 spin:violationPath expr:hasLeftOperand .
+    _:b0 spin:violationValue ?leftValue .
+    _:b0 spin:violationLevel spin:Error .
+    _:b0 rdfs:label \"the left operand a true GreaterThan-expression must not be <= the right operand!\" .
+} WHERE {
+    ?this expr:hasValue true .
+    ?this expr:hasLeftOperand/expr:hasValue ?leftValue .
+    ?this expr:hasRightOperand/expr:hasValue ?rightValue .
+    FILTER (?leftValue <= ?rightValue) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# if \"this\" means \"a>b\", and a > b, then \"this\" is true
+CONSTRUCT {
+    ?this expr:hasValue true .
+}
+WHERE {
+    ?this expr:hasLeftOperand/expr:hasValue ?leftValue .
+    ?this expr:hasRightOperand/expr:hasValue ?rightValue .
+    FILTER (?leftValue > ?rightValue) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    ?this expr:excludes ?other .
+}
+WHERE {
+    ?this expr:hasLeftOperand ?x .
+    ?this expr:hasRightOperand ?y .
+    ?other expr:hasLeftOperand ?x .
+    ?other expr:hasRightOperand ?y .
+    ?other expr:hasOperator expr:isLessThan . 
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    ?this expr:excludes ?other .
+}
+WHERE {
+    ?this expr:hasLeftOperand ?x .
+    ?this expr:hasRightOperand ?y .
+    ?other expr:hasLeftOperand ?x .
+    ?other expr:hasRightOperand ?y .
+    ?other expr:hasOperator expr:isLessThanOrEqualTo . 
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:BinaryOperation ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:isGreaterThan ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+.
+expr:GreaterThanOrEqualTo
+  rdf:type owl:Class ;
+  spin:constraint [
+      rdf:type sp:Construct ;
+      sp:text """# the left operand a true GreaterThanOrEqualTo-expression must not be < the right operand
+CONSTRUCT {
+    _:b0 a spin:ConstraintViolation .
+    _:b0 spin:violationRoot ?this .
+    _:b0 spin:violationPath expr:hasLeftOperand .
+    _:b0 spin:violationValue ?leftValue .
+    _:b0 spin:violationLevel spin:Error .
+    _:b0 rdfs:label \"the left operand a true GreaterThanOrEqualTo-expression must not be < the right operand!\" .
+} WHERE {
+    ?this expr:hasValue true .
+    ?this expr:hasLeftOperand/(expr:isAssignedTo*)/expr:hasValue ?leftValue .
+    ?this expr:hasRightOperand/(expr:isAssignedTo*)/expr:hasValue ?rightValue .
+    FILTER (?leftValue < ?rightValue) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# if \"this\" means \"a>=b\", and a >= b, then \"this\" is true
+CONSTRUCT {
+    ?this expr:hasValue true .
+}
+WHERE {
+    ?this expr:hasLeftOperand/expr:hasValue ?leftValue .
+    ?this expr:hasRightOperand/expr:hasValue ?rightValue .
+    FILTER (?leftValue >= ?rightValue) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    ?this expr:excludes ?other .
+}
+WHERE {
+    ?this expr:hasLeftOperand ?x .
+    ?this expr:hasRightOperand ?y .
+    ?other expr:hasLeftOperand ?x .
+    ?other expr:hasRightOperand ?y .
+    ?other expr:hasOperator expr:isLessThan . 
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:BinaryOperation ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:isGreaterThanOrEqualTo ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+.
+expr:HasBinaryOperation
+  rdf:type spin:Function ;
+  spin:body [
+      rdf:type sp:Ask ;
+      sp:where (
+          [
+            sp:object spin:_arg1 ;
+            sp:predicate expr:hasLeftOperand ;
+            sp:subject [
+                sp:varName "x"^^xsd:string ;
+              ] ;
+          ]
+          [
+            sp:object spin:_arg2 ;
+            sp:predicate expr:hasOperator ;
+            sp:subject [
+                sp:varName "x"^^xsd:string ;
+              ] ;
+          ]
+          [
+            sp:object spin:_arg3 ;
+            sp:predicate expr:hasRightOperand ;
+            sp:subject [
+                sp:varName "x"^^xsd:string ;
+              ] ;
+          ]
+          [
+            rdf:type sp:Filter ;
+            sp:expression [
+                rdf:type sp:ne ;
+                sp:arg1 spin:_arg1 ;
+                sp:arg2 spin:_arg3 ;
+              ] ;
+          ]
+        ) ;
+      rdfs:comment """?x a ?operation .
+?operation (rdfs:subClassOf)* :BinaryOperation ."""^^xsd:string ;
+    ] ;
+  spin:constraint [
+      rdf:type spl:Argument ;
+      spl:predicate sp:arg1 ;
+      rdfs:comment "The first operand"^^xsd:string ;
+    ] ;
+  spin:constraint [
+      rdf:type spl:Argument ;
+      spl:predicate sp:arg2 ;
+      rdfs:comment "The operator"^^xsd:string ;
+    ] ;
+  spin:constraint [
+      rdf:type spl:Argument ;
+      spl:predicate sp:arg3 ;
+      rdfs:comment "The second operand"^^xsd:string ;
+    ] ;
+  spin:returnType xsd:boolean ;
+  rdfs:subClassOf spin:Functions ;
+.
+expr:Implication
+  rdf:type owl:Class ;
+  rdfs:label "If then"^^xsd:string ;
+  rdfs:subClassOf expr:BinaryOperation ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:implies ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+.
+expr:ImplicationOperand
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# Biconditional introduction: (p --> q) AND (q --> p)    ==>   p <-> q
+CONSTRUCT {
+    ?this expr:isEquivalentTo ?other .
+}
+WHERE {
+    ?this expr:implies ?other .
+    ?other expr:implies ?this .
+}""" ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# Modus ponens: (p --> q) AND p    ==>    q
+CONSTRUCT {
+    ?q expr:hasValue true .
+}
+WHERE {
+    ?this expr:implies ?q .
+    ?this expr:hasValue true .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# p --> ¬q   ==>  p excludes q
+CONSTRUCT {
+    ?this expr:excludes ?other .
+}
+WHERE {
+    ?this expr:implies/expr:not ?other .
+}""" ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# this implies a   ==>  this excludes NOT a
+CONSTRUCT {
+    ?this expr:excludes ?notA .
+}
+WHERE {
+    ?this expr:implies ?a .
+    ?notA expr:not ?a .
+}""" ;
+    ] ;
+  rdfs:label "Implication operand"^^xsd:string ;
+  rdfs:subClassOf expr:Operand ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty expr:implies ;
+      owl:someValuesFrom expr:Expression ;
+    ] ;
+.
+expr:Int16
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:Primitive ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:t_int16 ;
+      owl:onProperty expr:hasDataType ;
+    ] ;
+.
+expr:Int32
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:Primitive ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:t_int32 ;
+      owl:onProperty expr:hasDataType ;
+    ] ;
+.
+expr:Int64
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:Primitive ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:t_int64 ;
+      owl:onProperty expr:hasDataType ;
+    ] ;
+.
+expr:Int8
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:Primitive ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:t_int8 ;
+      owl:onProperty expr:hasDataType ;
+    ] ;
+.
+expr:Interval
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:Expression ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          [
+            rdf:type owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty expr:hasLeftBound ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty expr:hasRightBound ;
+          ]
+        ) ;
+    ] ;
+.
+expr:IsAssignment
+  rdf:type spin:Function ;
+  spin:body [
+      rdf:type sp:Ask ;
+      sp:where (
+          [
+            sp:object expr:Assignment ;
+            sp:predicate rdf:type ;
+            sp:subject [
+                sp:varName "arg"^^xsd:string ;
+              ] ;
+          ]
+        ) ;
+    ] ;
+  spin:constraint [
+      rdf:type spl:Argument ;
+      spl:predicate sp:arg ;
+      spl:valueType rdfs:Resource ;
+      rdfs:comment "The instance to be checked"^^xsd:string ;
+    ] ;
+  rdfs:subClassOf spin:Functions ;
+.
+expr:LessThan
+  rdf:type owl:Class ;
+  spin:constraint [
+      rdf:type sp:Construct ;
+      sp:text """# the left operand a true LessThan-expression must not be >= the right operand
+CONSTRUCT {
+    _:b0 a spin:ConstraintViolation .
+    _:b0 spin:violationRoot ?this .
+    _:b0 spin:violationPath expr:hasLeftOperand .
+    _:b0 spin:violationValue ?leftValue .
+    _:b0 spin:violationLevel spin:Error .
+    _:b0 rdfs:label \"the left operand a true LessThan-expression must not be >= the right operand!\" .
+} WHERE {
+    ?this expr:hasValue true .
+    ?this expr:hasLeftOperand/(expr:isAssignedTo*)/expr:hasValue ?leftValue .
+    ?this expr:hasRightOperand/(expr:isAssignedTo*)/expr:hasValue ?rightValue .
+    FILTER (?leftValue >= ?rightValue) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# if \"this\" means \"a<b\", and a < b, then \"this\" is true
+CONSTRUCT {
+    ?this expr:hasValue true .
+}
+WHERE {
+    ?this expr:hasLeftOperand/expr:hasValue ?leftValue .
+    ?this expr:hasRightOperand/expr:hasValue ?rightValue .
+    FILTER (?leftValue < ?rightValue) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    ?this expr:excludes ?other .
+}
+WHERE {
+    ?this expr:hasLeftOperand ?x .
+    ?this expr:hasRightOperand ?y .
+    ?other expr:hasLeftOperand ?x .
+    ?other expr:hasRightOperand ?y .
+    ?other expr:hasOperator expr:isGreaterThan . 
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    ?this expr:excludes ?other .
+}
+WHERE {
+    ?this expr:hasLeftOperand ?x .
+    ?this expr:hasRightOperand ?y .
+    ?other expr:hasLeftOperand ?x .
+    ?other expr:hasRightOperand ?y .
+    ?other expr:hasOperator expr:isGreaterThanOrEqualTo . 
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:BinaryOperation ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:isLessThan ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+.
+expr:LessThanOrEqualTo
+  rdf:type owl:Class ;
+  spin:constraint [
+      rdf:type sp:Construct ;
+      sp:text """# the left operand a true LessThanOrEqualTo-expression must not be > the right operand
+CONSTRUCT {
+    _:b0 a spin:ConstraintViolation .
+    _:b0 spin:violationRoot ?this .
+    _:b0 spin:violationPath expr:hasLeftOperand .
+    _:b0 spin:violationValue ?leftValue .
+    _:b0 spin:violationLevel spin:Error .
+    _:b0 rdfs:label \"the left operand a true LessThanOrEqualTo-expression must not be > the right operand!\" .
+} WHERE {
+    ?this expr:hasValue true .
+    ?this expr:hasLeftOperand/expr:hasValue ?leftValue .
+    ?this expr:hasRightOperand/expr:hasValue ?rightValue .
+    FILTER (?leftValue > ?rightValue) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# if \"this\" means \"a<=b\", and a <= b, then \"this\" is true
+CONSTRUCT {
+    ?this expr:hasValue true .
+}
+WHERE {
+    ?this expr:hasLeftOperand/expr:hasValue ?leftValue .
+    ?this expr:hasRightOperand/expr:hasValue ?rightValue .
+    FILTER (?leftValue <= ?rightValue) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    ?this expr:excludes ?other .
+}
+WHERE {
+    ?this expr:hasLeftOperand ?x .
+    ?this expr:hasRightOperand ?y .
+    ?other expr:hasLeftOperand ?x .
+    ?other expr:hasRightOperand ?y .
+    ?other expr:hasOperator expr:isGreaterThan . 
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:BinaryOperation ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:isLessThanOrEqualTo ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+.
+expr:Not
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# this := NOT (NOT q) ==> this := q
+CONSTRUCT {
+    ?this expr:isAssignedTo ?q .
+}
+WHERE {
+    ?this expr:not/expr:not ?q .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    ?this expr:hasValue false
+}
+WHERE {
+    ?this expr:not/expr:hasValue true .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    ?this expr:hasValue true
+}
+WHERE {
+    ?this expr:not/expr:hasValue false .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:UnaryOperation ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty expr:hasInterval ;
+      owl:someValuesFrom expr:Interval ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty expr:not ;
+      owl:someValuesFrom expr:Expression ;
+    ] ;
+.
+expr:Operand
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:Expression ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty expr:isOperandOf ;
+      owl:someValuesFrom expr:Expression ;
+    ] ;
+.
+expr:Operation
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:Expression ;
+.
+expr:Operator
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:Expression ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty expr:isOperatorOf ;
+      owl:someValuesFrom expr:Expression ;
+    ] ;
+.
+expr:Or
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# Disjunction elimination
+CONSTRUCT {
+    ?r expr:hasValue true .
+}
+WHERE {
+    ?this expr:hasValue true .
+    ?this expr:hasLeftOperand/expr:implies ?r .
+    ?this expr:hasRightOperand/expr:implies ?r .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# Disjunction introduction : true OR x  =  x OR true = true
+CONSTRUCT {
+    ?this expr:hasValue true .
+}
+WHERE {
+    {
+        ?this expr:hasLeftOperand/expr:hasValue true .
+    }
+    UNION
+    {
+        ?this expr:hasLeftOperand/expr:hasValue true .
+    } .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# false OR false = false
+CONSTRUCT {
+    ?this expr:hasValue false .
+}
+WHERE {
+    ?this expr:hasLeftOperand/expr:hasValue false .
+    ?this expr:hasRightOperand/expr:hasValue false .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    ?notAorB expr:excludes ?a .
+    ?notAorB expr:excludes ?b .
+}
+WHERE {
+    ?notAorB expr:excludes ?this .
+    ?this expr:hasLeftOperand ?a .
+    ?this expr:hasRightOperand ?b .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:BinaryOperation ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:or ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+.
+expr:Primitive
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# infer the Bool type
+CONSTRUCT {
+    ?this a expr:Bool .
+}
+WHERE {
+    ?this expr:hasValue ?val .
+    FILTER (datatype(?val) = xsd:boolean) .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# infer the ByteString type
+CONSTRUCT {
+    ?this a expr:ByteString .
+}
+WHERE {
+    ?this expr:hasValue ?val .
+    FILTER (datatype(?val) = xsd:hexBinary) .
+}""" ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# infer the Double type
+CONSTRUCT {
+    ?this a expr:Double .
+}
+WHERE {
+    ?this expr:hasValue ?val .
+    FILTER (datatype(?val) = xsd:double) .
+}""" ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# infer the Float type
+CONSTRUCT {
+    ?this a expr:Float .
+}
+WHERE {
+    ?this expr:hasValue ?val .
+    FILTER (datatype(?val) = xsd:float) .
+}""" ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# infer the Int32 type
+CONSTRUCT {
+    ?this a expr:Int32 .
+}
+WHERE {
+    ?this expr:hasValue ?val .
+    FILTER (datatype(?val) = xsd:int) .
+}""" ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# infer the Int64 type
+CONSTRUCT {
+    ?this a expr:Int64 .
+}
+WHERE {
+    ?this expr:hasValue ?val .
+    FILTER (datatype(?val) = xsd:long) .
+}""" ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# infer the Int8 type
+CONSTRUCT {
+    ?this a expr:Int8 .
+}
+WHERE {
+    ?this expr:hasValue ?val .
+    FILTER (datatype(?val) = xsd:byte) .
+}""" ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# infer the Short type
+CONSTRUCT {
+    ?this a expr:Int16 .
+}
+WHERE {
+    ?this expr:hasValue ?val .
+    FILTER (datatype(?val) = xsd:short) .
+}""" ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# infer the String type
+CONSTRUCT {
+    ?this a expr:String .
+}
+WHERE {
+    ?this expr:hasValue ?val .
+    FILTER (datatype(?val) = xsd:string) .
+}""" ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# infer the UInt16 type
+CONSTRUCT {
+    ?this a expr:UInt16 .
+}
+WHERE {
+    ?this expr:hasValue ?val .
+    FILTER (datatype(?val) = xsd:unsignedShort) .
+}""" ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# infer the UInt32 type
+CONSTRUCT {
+    ?this a expr:UInt32 .
+}
+WHERE {
+    ?this expr:hasValue ?val .
+    FILTER (datatype(?val) = xsd:unsignedInt) .
+}""" ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# infer the UInt64 type
+CONSTRUCT {
+    ?this a expr:UInt64 .
+}
+WHERE {
+    ?this expr:hasValue ?val .
+    FILTER (datatype(?val) = xsd:unsignedLong) .
+}""" ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# infer the UInt8 type
+CONSTRUCT {
+    ?this a expr:UInt8 .
+}
+WHERE {
+    ?this expr:hasValue ?val .
+    FILTER (datatype(?val) = xsd:unsignedByte) .
+}""" ;
+    ] ;
+  rdfs:subClassOf expr:Expression ;
+.
+expr:String
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:Primitive ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:t_string ;
+      owl:onProperty expr:hasDataType ;
+    ] ;
+.
+expr:True
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:Bool ;
+  rdfs:subClassOf expr:BoolExpression ;
+  owl:disjointWith expr:False ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue "true"^^xsd:boolean ;
+      owl:onProperty expr:hasValue ;
+    ] ;
+.
+expr:UInt16
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:Primitive ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:t_uint16 ;
+      owl:onProperty expr:hasDataType ;
+    ] ;
+.
+expr:UInt32
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:Primitive ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:t_uint32 ;
+      owl:onProperty expr:hasDataType ;
+    ] ;
+.
+expr:UInt64
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:Primitive ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:t_uint64 ;
+      owl:onProperty expr:hasDataType ;
+    ] ;
+.
+expr:UInt8
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:Primitive ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:t_uint8 ;
+      owl:onProperty expr:hasDataType ;
+    ] ;
+.
+expr:UnaryOperation
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# a unary operation is linked to its operand via its operator
+CONSTRUCT {
+    ?this ?operator ?operand .
+}
+WHERE {
+    ?this expr:hasOperand ?operand .
+    ?this expr:hasOperator ?operator .
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf expr:Operation ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onClass expr:UnaryOperator ;
+      owl:onProperty expr:hasOperator ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:cardinality "1"^^xsd:nonNegativeInteger ;
+      owl:onProperty expr:hasOperand ;
+    ] ;
+.
+expr:UnaryOperator
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:Operator ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty expr:isOperatorOf ;
+      owl:someValuesFrom expr:UnaryOperation ;
+    ] ;
+.
+expr:Until
+  rdf:type owl:Class ;
+  rdfs:label "Until"^^xsd:string ;
+  rdfs:subClassOf expr:BinaryOperation ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:maxCardinality "1"^^xsd:nonNegativeInteger ;
+      owl:onProperty expr:hasInterval ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue expr:until ;
+      owl:onProperty expr:hasOperator ;
+    ] ;
+.
+expr:a
+  rdf:type expr:Operand ;
+  rdfs:label "a"^^xsd:string ;
+.
+expr:a_and_b
+  rdf:type expr:And ;
+  expr:hasLeftOperand expr:a ;
+  expr:hasRightOperand expr:b ;
+  rdfs:label "a and b"^^xsd:string ;
+.
+expr:a_or_b
+  rdf:type expr:Or ;
+  expr:hasLeftOperand expr:a ;
+  expr:hasRightOperand expr:b ;
+  rdfs:label "a or b"^^xsd:string ;
+.
+expr:always
+  rdf:type expr:UnaryOperator ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "always"^^xsd:string ;
+.
+expr:and
+  rdf:type expr:BinaryOperator ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "and"^^xsd:string ;
+.
+expr:b
+  rdf:type expr:Operand ;
+  rdfs:label "b"^^xsd:string ;
+.
+expr:bla_OP
+  rdf:type expr:Expression ;
+.
+expr:eventually
+  rdf:type expr:UnaryOperator ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "eventually"^^xsd:string ;
+.
+expr:excludes
+  rdf:type expr:BinaryOperator ;
+  rdf:type owl:SymmetricProperty ;
+  rdfs:label "excludes"^^xsd:string ;
+.
+expr:false
+  rdf:type expr:False ;
+  rdfs:label "false"^^xsd:string ;
+.
+expr:hasAssignment
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "has assignment"^^xsd:string ;
+  rdfs:range expr:Assignment ;
+.
+expr:hasDataType
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain expr:Expression ;
+  rdfs:label "has data type"^^xsd:string ;
+  rdfs:range expr:DataType ;
+.
+expr:hasInterval
+  rdf:type owl:FunctionalProperty ;
+  rdf:type owl:ObjectProperty ;
+.
+expr:hasLeftBound
+  rdf:type owl:DatatypeProperty ;
+  rdf:type owl:FunctionalProperty ;
+  rdfs:domain expr:Interval ;
+.
+expr:hasLeftOperand
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain expr:BinaryOperation ;
+  rdfs:range expr:Operand ;
+  rdfs:subPropertyOf expr:hasOperand ;
+  owl:propertyDisjointWith expr:hasRightOperand ;
+.
+expr:hasNumericValue
+  rdf:type owl:DatatypeProperty ;
+  rdfs:domain expr:Expression ;
+  rdfs:label "has numeric value"^^xsd:string ;
+  rdfs:subPropertyOf expr:hasValue ;
+  owl:equivalentProperty <http://qudt.org/schema/qudt#numericValue> ;
+.
+expr:hasOperand
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain expr:Operation ;
+  rdfs:range expr:Operand ;
+  rdfs:subPropertyOf <http://www.mercator.iac.es/onto/metamodels/systems#hasElement> ;
+.
+expr:hasOperator
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain expr:Expression ;
+  rdfs:range expr:Operator ;
+.
+expr:hasRightBound
+  rdf:type owl:DatatypeProperty ;
+  rdf:type owl:FunctionalProperty ;
+  rdfs:domain expr:Interval ;
+.
+expr:hasRightOperand
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain expr:Expression ;
+  rdfs:range expr:Operand ;
+  rdfs:subPropertyOf expr:hasOperand ;
+.
+expr:hasValue
+  rdf:type owl:DatatypeProperty ;
+  rdfs:domain expr:Expression ;
+.
+expr:implies
+  rdf:type expr:BinaryOperator ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain expr:ImplicationOperand ;
+  rdfs:label "implies"^^xsd:string ;
+.
+expr:isAssignedTo
+  rdf:type expr:BinaryOperator ;
+  rdf:type owl:TransitiveProperty ;
+  rdfs:domain expr:AssignmentOperand ;
+.
+expr:isEqualTo
+  rdf:type expr:BinaryOperator ;
+  rdf:type owl:SymmetricProperty ;
+.
+expr:isEquivalentTo
+  rdf:type expr:BinaryOperator ;
+  rdf:type owl:SymmetricProperty ;
+  rdfs:domain expr:EquivalenceOperand ;
+  rdfs:label "coimplies"^^xsd:string ;
+  rdfs:subPropertyOf expr:implies ;
+.
+expr:isGreaterThan
+  rdf:type expr:BinaryOperator ;
+  rdf:type owl:TransitiveProperty ;
+.
+expr:isGreaterThanOrEqualTo
+  rdf:type expr:BinaryOperator ;
+  rdf:type owl:TransitiveProperty ;
+.
+expr:isLeftOperandOf
+  rdf:type owl:ObjectProperty ;
+  rdfs:subPropertyOf expr:isOperandOf ;
+  owl:inverseOf expr:hasLeftOperand ;
+.
+expr:isLessThan
+  rdf:type expr:BinaryOperator ;
+  rdf:type owl:TransitiveProperty ;
+.
+expr:isLessThanOrEqualTo
+  rdf:type expr:BinaryOperator ;
+  rdf:type owl:TransitiveProperty ;
+.
+expr:isOperandOf
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain expr:Operand ;
+  rdfs:range expr:Expression ;
+  owl:inverseOf expr:hasOperand ;
+.
+expr:isOperatorOf
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain expr:Operator ;
+  rdfs:range expr:Expression ;
+  owl:inverseOf expr:hasOperator ;
+.
+expr:isRightOperandOf
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain expr:Operand ;
+  rdfs:range expr:Expression ;
+  rdfs:subPropertyOf expr:isOperandOf ;
+  owl:inverseOf expr:hasRightOperand ;
+.
+expr:not
+  rdf:type expr:UnaryOperator ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "not"^^xsd:string ;
+  rdfs:subPropertyOf expr:excludes ;
+.
+expr:not_a
+  rdf:type expr:Not ;
+  expr:hasOperand expr:a ;
+  rdfs:label "not a"^^xsd:string ;
+.
+expr:not_a_or_b
+  rdf:type expr:Not ;
+  expr:hasOperand expr:a_or_b ;
+  rdfs:label "not a or b"^^xsd:string ;
+.
+expr:not_b
+  rdf:type expr:Not ;
+  expr:hasOperand expr:b ;
+  rdfs:label "not b"^^xsd:string ;
+.
+expr:or
+  rdf:type expr:BinaryOperator ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "or" ;
+.
+expr:t_bool
+  rdf:type expr:DataType ;
+  rdfs:label "bool"^^xsd:string ;
+.
+expr:t_bytestring
+  rdf:type expr:DataType ;
+  rdfs:label "t bytestring"^^xsd:string ;
+.
+expr:t_double
+  rdf:type expr:DataType ;
+  rdfs:label "t double"^^xsd:string ;
+.
+expr:t_float
+  rdf:type expr:DataType ;
+  rdfs:label "t float"^^xsd:string ;
+.
+expr:t_int16
+  rdf:type expr:DataType ;
+  rdfs:label "t int16"^^xsd:string ;
+.
+expr:t_int32
+  rdf:type expr:DataType ;
+  rdfs:label "t int32"^^xsd:string ;
+.
+expr:t_int64
+  rdf:type expr:DataType ;
+  rdfs:label "t int64"^^xsd:string ;
+.
+expr:t_int8
+  rdf:type expr:DataType ;
+  rdfs:label "t int8"^^xsd:string ;
+.
+expr:t_string
+  rdf:type expr:DataType ;
+  rdfs:label "t string"^^xsd:string ;
+.
+expr:t_uint16
+  rdf:type expr:DataType ;
+  rdfs:label "t uint16"^^xsd:string ;
+.
+expr:t_uint32
+  rdf:type expr:DataType ;
+  rdfs:label "t uint32"^^xsd:string ;
+.
+expr:t_uint64
+  rdf:type expr:DataType ;
+  rdfs:label "t uint64"^^xsd:string ;
+.
+expr:t_uint8
+  rdf:type expr:DataType ;
+  rdfs:label "t uint8"^^xsd:string ;
+.
+expr:true
+  rdf:type expr:True ;
+  rdfs:label "true"^^xsd:string ;
+.
+expr:until
+  rdf:type expr:BinaryOperator ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "until"^^xsd:string ;
+.
+expr:upgradePrimitive
+  rdf:type spin:ConstructTemplate ;
+  spin:body [
+      rdf:type sp:Construct ;
+      sp:templates (
+          [
+            sp:object spin:_arg1 ;
+            sp:predicate rdf:type ;
+            sp:subject spin:_this ;
+          ]
+        ) ;
+      sp:where (
+          [
+            sp:object [
+                sp:varName "val"^^xsd:string ;
+              ] ;
+            sp:predicate expr:hasValue ;
+            sp:subject spin:_this ;
+          ]
+          [
+            rdf:type sp:Filter ;
+            sp:expression [
+                rdf:type spl:instanceOf ;
+                sp:arg1 [
+                    sp:varName "val"^^xsd:string ;
+                  ] ;
+                sp:arg2 spin:_arg2 ;
+              ] ;
+          ]
+        ) ;
+    ] ;
+  spin:constraint [
+      rdf:type spl:Argument ;
+      spl:predicate sp:arg1 ;
+      rdfs:comment "e.g. expr:Bool, expr:UInt16, expr:String, ..."^^xsd:string ;
+    ] ;
+  spin:constraint [
+      rdf:type spl:Argument ;
+      spl:predicate sp:arg2 ;
+      rdfs:comment "e.g. xsd:boolean, xsd:unsignedInt, xsd:string, ..."^^xsd:string ;
+    ] ;
+  spin:labelTemplate "Upgrade '?this expr:hasValue {?arg2}' to {?arg1}"^^xsd:string ;
+  rdfs:subClassOf spin:ConstructTemplates ;
+.
+[
+  rdf:type owl:Class ;
+  owl:intersectionOf (
+      rdfs:Datatype
+      [
+        rdf:type owl:Restriction ;
+        owl:hasValue "boolean"^^xsd:string ;
+        owl:onProperty rdfs:label ;
+      ]
+    ) ;
+].
+[
+  rdf:type owl:Class ;
+  owl:intersectionOf (
+      rdfs:Datatype
+      [
+        rdf:type owl:Restriction ;
+        owl:hasValue "boolean"^^xsd:string ;
+        owl:onProperty rdfs:label ;
+      ]
+    ) ;
+].
+[
+  rdf:type owl:Class ;
+  owl:intersectionOf (
+      rdfs:Datatype
+      [
+        rdf:type owl:Restriction ;
+        owl:hasValue "boolean"^^xsd:string ;
+        owl:onProperty rdfs:label ;
+      ]
+    ) ;
+].
+[
+  rdf:type owl:Restriction ;
+  owl:hasValue xsd:boolean ;
+  owl:onProperty rdf:type ;
+].
+[
+  rdf:type owl:Restriction ;
+  owl:hasValue xsd:boolean ;
+  owl:onProperty rdfs:subClassOf ;
+].
+[
+  rdf:type owl:Restriction ;
+  owl:hasValue "boolean"^^xsd:string ;
+  owl:onProperty rdfs:label ;
+].

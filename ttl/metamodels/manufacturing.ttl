@@ -1,0 +1,101 @@
+# baseURI: http://www.mercator.iac.es/onto/metamodels/manufacturing
+# imports: http://www.mercator.iac.es/onto/metamodels/development
+# imports: http://www.mercator.iac.es/onto/metamodels/organizations
+
+@prefix arg: <http://spinrdf.org/arg#> .
+@prefix man: <http://www.mercator.iac.es/onto/metamodels/manufacturing#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix spin: <http://spinrdf.org/spin#> .
+@prefix spl: <http://spinrdf.org/spl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.mercator.iac.es/onto/metamodels/manufacturing>
+  rdf:type owl:Ontology ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/development> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/organizations> ;
+  owl:versionInfo "Created with TopBraid Composer"^^xsd:string ;
+.
+man:Manufacturer
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+      ?product1 owl:sameAs ?product2
+}
+WHERE {
+      ?this man:manufactures ?product1 .
+      ?this man:manufactures ?product2 .
+      FILTER(?product1 != ?product2) .
+      ?product1 man:hasId ?id .
+      ?product2 man:hasId ?id
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          <http://www.mercator.iac.es/onto/metamodels/organizations#Organization>
+          [
+            rdf:type owl:Restriction ;
+            owl:minCardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty man:manufactures ;
+          ]
+        ) ;
+    ] ;
+.
+man:Product
+  rdf:type owl:Class ;
+  spin:constraint [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT { _:b0 a spin:ConstraintViolation .
+                       _:b0 spin:violationRoot ?this . 
+                       _:b0 spin:violationLevel spin:Error .
+                       _:b0 rdfs:label \"A product must have a unique ID!\" }
+WHERE { ?this man:hasId ?id .
+                ?this man:hasId ?otherId .
+                FILTER( ?id != ?otherId ) }"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf owl:Thing ;
+  rdfs:subClassOf [
+      rdf:type owl:Class ;
+      owl:unionOf (
+          <http://www.mercator.iac.es/onto/metamodels/development#Design>
+          <http://www.mercator.iac.es/onto/metamodels/development#Implementation>
+        ) ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:maxCardinality "1"^^xsd:nonNegativeInteger ;
+      owl:onProperty man:hasType ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty man:isManufacturedBy ;
+      owl:someValuesFrom man:Manufacturer ;
+    ] ;
+.
+man:hasId
+  rdf:type owl:DatatypeProperty ;
+.
+man:hasType
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain man:Product ;
+  rdfs:range man:Product ;
+  rdfs:subPropertyOf <http://www.mercator.iac.es/onto/metamodels/systems#realizes> ;
+.
+man:isManufacturedBy
+  rdf:type owl:ObjectProperty ;
+  owl:inverseOf man:manufactures ;
+.
+man:isTypeOf
+  rdf:type owl:ObjectProperty ;
+  owl:inverseOf man:hasType ;
+.
+man:manufactures
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain man:Manufacturer ;
+  rdfs:range man:Product ;
+.

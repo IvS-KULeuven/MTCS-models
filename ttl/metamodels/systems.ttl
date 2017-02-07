@@ -1,0 +1,174 @@
+# baseURI: http://www.mercator.iac.es/onto/metamodels/systems
+# imports: http://spinrdf.org/spin
+# imports: http://topbraid.org/spin/owlrl-all
+
+@prefix : <http://www.mercator.iac.es/onto/metamodels/systems#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix spif: <http://spinrdf.org/spif#> .
+@prefix spin: <http://spinrdf.org/spin#> .
+@prefix sys: <http://www.mercator.iac.es/onto/metamodels/systems#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.mercator.iac.es/onto/metamodels/systems>
+  rdf:type owl:Ontology ;
+  spin:imports <http://topbraid.org/spin/owlrl-all> ;
+  owl:imports <http://spinrdf.org/spin> ;
+  owl:imports <http://topbraid.org/spin/owlrl-all> ;
+.
+sys:Complete
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+.
+sys:Element
+  rdf:type owl:Class ;
+  rdfs:label "Element"^^xsd:string ;
+  owl:equivalentClass owl:Thing ;
+.
+sys:Interface
+  rdf:type owl:Class ;
+  spin:constraint [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT { _:b0 a spin:ConstraintViolation .
+                       _:b0 spin:violationRoot ?this .
+                       _:b0 spin:violationPath sys:interfaces .
+                       _:b0 spin:violationValue ?e .
+                       _:b0 spin:violationLevel spin:Error .
+                       _:b0 rdfs:label ?msg }
+WHERE { ?this sys:interfaces ?system .
+               ?this sys:hasElement ?element .
+               FILTER NOT EXISTS { ?system sys:hasElement ?element }
+               BIND (fn:concat(\"Interface error: element \", ?element, \" is not an element of system \", ?system) AS ?msg) }"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT { ?sys1 sys:isInterfacedWith ?sys2 }            
+WHERE { ?this sys:interfaces ?sys1 .
+               ?this sys:interfaces ?sys2 .
+               FILTER(?sys1 != ?sys2) . }"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:minCardinality "2"^^xsd:nonNegativeInteger ;
+      owl:onProperty sys:interfaces ;
+    ] ;
+.
+sys:Part
+  rdf:type owl:Class ;
+  rdfs:label "Part"^^xsd:string ;
+  rdfs:subClassOf sys:Element ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty sys:isPartOf ;
+      owl:someValuesFrom sys:System ;
+    ] ;
+.
+sys:Property
+  rdf:type owl:Class ;
+  rdfs:label "Property"^^xsd:string ;
+  rdfs:subClassOf sys:Element ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty sys:isPropertyOf ;
+      owl:someValuesFrom sys:System ;
+    ] ;
+.
+sys:Realization
+  rdf:type owl:Class ;
+  spin:constraint [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT { _:b0 a spin:ConstraintViolation .
+                       _:b0 spin:violationRoot ?this . 
+                       _:b0 spin:violationPath sys:hasElement .
+                       _:b0 spin:violationValue ?e .
+                       _:b0 spin:violationLevel spin:Error .
+                       _:b0 rdfs:label ?msg.}
+WHERE { ?this rdf:type sys:Complete .
+               ?this sys:realizes ?other . 
+               ?other sys:hasPart|sys:hasProperty ?e .
+               FILTER NOT EXISTS { ?this sys:hasElement*/sys:realizes ?e } 
+               BIND (fn:concat(\"Realization error: no element which realizes \", ?e, \" (which is an element of \", ?other, \" )\") AS ?msg) . }"""^^xsd:string ;
+      spin:thisUnbound "true"^^xsd:boolean ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty sys:realizes ;
+      owl:someValuesFrom sys:System ;
+    ] ;
+.
+sys:System
+  rdf:type owl:Class ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty sys:hasElement ;
+      owl:someValuesFrom sys:Element ;
+    ] ;
+.
+sys:hasElement
+  rdf:type owl:AsymmetricProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain sys:System ;
+  rdfs:range sys:Element ;
+.
+sys:hasInterface
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain sys:System ;
+  rdfs:range sys:Interface ;
+  rdfs:subPropertyOf sys:hasPart ;
+.
+sys:hasPart
+  rdf:type owl:TransitiveProperty ;
+  rdfs:domain sys:System ;
+  rdfs:label "has part"^^xsd:string ;
+  rdfs:range sys:Part ;
+  rdfs:subPropertyOf sys:hasElement ;
+.
+sys:hasProperty
+  rdf:type owl:IrreflexiveProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain sys:System ;
+  rdfs:label "has property"^^xsd:string ;
+  rdfs:range sys:Property ;
+  rdfs:subPropertyOf sys:hasElement ;
+  owl:propertyDisjointWith sys:hasPart ;
+.
+sys:interfaces
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain sys:Interface ;
+  rdfs:range sys:System ;
+.
+sys:isElementOf
+  rdf:type owl:ObjectProperty ;
+  owl:inverseOf sys:hasElement ;
+.
+sys:isInterfacedWith
+  rdf:type owl:SymmetricProperty ;
+  rdfs:domain sys:System ;
+  rdfs:label "is interfaced with"^^xsd:string ;
+  rdfs:range sys:System ;
+.
+sys:isPartOf
+  rdf:type owl:ObjectProperty ;
+  owl:inverseOf sys:hasPart ;
+.
+sys:isPropertyOf
+  rdf:type owl:ObjectProperty ;
+  owl:inverseOf sys:hasProperty ;
+.
+sys:isRealizedBy
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "is realized by"^^xsd:string ;
+  owl:inverseOf sys:realizes ;
+.
+sys:realizes
+  rdf:type owl:AsymmetricProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain sys:Element ;
+  rdfs:label "realizes"^^xsd:string ;
+  rdfs:range sys:Element ;
+  owl:inverseOf sys:isRealizedBy ;
+.

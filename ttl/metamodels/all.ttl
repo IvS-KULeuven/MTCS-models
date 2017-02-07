@@ -1,0 +1,21 @@
+# baseURI: http://www.mercator.iac.es/onto/metamodels/all
+# imports: http://www.mercator.iac.es/onto/metamodels/colors
+# imports: http://www.mercator.iac.es/onto/metamodels/electricity
+# imports: http://www.mercator.iac.es/onto/metamodels/iec61131
+
+@prefix : <http://www.mercator.iac.es/onto/metamodels/all#> .
+@prefix elec: <http://www.mercator.iac.es/onto/metamodels/electricity#> .
+@prefix iec61131: <http://www.mercator.iac.es/onto/metamodels/iec61131#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix soft: <http://www.mercator.iac.es/onto/metamodels/software#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.mercator.iac.es/onto/metamodels/all>
+  rdf:type owl:Ontology ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/colors> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/electricity> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/iec61131> ;
+  owl:versionInfo "Created with TopBraid Composer"^^xsd:string ;
+.

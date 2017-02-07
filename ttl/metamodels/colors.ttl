@@ -1,0 +1,132 @@
+# baseURI: http://www.mercator.iac.es/onto/metamodels/colors
+
+@prefix : <http://www.mercator.iac.es/onto/metamodels/colors#> .
+@prefix colors: <http://www.mercator.iac.es/onto/metamodels/colors#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.mercator.iac.es/onto/metamodels/colors>
+  rdf:type owl:Ontology ;
+  owl:versionInfo "Created with TopBraid Composer"^^xsd:string ;
+.
+colors:Color
+  rdf:type owl:Class ;
+  rdfs:label "Color"^^xsd:string ;
+  rdfs:subClassOf owl:Thing ;
+.
+colors:aqua
+  rdf:type colors:Color ;
+  colors:hasHexValue "00FFFF"^^xsd:string ;
+  rdfs:label "aqua"^^xsd:string ;
+.
+colors:black
+  rdf:type colors:Color ;
+  colors:hasHexValue "000000"^^xsd:string ;
+  rdfs:label "black"^^xsd:string ;
+.
+colors:blue
+  rdf:type colors:Color ;
+  colors:hasHexValue "0000FF"^^xsd:string ;
+  rdfs:label "blue"^^xsd:string ;
+.
+colors:brown
+  rdf:type colors:Color ;
+  colors:hasHexValue "A52A2A"^^xsd:string ;
+  rdfs:label "brown"^^xsd:string ;
+.
+colors:fuchsia
+  rdf:type colors:Color ;
+  colors:hasHexValue "FF00FF"^^xsd:string ;
+  rdfs:label "fuchsia"^^xsd:string ;
+.
+colors:gray
+  rdf:type colors:Color ;
+  colors:hasHexValue "808080"^^xsd:string ;
+  rdfs:label "gray"^^xsd:string ;
+.
+colors:green
+  rdf:type colors:Color ;
+  colors:hasHexValue "008000"^^xsd:string ;
+  rdfs:label "green"^^xsd:string ;
+.
+colors:hasColor
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "has color"^^xsd:string ;
+  rdfs:range colors:Color ;
+.
+colors:hasHexValue
+  rdf:type owl:DatatypeProperty ;
+  rdfs:label "has hex value"^^xsd:string ;
+.
+colors:lime
+  rdf:type colors:Color ;
+  colors:hasHexValue "00FF00"^^xsd:string ;
+  rdfs:label "lime"^^xsd:string ;
+.
+colors:maroon
+  rdf:type colors:Color ;
+  colors:hasHexValue "800000"^^xsd:string ;
+  rdfs:label "maroon"^^xsd:string ;
+.
+colors:navy
+  rdf:type colors:Color ;
+  colors:hasHexValue "000080"^^xsd:string ;
+  rdfs:label "navy"^^xsd:string ;
+.
+colors:olive
+  rdf:type colors:Color ;
+  colors:hasHexValue "808000"^^xsd:string ;
+  rdfs:label "olive"^^xsd:string ;
+.
+colors:orange
+  rdf:type colors:Color ;
+  colors:hasHexValue "FFA500"^^xsd:string ;
+  rdfs:label "orange"^^xsd:string ;
+.
+colors:pink
+  rdf:type colors:Color ;
+  colors:hasHexValue "FFC0CB"^^xsd:string ;
+  rdfs:label "pink"^^xsd:string ;
+.
+colors:purple
+  rdf:type colors:Color ;
+  colors:hasHexValue "800080"^^xsd:string ;
+  rdfs:label "purple"^^xsd:string ;
+.
+colors:red
+  rdf:type colors:Color ;
+  colors:hasHexValue "FF0000"^^xsd:string ;
+  rdfs:label "red"^^xsd:string ;
+.
+colors:silver
+  rdf:type colors:Color ;
+  colors:hasHexValue "C0C0C0"^^xsd:string ;
+  rdfs:label "silver"^^xsd:string ;
+.
+colors:teal
+  rdf:type colors:Color ;
+  colors:hasHexValue "008080"^^xsd:string ;
+  rdfs:label "teal"^^xsd:string ;
+.
+colors:turquoise
+  rdf:type colors:Color ;
+  colors:hasHexValue "40E0D0"^^xsd:string ;
+  rdfs:label "turqoise"^^xsd:string ;
+.
+colors:violet
+  rdf:type colors:Color ;
+  colors:hasHexValue "EE82EE"^^xsd:string ;
+  rdfs:label "violet"^^xsd:string ;
+.
+colors:white
+  rdf:type colors:Color ;
+  colors:hasHexValue "FFFFFF"^^xsd:string ;
+  rdfs:label "white"^^xsd:string ;
+.
+colors:yellow
+  rdf:type colors:Color ;
+  colors:hasHexValue "FFFF00"^^xsd:string ;
+  rdfs:label "yellow"^^xsd:string ;
+.

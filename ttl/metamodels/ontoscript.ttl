@@ -1,0 +1,54 @@
+# baseURI: http://www.mercator.iac.es/onto/metamodels/ontoscript
+
+@prefix : <http://www.mercator.iac.es/onto/metamodels/ontoscript#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.mercator.iac.es/onto/metamodels/ontoscript>
+  rdf:type owl:Ontology ;
+  owl:versionInfo "Created with TopBraid Composer"^^xsd:string ;
+.
+:TestClass
+  rdf:type owl:Class ;
+  :views :view1 ;
+  rdfs:label "Test class"^^xsd:string ;
+  rdfs:subClassOf owl:Thing ;
+.
+:View
+  rdf:type owl:Class ;
+  rdfs:label "View"^^xsd:string ;
+  rdfs:subClassOf owl:Thing ;
+.
+:counter
+  rdf:type owl:DatatypeProperty ;
+.
+:fullName
+  rdf:type owl:DatatypeProperty ;
+.
+:hasViewCategory
+  rdf:type owl:DatatypeProperty ;
+  rdfs:domain :View ;
+  rdfs:label "has view category"^^xsd:string ;
+.
+:hasViewPriority
+  rdf:type owl:DatatypeProperty ;
+  rdfs:label "has view priority"^^xsd:string ;
+.
+:hasViewType
+  rdf:type owl:DatatypeProperty ;
+  rdfs:domain :View ;
+  rdfs:label "has view type"^^xsd:string ;
+.
+:name
+  rdf:type owl:DatatypeProperty ;
+.
+:view1
+  rdf:type :View ;
+  rdfs:label "view1"^^xsd:string ;
+.
+:views
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "views"^^xsd:string ;
+.

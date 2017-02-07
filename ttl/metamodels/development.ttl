@@ -1,0 +1,263 @@
+# baseURI: http://www.mercator.iac.es/onto/metamodels/development
+# imports: http://www.mercator.iac.es/onto/metamodels/containers
+# imports: http://www.mercator.iac.es/onto/metamodels/finitestatemachines
+# imports: http://www.mercator.iac.es/onto/metamodels/models
+# imports: http://www.mercator.iac.es/onto/metamodels/organizations
+# imports: http://www.mercator.iac.es/onto/metamodels/systems
+
+@prefix dev: <http://www.mercator.iac.es/onto/metamodels/development#> .
+@prefix fsm: <http://www.mercator.iac.es/onto/metamodels/finitestatemachines#> .
+@prefix org: <http://www.mercator.iac.es/onto/metamodels/organizations#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix spin: <http://spinrdf.org/spin#> .
+@prefix sys: <http://www.mercator.iac.es/onto/metamodels/systems#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.mercator.iac.es/onto/metamodels/development>
+  rdf:type owl:Ontology ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/containers> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/finitestatemachines> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/models> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/organizations> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/systems> ;
+  owl:versionInfo "Created with TopBraid Composer"^^xsd:string ;
+.
+dev:Assertion
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty dev:asserts ;
+      owl:someValuesFrom dev:Constraint ;
+    ] ;
+.
+dev:Concept
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          <http://www.mercator.iac.es/onto/metamodels/models#Model>
+          [
+            rdf:type owl:Restriction ;
+            owl:maxCardinality "0"^^xsd:nonNegativeInteger ;
+            owl:onProperty sys:hasPart ;
+          ]
+        ) ;
+    ] ;
+.
+dev:Constraint
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT { 
+      ?this dev:satisfies ?req
+} WHERE {
+      ?this mod:represents ?req .
+      ?req expr:hasValue true
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf owl:Thing ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/models#represents> ;
+      owl:someValuesFrom dev:Requirement ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          <http://www.mercator.iac.es/onto/metamodels/expressions#Always>
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty <http://www.mercator.iac.es/onto/metamodels/expressions#hasOperand> ;
+            owl:someValuesFrom [
+                rdf:type owl:Restriction ;
+                owl:onProperty sys:isPropertyOf ;
+                owl:someValuesFrom sys:System ;
+              ] ;
+          ]
+        ) ;
+    ] ;
+.
+dev:Design
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty sys:realizes ;
+      owl:someValuesFrom dev:Concept ;
+    ] ;
+.
+dev:Implementation
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty sys:realizes ;
+      owl:someValuesFrom dev:Design ;
+    ] ;
+.
+dev:Project
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/models#hasPurpose> ;
+      owl:someValuesFrom <http://www.mercator.iac.es/onto/metamodels/models#Purpose> ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty sys:hasPart ;
+      owl:someValuesFrom [
+          rdf:type owl:Class ;
+          owl:unionOf (
+              dev:Concept
+              dev:Design
+              dev:Implementation
+            ) ;
+        ] ;
+    ] ;
+.
+dev:Requirement
+  rdf:type owl:Class ;
+  spin:constraint [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+      _:b0 a spin:ConstraintViolation .
+      _:b0 spin:violationRoot ?this . 
+      _:b0 spin:violationLevel spin:Warning .
+      _:b0 rdfs:label \"Realized requirement is not satsified!\"        
+} WHERE { 
+      { 
+        FILTER NOT EXISTS { 
+          ?this dev:isSatisfiedBy ?x 
+        }
+      }
+      UNION
+      {
+        FILTER NOT EXISTS {
+         ?req dev:isDerivedFrom ?this .
+         ?req dev:isSatisfiedBy ?y .
+        }
+      }  
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    ?this dev:isSatisfiedBy ?x
+}
+WHERE {
+    ?this sys:isRealizedBy/dev:isSatisfiedBy ?x
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/models#represents> ;
+      owl:someValuesFrom dev:Constraint ;
+    ] ;
+.
+dev:Test
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    ?this dev:asserts ?x
+}
+WHERE {
+    ?this dev:tests ?x .
+    ?this dev:hasResult dev:pass
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:minCardinality "1"^^xsd:nonNegativeInteger ;
+      owl:onProperty dev:tests ;
+    ] ;
+.
+dev:TestResult
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty dev:isResultOf ;
+      owl:someValuesFrom dev:Test ;
+    ] ;
+.
+dev:asserts
+  rdf:type owl:AsymmetricProperty ;
+  rdfs:range <http://www.mercator.iac.es/onto/metamodels/expressions#True> ;
+.
+dev:derives
+  rdf:type owl:IrreflexiveProperty ;
+  rdfs:domain dev:Requirement ;
+  rdfs:range dev:Requirement ;
+.
+dev:fail
+  rdf:type dev:TestResult ;
+  owl:differentFrom dev:pass ;
+.
+dev:hasRequirement
+  rdf:type owl:ObjectProperty ;
+  rdfs:range dev:Requirement ;
+  rdfs:subPropertyOf sys:hasProperty ;
+.
+dev:hasResult
+  rdf:type owl:AsymmetricProperty ;
+  rdf:type owl:IrreflexiveProperty ;
+  rdfs:domain dev:Test ;
+  rdfs:range dev:TestResult ;
+.
+dev:isDerivedFrom
+  rdf:type owl:ObjectProperty ;
+  owl:inverseOf dev:derives ;
+.
+dev:isRefinedBy
+  rdf:type owl:ObjectProperty ;
+  owl:inverseOf dev:refines ;
+.
+dev:isRequiredBy
+  rdf:type owl:AsymmetricProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain dev:Requirement ;
+  rdfs:range org:Role ;
+.
+dev:isResultOf
+  rdf:type owl:ObjectProperty ;
+  owl:inverseOf dev:hasResult ;
+.
+dev:isSatisfiedBy
+  rdf:type owl:ObjectProperty ;
+  owl:inverseOf dev:satisfies ;
+.
+dev:pass
+  rdf:type dev:TestResult ;
+.
+dev:refines
+  rdf:type owl:IrreflexiveProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain dev:Requirement ;
+  rdfs:range dev:Requirement ;
+.
+dev:satisfies
+  rdf:type owl:IrreflexiveProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain sys:System ;
+  rdfs:range dev:Requirement ;
+.
+dev:tests
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain dev:Test ;
+.
+dev:verifies
+  rdf:type owl:ObjectProperty ;
+  owl:propertyChainAxiom (
+      dev:tests
+      <http://www.mercator.iac.es/onto/metamodels/models#represents>
+    ) ;
+.

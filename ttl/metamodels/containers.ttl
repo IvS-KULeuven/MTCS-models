@@ -1,0 +1,145 @@
+# baseURI: http://www.mercator.iac.es/onto/metamodels/containers
+# imports: http://www.mercator.iac.es/onto/metamodels/systems
+
+@prefix cont: <http://www.mercator.iac.es/onto/metamodels/containers#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix spin: <http://spinrdf.org/spin#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.mercator.iac.es/onto/metamodels/containers>
+  rdf:type owl:Ontology ;
+  spin:imports <http://topbraid.org/spin/owlrl-all> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/systems> ;
+  owl:versionInfo "Created with TopBraid Composer"^^xsd:string ;
+.
+cont:Container
+  rdf:type owl:Class ;
+  spin:constraint [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+   _:b0 a spin:ConstraintViolation .
+   _:b0 spin:violationRoot ?this . 
+   _:b0 spin:violationPath cont:containsOrIsContainedBy .
+   _:b0 spin:violationValue ?other .
+   _:b0 spin:violationLevel spin:Error .
+   _:b0 rdfs:label \"Container error: unspecified containsOrIsContainedBy relation\"        
+} WHERE {
+   ?this cont:containsOrIsContainedBy ?other .
+   FILTER NOT EXISTS { ?this cont:contains|cont:isContainedBy ?other }
+} """^^xsd:string ;
+    ] ;
+  rdfs:label "Container"^^xsd:string ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty cont:contains ;
+      owl:someValuesFrom cont:Item ;
+    ] ;
+.
+cont:Containment
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:disjointWith cont:Container ;
+  owl:disjointWith cont:Item ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          [
+            rdf:type owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty cont:isContainmentOf ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty cont:hasItem ;
+          ]
+        ) ;
+    ] ;
+.
+cont:Item
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+      ?c1 cont:containsOrIsContainedBy ?c2 .
+}
+WHERE {
+      ?this cont:isContainedBy ?c1 .
+      ?this cont:isContainedBy ?c2 .
+      FILTER(?c1 != ?c2)
+}"""^^xsd:string ;
+    ] ;
+  rdfs:label "Item"^^xsd:string ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty cont:isContainedBy ;
+      owl:someValuesFrom cont:Container ;
+    ] ;
+.
+cont:List
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:allValuesFrom [
+          rdf:type owl:Restriction ;
+          owl:cardinality "1"^^xsd:nonNegativeInteger ;
+          owl:onProperty cont:hasNumber ;
+        ] ;
+      owl:onProperty cont:hasContainment ;
+    ] ;
+.
+cont:contains
+  rdf:type owl:IrreflexiveProperty ;
+  rdf:type owl:TransitiveProperty ;
+  rdfs:domain cont:Container ;
+  rdfs:label "contains"^^xsd:string ;
+  rdfs:range cont:Item ;
+  rdfs:subPropertyOf cont:containsOrIsContainedBy ;
+  rdfs:subPropertyOf <http://www.mercator.iac.es/onto/metamodels/systems#hasElement> ;
+  owl:propertyChainAxiom (
+      cont:hasContainment
+      cont:hasItem
+    ) ;
+.
+cont:containsOrIsContainedBy
+  rdf:type owl:SymmetricProperty ;
+.
+cont:hasContainment
+  rdf:type owl:InverseFunctionalProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain cont:Container ;
+  rdfs:range cont:Containment ;
+.
+cont:hasItem
+  rdf:type owl:InverseFunctionalProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain cont:Containment ;
+  rdfs:range cont:Item ;
+.
+cont:hasNumber
+  rdf:type owl:DatatypeProperty ;
+  rdfs:domain cont:Containment ;
+  rdfs:label "has number"^^xsd:string ;
+  rdfs:range xsd:integer ;
+.
+cont:isContainedBy
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "is contained by"^^xsd:string ;
+  rdfs:subPropertyOf cont:containsOrIsContainedBy ;
+  rdfs:subPropertyOf <http://www.mercator.iac.es/onto/metamodels/systems#isElementOf> ;
+  owl:inverseOf cont:contains ;
+.
+cont:isContainmentOf
+  rdf:type owl:ObjectProperty ;
+  owl:inverseOf cont:hasContainment ;
+.
+cont:isItemOf
+  rdf:type owl:ObjectProperty ;
+  owl:inverseOf cont:hasItem ;
+.

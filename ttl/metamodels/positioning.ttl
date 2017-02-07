@@ -1,0 +1,58 @@
+# baseURI: http://www.mercator.iac.es/onto/metamodels/positioning
+# imports: http://www.mercator.iac.es/onto/metamodels/geometry
+# imports: http://qudt.org/1.1/vocab/dimensionalunit
+
+@prefix :        <http://www.mercator.iac.es/onto/metamodels/positioning#> .
+@prefix geom:    <http://www.mercator.iac.es/onto/metamodels/geometry#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix pos:     <http://www.mercator.iac.es/onto/metamodels/positioning#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xml:     <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.mercator.iac.es/onto/metamodels/positioning>
+      rdf:type owl:Ontology ;
+      owl:imports <http://qudt.org/vocab/dimensionalunit> , <http://www.mercator.iac.es/onto/metamodels/geometry> .
+
+pos:BackToFront
+      rdf:type owl:Class ;
+      rdfs:subClassOf geom:Direction .
+
+pos:BottomToTop
+      rdf:type owl:Class ;
+      rdfs:subClassOf geom:Direction .
+
+pos:LeftToRight
+      rdf:type owl:Class ;
+      rdfs:subClassOf geom:Direction .
+
+pos:isAbove
+      rdf:type owl:TransitiveProperty , owl:ObjectProperty ;
+      rdfs:subPropertyOf pos:isDisplacedFrom .
+
+pos:isBefore
+      rdf:type owl:TransitiveProperty , owl:ObjectProperty ;
+      rdfs:subPropertyOf pos:isDisplacedFrom ;
+      owl:inverseOf pos:isBehind .
+
+pos:isBehind
+      rdf:type owl:TransitiveProperty , owl:ObjectProperty ;
+      rdfs:subPropertyOf pos:isDisplacedFrom .
+
+pos:isBelow
+      rdf:type owl:TransitiveProperty , owl:ObjectProperty ;
+      rdfs:subPropertyOf pos:isDisplacedFrom ;
+      owl:inverseOf pos:isAbove .
+
+pos:isDisplacedFrom
+      rdf:type owl:ObjectProperty .
+
+pos:isLeftOf
+      rdf:type owl:TransitiveProperty , owl:ObjectProperty ;
+      rdfs:subPropertyOf pos:isDisplacedFrom .
+
+pos:isRightOf
+      rdf:type owl:TransitiveProperty , owl:ObjectProperty ;
+      rdfs:subPropertyOf pos:isDisplacedFrom ;
+      owl:inverseOf pos:isLeftOf .

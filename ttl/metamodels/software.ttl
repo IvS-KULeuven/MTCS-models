@@ -1,0 +1,486 @@
+# baseURI: http://www.mercator.iac.es/onto/metamodels/software
+# imports: http://www.mercator.iac.es/onto/metamodels/containers
+# imports: http://www.mercator.iac.es/onto/metamodels/documents
+# imports: http://www.mercator.iac.es/onto/metamodels/mathematics
+# imports: http://www.mercator.iac.es/onto/metamodels/models
+# imports: http://www.mercator.iac.es/onto/metamodels/systems
+
+@prefix : <http://www.mercator.iac.es/onto/metamodels/software#> .
+@prefix expr: <http://www.mercator.iac.es/onto/metamodels/expressions#> .
+@prefix math: <http://www.mercator.iac.es/onto/metamodels/mathematics#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix soft: <http://www.mercator.iac.es/onto/metamodels/software#> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix spin: <http://spinrdf.org/spin#> .
+@prefix spl: <http://spinrdf.org/spl#> .
+@prefix sys: <http://www.mercator.iac.es/onto/metamodels/systems#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.mercator.iac.es/onto/metamodels/software>
+  rdf:type owl:Ontology ;
+  spin:imports <http://topbraid.org/spin/owlrl-all> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/containers> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/documents> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/mathematics> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/models> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/systems> ;
+  owl:versionInfo "Created with TopBraid Composer"^^xsd:string ;
+.
+soft:ADR
+  rdf:type owl:Class ;
+  rdfs:subClassOf expr:UnaryOperation ;
+  rdfs:subClassOf soft:Call ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue soft:adr ;
+      owl:onProperty soft:calls ;
+    ] ;
+.
+soft:Argument
+  rdf:type owl:Class ;
+  rdfs:subClassOf soft:Variable ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          soft:Variable
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty sys:isPropertyOf ;
+            owl:someValuesFrom soft:CallableType ;
+          ]
+        ) ;
+    ] ;
+.
+soft:Attribute
+  rdf:type owl:Class ;
+  rdfs:subClassOf soft:Variable ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          soft:Variable
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty sys:isPropertyOf ;
+            owl:someValuesFrom soft:Type ;
+          ]
+        ) ;
+    ] ;
+.
+soft:Call
+  rdf:type owl:Class ;
+  rdfs:label "Call"^^xsd:string ;
+  rdfs:subClassOf expr:Operation ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty soft:calls ;
+      owl:someValuesFrom soft:Callable ;
+    ] ;
+.
+soft:Callable
+  rdf:type owl:Class ;
+  rdfs:subClassOf soft:Variable ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty soft:hasType ;
+      owl:someValuesFrom soft:CallableType ;
+    ] ;
+.
+soft:CallableType
+  rdf:type owl:Class ;
+  rdfs:subClassOf soft:Type ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:minCardinality "1"^^xsd:nonNegativeInteger ;
+      owl:onProperty soft:hasImplementation ;
+    ] ;
+.
+soft:Enumeration
+  rdf:type owl:Class ;
+  rdfs:label "Enumeration"^^xsd:string ;
+  rdfs:subClassOf <http://www.mercator.iac.es/onto/metamodels/containers#List> ;
+  rdfs:subClassOf soft:Type ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:allValuesFrom soft:EnumerationItem ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/containers#contains> ;
+    ] ;
+.
+soft:EnumerationItem
+  rdf:type owl:Class ;
+  rdfs:label "Enumeration item"^^xsd:string ;
+  rdfs:subClassOf soft:Variable ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onClass soft:Enumeration ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/containers#isContainedBy> ;
+      owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+    ] ;
+.
+soft:GlobalVariable
+  rdf:type owl:Class ;
+  rdfs:subClassOf soft:Variable ;
+.
+soft:IfThen
+  rdf:type owl:Class ;
+  rdfs:comment "If then [else] construct"^^xsd:string ;
+  rdfs:label "If"^^xsd:string ;
+  rdfs:subClassOf expr:Expression ;
+  rdfs:subClassOf soft:LanguageElement ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty soft:if ;
+            owl:someValuesFrom expr:Expression ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty soft:then ;
+            owl:someValuesFrom soft:Implementation ;
+          ]
+        ) ;
+    ] ;
+.
+soft:Implementation
+  rdf:type owl:Class ;
+  rdfs:label "Implementation"^^xsd:string ;
+  rdfs:subClassOf <http://www.mercator.iac.es/onto/metamodels/containers#Container> ;
+  rdfs:subClassOf owl:Thing ;
+  rdfs:subClassOf [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          <http://www.mercator.iac.es/onto/metamodels/containers#List>
+          [
+            rdf:type owl:Restriction ;
+            owl:allValuesFrom expr:Expression ;
+            owl:onProperty <http://www.mercator.iac.es/onto/metamodels/containers#contains> ;
+          ]
+        ) ;
+    ] ;
+.
+soft:Interface
+  rdf:type owl:Class ;
+  rdfs:subClassOf sys:Interface ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          sys:Interface
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty soft:hasVariable ;
+            owl:someValuesFrom soft:Variable ;
+          ]
+        ) ;
+    ] ;
+.
+soft:InterfaceInstance
+  rdf:type owl:Class ;
+  rdfs:label "Interface instance"^^xsd:string ;
+  rdfs:subClassOf soft:Interface ;
+.
+soft:Language
+  rdf:type owl:Class ;
+  rdfs:subClassOf <http://www.mercator.iac.es/onto/metamodels/models#Model> ;
+  rdfs:subClassOf owl:Thing ;
+.
+soft:LanguageElement
+  rdf:type owl:Class ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty sys:isElementOf ;
+      owl:someValuesFrom soft:Language ;
+    ] ;
+.
+soft:LanguageProperty
+  rdf:type rdfs:Class ;
+  rdfs:comment "A LanguageProperty is a property that relates 2 LanguageElement of the same language."^^xsd:string ;
+  rdfs:subClassOf owl:ObjectProperty ;
+.
+soft:Library
+  rdf:type owl:Class ;
+  rdfs:label "Library"^^xsd:string ;
+  rdfs:subClassOf <http://www.mercator.iac.es/onto/metamodels/documents#Document> ;
+  rdfs:subClassOf owl:Thing ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:allValuesFrom soft:LanguageElement ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/containers#contains> ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/documents#hasFileName> ;
+      owl:someValuesFrom xsd:string ;
+    ] ;
+.
+soft:MemoryLocation
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:cardinality "1"^^xsd:nonNegativeInteger ;
+      owl:onProperty soft:hasAddress ;
+    ] ;
+.
+soft:Namespace
+  rdf:type owl:Class ;
+  rdfs:subClassOf soft:LanguageElement ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:allValuesFrom soft:LanguageElement ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/containers#contains> ;
+    ] ;
+.
+soft:Pointer
+  rdf:type owl:Class ;
+  rdfs:label "Pointer"^^xsd:string ;
+  rdfs:subClassOf soft:Variable ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty soft:pointsTo ;
+      owl:someValuesFrom soft:Variable ;
+    ] ;
+.
+soft:Qualifier
+  rdf:type owl:Class ;
+  rdfs:label "Qualifier"^^xsd:string ;
+  rdfs:subClassOf sys:Property ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:cardinality "1"^^xsd:nonNegativeInteger ;
+      owl:onProperty expr:hasValue ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty sys:isPropertyOf ;
+      owl:someValuesFrom soft:Variable ;
+    ] ;
+.
+soft:SubType
+  rdf:type owl:Class ;
+  rdfs:label "Sub type"^^xsd:string ;
+  rdfs:subClassOf soft:Type ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty soft:extends ;
+      owl:someValuesFrom soft:Type ;
+    ] ;
+.
+soft:Type
+  rdf:type owl:Class ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty soft:isTypeOf ;
+      owl:someValuesFrom soft:Variable ;
+    ] ;
+.
+soft:Variable
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# if variable A realizes variable B, then A will have the same type as B
+CONSTRUCT {
+      ?this soft:hasType ?type
+}
+WHERE {
+    ?this sys:realizes/soft:hasType ?type .
+}"""^^xsd:string ;
+    ] ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# if variable A realizes variable B, then all attributes of A realize those variables of B with the same name
+CONSTRUCT {
+    ?thisSubVar sys:realizes ?otherSubVar .
+}
+WHERE {
+      ?this sys:realizes ?other .
+      ?this soft:hasVariable ?thisSubVar .
+      ?other soft:hasVariable ?otherSubVar .
+      ?thisSubVar rdfs:label ?subVarName .
+      ?otherSubVar rdfs:label ?subVarName
+}"""^^xsd:string ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty <http://www.mercator.iac.es/onto/metamodels/models#represents> ;
+            owl:someValuesFrom soft:MemoryLocation ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty soft:hasSymbol ;
+          ]
+        ) ;
+    ] ;
+.
+soft:adr
+  rdf:type expr:UnaryOperator ;
+  rdf:type owl:ObjectProperty ;
+.
+soft:builtinFunctionADR
+  rdf:type soft:Callable ;
+  rdfs:comment "built-in function to get the address of a variable (not available in all languages!)"^^xsd:string ;
+  rdfs:label "builtinFunctionADR"^^xsd:string ;
+.
+soft:calls
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain soft:Call ;
+  rdfs:label "calls"^^xsd:string ;
+  rdfs:range soft:Callable ;
+  rdfs:subPropertyOf expr:hasOperand ;
+.
+soft:else
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain soft:IfThen ;
+  rdfs:label "else"^^xsd:string ;
+  rdfs:range soft:Implementation ;
+.
+soft:extends
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain soft:SubType ;
+  rdfs:label "extends"^^xsd:string ;
+  rdfs:range soft:Type ;
+  rdfs:subPropertyOf sys:realizes ;
+.
+soft:hasAddress
+  rdf:type owl:DatatypeProperty ;
+  rdfs:domain soft:MemoryLocation ;
+  rdfs:label "has address"^^xsd:string ;
+.
+soft:hasArgument
+  rdf:type soft:LanguageProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:subPropertyOf soft:hasVariable ;
+  owl:inverseOf soft:isArgumentOf ;
+.
+soft:hasAttribute
+  rdf:type soft:LanguageProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:range soft:Attribute ;
+  rdfs:subPropertyOf soft:hasVariable ;
+  owl:inverseOf soft:isAttributeOf ;
+.
+soft:hasCallable
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "has callable"^^xsd:string ;
+  rdfs:range soft:Callable ;
+  rdfs:subPropertyOf soft:hasVariable ;
+.
+soft:hasImplementation
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain soft:CallableType ;
+  rdfs:range soft:Implementation ;
+  rdfs:subPropertyOf sys:hasPart ;
+.
+soft:hasInitialValue
+  rdf:type owl:DatatypeProperty ;
+.
+soft:hasInterface
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain owl:Thing ;
+  rdfs:range soft:Interface ;
+.
+soft:hasQualifier
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "has qualifier"^^xsd:string ;
+  rdfs:range soft:Qualifier ;
+.
+soft:hasReturnType
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain soft:Callable ;
+  rdfs:label "has return type"^^xsd:string ;
+  rdfs:range soft:Type ;
+.
+soft:hasSymbol
+  rdf:type owl:DatatypeProperty ;
+  rdfs:subPropertyOf rdfs:label ;
+.
+soft:hasType
+  rdf:type soft:LanguageProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain soft:Variable ;
+  rdfs:range soft:Type ;
+  rdfs:subPropertyOf sys:realizes ;
+  owl:inverseOf soft:isTypeOf ;
+.
+soft:hasVariable
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "has variable"^^xsd:string ;
+  rdfs:subPropertyOf sys:hasProperty ;
+.
+soft:if
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain soft:IfThen ;
+  rdfs:label "if"^^xsd:string ;
+  rdfs:range expr:Expression ;
+.
+soft:isArgumentOf
+  rdf:type soft:LanguageProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain soft:Argument ;
+  rdfs:range [
+      rdf:type owl:Class ;
+      owl:unionOf (
+          soft:Callable
+          soft:CallableType
+        ) ;
+    ] ;
+  rdfs:subPropertyOf soft:isVariableOf ;
+  owl:inverseOf soft:hasArgument ;
+.
+soft:isAttributeOf
+  rdf:type soft:LanguageProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:subPropertyOf soft:isVariableOf ;
+  owl:inverseOf soft:hasAttribute ;
+.
+soft:isElementOf
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain soft:LanguageElement ;
+  rdfs:range soft:Language ;
+.
+soft:isPropertyOf
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain soft:LanguageProperty ;
+  rdfs:range soft:Language ;
+.
+soft:isTypeOf
+  rdf:type soft:LanguageProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain soft:Type ;
+  rdfs:range soft:Variable ;
+  owl:inverseOf soft:hasType ;
+.
+soft:isVariableOf
+  rdf:type owl:ObjectProperty ;
+  owl:inverseOf soft:hasVariable ;
+.
+soft:pointsTo
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain soft:Pointer ;
+  rdfs:label "points to"^^xsd:string ;
+  rdfs:range soft:Variable ;
+.
+soft:pointsToType
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain soft:Pointer ;
+  rdfs:label "points to type"^^xsd:string ;
+  rdfs:range soft:Type ;
+  owl:propertyChainAxiom (
+      soft:pointsTo
+      soft:hasType
+    ) ;
+.
+soft:then
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain soft:IfThen ;
+  rdfs:label "then"^^xsd:string ;
+  rdfs:range soft:Implementation ;
+.

@@ -1,0 +1,863 @@
+# baseURI: http://www.mercator.iac.es/onto/metamodels/electricity
+# imports: http://www.mercator.iac.es/onto/metamodels/colors
+# imports: http://www.mercator.iac.es/onto/metamodels/iec61131
+# imports: http://www.mercator.iac.es/onto/metamodels/mechanics
+
+@prefix colors: <http://www.mercator.iac.es/onto/metamodels/colors#> .
+@prefix elec: <http://www.mercator.iac.es/onto/metamodels/electricity#> .
+@prefix iec61131: <http://www.mercator.iac.es/onto/metamodels/iec61131#> .
+@prefix mech: <http://www.mercator.iac.es/onto/metamodels/mechanics#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix spin: <http://spinrdf.org/spin#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.mercator.iac.es/onto/metamodels/electricity>
+  rdf:type owl:Ontology ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/colors> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/iec61131> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/mechanics> ;
+  owl:versionInfo "Created with TopBraid Composer"^^xsd:string ;
+.
+elec:Actuator
+  rdf:type owl:Class ;
+  rdfs:label "Actuator"^^xsd:string ;
+  rdfs:subClassOf elec:Device ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          <http://www.mercator.iac.es/onto/metamodels/controlsystems#Actuator>
+          elec:Consumer
+        ) ;
+    ] ;
+.
+elec:ActuatorInstance
+  rdf:type owl:Class ;
+  rdfs:label "Actuator instance"^^xsd:string ;
+  rdfs:subClassOf elec:Actuator ;
+  rdfs:subClassOf elec:DeviceInstance ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#realizes> ;
+      owl:someValuesFrom elec:ActuatorType ;
+    ] ;
+.
+elec:ActuatorType
+  rdf:type owl:Class ;
+  rdfs:label "Actuator type"^^xsd:string ;
+  rdfs:subClassOf elec:Actuator ;
+  rdfs:subClassOf elec:DeviceType ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#isRealizedBy> ;
+      owl:someValuesFrom elec:ActuatorInstance ;
+    ] ;
+.
+elec:Cable
+  rdf:type owl:Class ;
+  rdfs:label "Cable"^^xsd:string ;
+  rdfs:subClassOf mech:Part ;
+  rdfs:subClassOf owl:Thing ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty mech:hasPart ;
+      owl:someValuesFrom elec:Wire ;
+    ] ;
+.
+elec:CableAssembly
+  rdf:type owl:Class ;
+  rdfs:label "Cable assembly"^^xsd:string ;
+  rdfs:subClassOf owl:Thing ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty mech:hasPart ;
+      owl:someValuesFrom elec:Cable ;
+    ] ;
+.
+elec:CableAssemblyInstance
+  rdf:type owl:Class ;
+  rdfs:label "Cable assembly instance"^^xsd:string ;
+  rdfs:subClassOf elec:CableAssembly ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#realizes> ;
+      owl:someValuesFrom elec:CableAssemblyType ;
+    ] ;
+.
+elec:CableAssemblyType
+  rdf:type owl:Class ;
+  rdfs:label "Cable assembly type"^^xsd:string ;
+  rdfs:subClassOf elec:CableAssembly ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#isRealizedBy> ;
+      owl:someValuesFrom elec:CableAssemblyInstance ;
+    ] ;
+.
+elec:CableInstance
+  rdf:type owl:Class ;
+  rdfs:label "Cable instance"^^xsd:string ;
+  rdfs:subClassOf elec:Cable ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          elec:Cable
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#realizes> ;
+            owl:someValuesFrom elec:CableType ;
+          ]
+        ) ;
+    ] ;
+.
+elec:CableType
+  rdf:type owl:Class ;
+  rdfs:label "Cable type"^^xsd:string ;
+  rdfs:subClassOf elec:Cable ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          elec:Cable
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#isRealizedBy> ;
+            owl:someValuesFrom elec:CableInstance ;
+          ]
+        ) ;
+    ] ;
+.
+elec:Channel
+  rdf:type owl:Class ;
+.
+elec:CircuitBreaker
+  rdf:type owl:Class ;
+  rdfs:label "Circuit breaker"^^xsd:string ;
+  rdfs:subClassOf elec:Switch ;
+.
+elec:CircuitBreakerInstance
+  rdf:type owl:Class ;
+  rdfs:label "Circuit breaker instance"^^xsd:string ;
+  rdfs:subClassOf elec:CircuitBreaker ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#realizes> ;
+      owl:someValuesFrom elec:CircuitBreakerType ;
+    ] ;
+.
+elec:CircuitBreakerType
+  rdf:type owl:Class ;
+  rdfs:label "Circuit breaker type"^^xsd:string ;
+  rdfs:subClassOf elec:CircuitBreaker ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#isRealizedBy> ;
+      owl:someValuesFrom elec:CircuitBreakerInstance ;
+    ] ;
+.
+elec:ConductingState
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+      ?stateMachine rdf:type elec:Conductor
+} WHERE {
+      ?this expr:hasValue true .
+      ?stateMachine fsm:hasState ?this
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf <http://www.mercator.iac.es/onto/metamodels/finitestatemachines#State> ;
+  rdfs:subClassOf owl:Thing ;
+.
+elec:Conductor
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    ?this elec:isConnectedTo ?part
+}
+WHERE {
+    ?this mech:hasPart ?part
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf mech:Part ;
+  rdfs:subClassOf owl:Thing ;
+.
+elec:Configuration
+  rdf:type owl:Class ;
+  rdfs:label "Configuration"^^xsd:string ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/containers#contains> ;
+      owl:someValuesFrom elec:Device ;
+    ] ;
+.
+elec:Connection
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+      ?x elec:isConnectedTo ?y .
+} WHERE {
+      ?this elec:connects ?x .
+      ?this elec:connects ?y
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:minCardinality "2"^^xsd:nonNegativeInteger ;
+      owl:onProperty elec:connects ;
+    ] ;
+.
+elec:Connector
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """# joined connectors have terminals with corresponding numbers fixed to each other
+CONSTRUCT {
+      ?thisTerminal mech:isFixedTo ?otherTerminal
+}
+WHERE {
+      ?this elec:isJoinedWith ?other .
+      ?this sys:hasPart/cont:contains ?thisTerminal .
+      ?thisTerminal rdf:type/rdfs:subClassOf* elec:Terminal .
+      ?thisTerminal cont:isItemOf/cont:hasNumber ?n .
+      ?other sys:hasPart/cont:contains ?otherTerminal .
+      ?otherTerminal rdf:type/rdfs:subClassOf* elec:Terminal .
+      ?otherTerminal cont:isItemOf/cont:hasNumber ?n
+}"""^^xsd:string ;
+    ] ;
+  rdfs:label "Connector"^^xsd:string ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty mech:hasPart ;
+      owl:someValuesFrom [
+          rdf:type owl:Class ;
+          owl:intersectionOf (
+              <http://www.mercator.iac.es/onto/metamodels/containers#List>
+              [
+                rdf:type owl:Restriction ;
+                owl:onProperty <http://www.mercator.iac.es/onto/metamodels/containers#contains> ;
+                owl:someValuesFrom elec:Terminal ;
+              ]
+            ) ;
+        ] ;
+    ] ;
+.
+elec:ConnectorInstance
+  rdf:type owl:Class ;
+  rdfs:label "Connector instance"^^xsd:string ;
+  rdfs:subClassOf elec:Connector ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#realizes> ;
+      owl:someValuesFrom elec:ConnectorType ;
+    ] ;
+.
+elec:ConnectorType
+  rdf:type owl:Class ;
+  rdfs:label "Connector type"^^xsd:string ;
+  rdfs:subClassOf elec:Connector ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#isRealizedBy> ;
+      owl:someValuesFrom elec:ConnectorInstance ;
+    ] ;
+.
+elec:Consumer
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/controlsystems#consumes> ;
+      owl:someValuesFrom elec:Power ;
+    ] ;
+.
+elec:Converter
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          elec:Consumer
+          elec:Producer
+        ) ;
+    ] ;
+.
+elec:Device
+  rdf:type owl:Class ;
+  rdfs:subClassOf mech:Part ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:unionOf (
+          elec:Consumer
+          elec:Producer
+        ) ;
+    ] ;
+.
+elec:DeviceInstance
+  rdf:type owl:Class ;
+  rdfs:label "Device instance"^^xsd:string ;
+  rdfs:subClassOf elec:Device ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#realizes> ;
+      owl:someValuesFrom elec:DeviceType ;
+    ] ;
+.
+elec:DeviceType
+  rdf:type owl:Class ;
+  rdfs:label "Device type"^^xsd:string ;
+  rdfs:subClassOf elec:Device ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#isRealizedBy> ;
+      owl:someValuesFrom elec:DeviceInstance ;
+    ] ;
+.
+elec:Drive
+  rdf:type owl:Class ;
+  rdfs:label "Drive"^^xsd:string ;
+  rdfs:subClassOf elec:Device ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          elec:Converter
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty <http://www.mercator.iac.es/onto/metamodels/controlsystems#controls> ;
+            owl:someValuesFrom mech:Power ;
+          ]
+        ) ;
+    ] ;
+.
+elec:DriveInstance
+  rdf:type owl:Class ;
+  rdfs:label "Drive instance"^^xsd:string ;
+  rdfs:subClassOf elec:DeviceInstance ;
+  rdfs:subClassOf elec:Drive ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#realizes> ;
+      owl:someValuesFrom elec:DriveType ;
+    ] ;
+.
+elec:DriveType
+  rdf:type owl:Class ;
+  rdfs:label "Drive type"^^xsd:string ;
+  rdfs:subClassOf elec:DeviceType ;
+  rdfs:subClassOf elec:Drive ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#isRealizedBy> ;
+      owl:someValuesFrom elec:DriveInstance ;
+    ] ;
+.
+elec:Encoder
+  rdf:type owl:Class ;
+  rdfs:label "Encoder"^^xsd:string ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          elec:Sensor
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty <http://www.mercator.iac.es/onto/metamodels/controlsystems#senses> ;
+            owl:someValuesFrom <http://www.mercator.iac.es/onto/metamodels/geometry#Position> ;
+          ]
+        ) ;
+    ] ;
+.
+elec:EncoderInstance
+  rdf:type owl:Class ;
+  rdfs:label "Encoder instance"^^xsd:string ;
+  rdfs:subClassOf elec:Encoder ;
+  rdfs:subClassOf elec:SensorInstance ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#realizes> ;
+      owl:someValuesFrom elec:EncoderType ;
+    ] ;
+.
+elec:EncoderType
+  rdf:type owl:Class ;
+  rdfs:label "Encoder type"^^xsd:string ;
+  rdfs:subClassOf elec:Encoder ;
+  rdfs:subClassOf elec:SensorType ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#isRealizedBy> ;
+      owl:someValuesFrom elec:EncoderInstance ;
+    ] ;
+.
+elec:FemaleConnector
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:allValuesFrom elec:MaleConnector ;
+      owl:onProperty elec:isJoinedWith ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          elec:Connector
+          [
+            rdf:type owl:Restriction ;
+            owl:hasValue elec:female ;
+            owl:onProperty elec:hasGender ;
+          ]
+        ) ;
+    ] ;
+.
+elec:Gender
+  rdf:type owl:Class ;
+  rdfs:label "Gender"^^xsd:string ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:oneOf (
+          elec:male
+          elec:female
+          elec:hybrid
+        ) ;
+    ] ;
+.
+elec:HybridConnector
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          elec:Connector
+          [
+            rdf:type owl:Restriction ;
+            owl:hasValue elec:hybrid ;
+            owl:onProperty elec:hasGender ;
+          ]
+        ) ;
+    ] ;
+.
+elec:InsulatingState
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+      ?stateMachine rdf:type elec:Insulator
+} WHERE {
+      ?this expr:hasValue true .
+      ?stateMachine fsm:hasState ?this
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf <http://www.mercator.iac.es/onto/metamodels/finitestatemachines#State> ;
+  rdfs:subClassOf owl:Thing ;
+.
+elec:Insulator
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:allValuesFrom elec:Insulator ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#hasPart> ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:maxCardinality "0"^^xsd:nonNegativeInteger ;
+      owl:onProperty elec:isConnectedTo ;
+    ] ;
+  owl:disjointWith elec:Conductor ;
+.
+elec:IoModule
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    ?interface soft:hasVariable ?variable
+} WHERE {
+    ?this sys:hasInterface ?interface .
+    ?this elec:hasChannel/sys:hasInterface ?channelInterface .
+    ?channelInterface soft:hasVariable ?variable
+}""" ;
+    ] ;
+  rdfs:subClassOf elec:Device ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:minCardinality "1"^^xsd:nonNegativeInteger ;
+      owl:onProperty elec:hasChannel ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#hasInterface> ;
+      owl:someValuesFrom <http://www.mercator.iac.es/onto/metamodels/software#Interface> ;
+    ] ;
+.
+elec:IoModuleInstance
+  rdf:type owl:Class ;
+  rdfs:label "Io module instance"^^xsd:string ;
+  rdfs:subClassOf elec:DeviceInstance ;
+  rdfs:subClassOf elec:IoModule ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#realizes> ;
+      owl:someValuesFrom elec:IoModuleType ;
+    ] ;
+.
+elec:IoModuleType
+  rdf:type owl:Class ;
+  rdfs:label "Io module type"^^xsd:string ;
+  rdfs:subClassOf elec:DeviceType ;
+  rdfs:subClassOf elec:IoModule ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#isRealizedBy> ;
+      owl:someValuesFrom elec:IoModuleInstance ;
+    ] ;
+.
+elec:MaleConnector
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:allValuesFrom elec:FemaleConnector ;
+      owl:onProperty elec:isJoinedWith ;
+    ] ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          elec:Connector
+          [
+            rdf:type owl:Restriction ;
+            owl:hasValue elec:male ;
+            owl:onProperty elec:hasGender ;
+          ]
+        ) ;
+    ] ;
+.
+elec:Motor
+  rdf:type owl:Class ;
+  rdfs:label "Motor"^^xsd:string ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          elec:Actuator
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty <http://www.mercator.iac.es/onto/metamodels/controlsystems#produces> ;
+            owl:someValuesFrom mech:Power ;
+          ]
+        ) ;
+    ] ;
+.
+elec:MotorInstance
+  rdf:type owl:Class ;
+  rdfs:label "Motor instance"^^xsd:string ;
+  rdfs:subClassOf elec:ActuatorInstance ;
+  rdfs:subClassOf elec:Motor ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#realizes> ;
+      owl:someValuesFrom elec:MotorType ;
+    ] ;
+.
+elec:MotorType
+  rdf:type owl:Class ;
+  rdfs:label "Motor type"^^xsd:string ;
+  rdfs:subClassOf elec:ActuatorType ;
+  rdfs:subClassOf elec:Motor ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#isRealizedBy> ;
+      owl:someValuesFrom elec:MotorInstance ;
+    ] ;
+.
+elec:Power
+  rdf:type owl:Class ;
+  rdfs:subClassOf <http://qudt.org/schema/qudt#Quantity> ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:hasValue <http://qudt.org/vocab/quantity#ElectricPower> ;
+      owl:onProperty <http://qudt.org/schema/qudt#quantityKind> ;
+    ] ;
+.
+elec:PowerSupply
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+    ?this ctrl:controls ?power
+}
+WHERE {
+    ?this ctrl:produces ?power .
+    ?power rdf:type elec:Power
+}"""^^xsd:string ;
+    ] ;
+  rdfs:label "Power supply"^^xsd:string ;
+  rdfs:subClassOf elec:Device ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          elec:Converter
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty <http://www.mercator.iac.es/onto/metamodels/controlsystems#controls> ;
+            owl:someValuesFrom elec:Power ;
+          ]
+        ) ;
+    ] ;
+.
+elec:PowerSupplyInstance
+  rdf:type owl:Class ;
+  rdfs:label "Power supply instance"^^xsd:string ;
+  rdfs:subClassOf elec:DeviceInstance ;
+  rdfs:subClassOf elec:PowerSupply ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#realizes> ;
+      owl:someValuesFrom elec:PowerSupplyType ;
+    ] ;
+.
+elec:PowerSupplyType
+  rdf:type owl:Class ;
+  rdfs:label "Power supply type"^^xsd:string ;
+  rdfs:subClassOf elec:DeviceType ;
+  rdfs:subClassOf elec:PowerSupply ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#isRealizedBy> ;
+      owl:someValuesFrom elec:PowerSupplyInstance ;
+    ] ;
+.
+elec:Producer
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/controlsystems#produces> ;
+      owl:someValuesFrom elec:Power ;
+    ] ;
+.
+elec:Sensor
+  rdf:type owl:Class ;
+  rdfs:label "Sensor"^^xsd:string ;
+  rdfs:subClassOf elec:Device ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          <http://www.mercator.iac.es/onto/metamodels/controlsystems#Sensor>
+          elec:Consumer
+        ) ;
+    ] ;
+.
+elec:SensorInstance
+  rdf:type owl:Class ;
+  rdfs:label "Sensor instance"^^xsd:string ;
+  rdfs:subClassOf elec:DeviceInstance ;
+  rdfs:subClassOf elec:Sensor ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#realizes> ;
+      owl:someValuesFrom elec:SensorType ;
+    ] ;
+.
+elec:SensorType
+  rdf:type owl:Class ;
+  rdfs:label "Sensor type"^^xsd:string ;
+  rdfs:subClassOf elec:DeviceType ;
+  rdfs:subClassOf elec:Sensor ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#isRealizedBy> ;
+      owl:someValuesFrom elec:SensorInstance ;
+    ] ;
+.
+elec:Switch
+  rdf:type owl:Class ;
+  rdfs:label "Switch"^^xsd:string ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#hasPart> ;
+      owl:someValuesFrom [
+          rdf:type owl:Restriction ;
+          owl:onProperty <http://www.mercator.iac.es/onto/metamodels/finitestatemachines#hasState> ;
+          owl:someValuesFrom elec:ConductingState ;
+        ] ;
+    ] ;
+.
+elec:SwitchInstance
+  rdf:type owl:Class ;
+  rdfs:label "Switch instance"^^xsd:string ;
+  rdfs:subClassOf elec:DeviceInstance ;
+  rdfs:subClassOf elec:Switch ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#realizes> ;
+      owl:someValuesFrom elec:SwitchType ;
+    ] ;
+.
+elec:SwitchType
+  rdf:type owl:Class ;
+  rdfs:label "Switch type"^^xsd:string ;
+  rdfs:subClassOf elec:DeviceType ;
+  rdfs:subClassOf elec:Switch ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#isRealizedBy> ;
+      owl:someValuesFrom elec:SwitchInstance ;
+    ] ;
+.
+elec:Terminal
+  rdf:type owl:Class ;
+  spin:rule [
+      rdf:type sp:Construct ;
+      sp:text """CONSTRUCT {
+      ?this elec:isConnectedTo ?x
+} WHERE {
+      ?this mech:isFixedTo ?x .
+      ?x rdf:type/rdfs:subClassOf* elec:Conductor
+}"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf owl:Thing ;
+  rdfs:subClassOf [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          elec:Conductor
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty mech:isFixedTo ;
+            owl:someValuesFrom mech:Part ;
+          ]
+        ) ;
+    ] ;
+.
+elec:TerminalInstance
+  rdf:type owl:Class ;
+  rdfs:label "Terminal instance"^^xsd:string ;
+  rdfs:subClassOf elec:Terminal ;
+  rdfs:subClassOf <http://www.mercator.iac.es/onto/metamodels/systems#Realization> ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#realizes> ;
+      owl:someValuesFrom elec:Terminal ;
+    ] ;
+.
+elec:Wire
+  rdf:type owl:Class ;
+  rdfs:subClassOf elec:Connection ;
+  rdfs:subClassOf [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          elec:Connection
+          [
+            rdf:type owl:Restriction ;
+            owl:onClass elec:Conductor ;
+            owl:onProperty mech:hasPart ;
+            owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+          ]
+        ) ;
+    ] ;
+.
+elec:WireInstance
+  rdf:type owl:Class ;
+  rdfs:label "Wire instance"^^xsd:string ;
+  rdfs:subClassOf elec:Wire ;
+  rdfs:subClassOf <http://www.mercator.iac.es/onto/metamodels/systems#Realization> ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/systems#realizes> ;
+      owl:someValuesFrom elec:Wire ;
+    ] ;
+.
+elec:connects
+  rdf:type owl:AsymmetricProperty ;
+  rdf:type owl:IrreflexiveProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain elec:Connection ;
+  rdfs:range elec:Conductor ;
+.
+elec:connectsFrom
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "connects from"^^xsd:string ;
+  rdfs:subPropertyOf elec:connects ;
+.
+elec:connectsTo
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "connects to"^^xsd:string ;
+  rdfs:subPropertyOf elec:connects ;
+.
+elec:female
+  rdf:type elec:Gender ;
+  rdfs:label "female"^^xsd:string ;
+  owl:differentFrom elec:hybrid ;
+  owl:differentFrom elec:male ;
+.
+elec:hasCable
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "has cable"^^xsd:string ;
+  rdfs:range elec:Cable ;
+.
+elec:hasCableAssembly
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "has cable assembly"^^xsd:string ;
+  rdfs:range elec:CableAssembly ;
+.
+elec:hasChannel
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain elec:Device ;
+  rdfs:range elec:Channel ;
+  rdfs:subPropertyOf <http://www.mercator.iac.es/onto/metamodels/systems#hasPart> ;
+.
+elec:hasConnector
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "has connector"^^xsd:string ;
+  rdfs:range elec:Connector ;
+.
+elec:hasGender
+  rdf:type owl:FunctionalProperty ;
+  rdf:type owl:ObjectProperty ;
+  rdfs:domain elec:Connector ;
+  rdfs:label "has gender"^^xsd:string ;
+  rdfs:range elec:Gender ;
+.
+elec:hasSymbol
+  rdf:type owl:DatatypeProperty ;
+  rdfs:label "has symbol"^^xsd:string ;
+.
+elec:hasTerminal
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "has terminal"^^xsd:string ;
+  rdfs:range elec:Terminal ;
+.
+elec:hasWire
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "has wire"^^xsd:string ;
+.
+elec:hybrid
+  rdf:type elec:Gender ;
+  rdfs:label "hybrid"^^xsd:string ;
+  owl:differentFrom elec:female ;
+  owl:differentFrom elec:male ;
+.
+elec:isConnectedTo
+  rdf:type owl:ObjectProperty ;
+  rdf:type owl:SymmetricProperty ;
+  rdfs:domain elec:Conductor ;
+  rdfs:label "is connected to"^^xsd:string ;
+  rdfs:range elec:Conductor ;
+.
+elec:isJoinedWith
+  rdf:type owl:ObjectProperty ;
+  rdf:type owl:SymmetricProperty ;
+  rdfs:domain elec:Connector ;
+  rdfs:range elec:Connector ;
+  rdfs:subPropertyOf mech:isFixedTo ;
+.
+elec:male
+  rdf:type elec:Gender ;
+  rdfs:label "male"^^xsd:string ;
+  owl:differentFrom elec:female ;
+  owl:differentFrom elec:male ;
+.

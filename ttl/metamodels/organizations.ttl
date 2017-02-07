@@ -1,0 +1,90 @@
+# baseURI: http://www.mercator.iac.es/onto/metamodels/organizations
+# imports: http://www.mercator.iac.es/onto/metamodels/containers
+# imports: http://www.mercator.iac.es/onto/metamodels/models
+
+@prefix : <http://www.mercator.iac.es/onto/metamodels/organizations#> .
+@prefix org: <http://www.mercator.iac.es/onto/metamodels/organizations#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix spin: <http://spinrdf.org/spin#> .
+@prefix spl: <http://spinrdf.org/spl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.mercator.iac.es/onto/metamodels/organizations>
+  rdf:type owl:Ontology ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/containers> ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/models> ;
+  owl:versionInfo "Created with TopBraid Composer"^^xsd:string ;
+.
+org:NamedEntity
+  rdf:type owl:Class ;
+  spin:constraint [
+      rdf:type sp:Construct ;
+      sp:text """    CONSTRUCT {
+      _:b0 a spin:ConstraintViolation .
+      _:b0 rdfs:label \"Long name shorter than short name!\"        
+    } WHERE {
+      ?this org:hasLongName ?long .
+      ?this org:hasShortName ?short .
+      FILTER( strlen(?long) < strlen(?short) ) 
+    }"""^^xsd:string ;
+    ] ;
+  rdfs:subClassOf owl:Thing ;
+.
+org:Organization
+  rdf:type owl:Class ;
+  rdfs:subClassOf org:NamedEntity ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty <http://www.mercator.iac.es/onto/metamodels/containers#contains> ;
+      owl:someValuesFrom org:Person ;
+    ] ;
+.
+org:Person
+  rdf:type owl:Class ;
+  rdfs:subClassOf org:NamedEntity ;
+  owl:equivalentClass <http://xmlns.com/foaf/0.1/Person> ;
+.
+org:Role
+  rdf:type owl:Class ;
+  rdfs:label "Role"^^xsd:string ;
+  rdfs:subClassOf org:NamedEntity ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty <http://www.mercator.iac.es/onto/metamodels/models#represents> ;
+            owl:someValuesFrom org:Person ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty <http://www.mercator.iac.es/onto/metamodels/models#hasPurpose> ;
+            owl:someValuesFrom <http://www.mercator.iac.es/onto/metamodels/models#Purpose> ;
+          ]
+        ) ;
+    ] ;
+.
+org:hasLongName
+  rdf:type owl:DatatypeProperty ;
+  rdfs:subPropertyOf org:hasName ;
+.
+org:hasName
+  rdf:type rdf:Property ;
+  rdf:type owl:DatatypeProperty ;
+  rdfs:comment "A name for some thing." ;
+  rdfs:label "name" ;
+  rdfs:range rdfs:Literal ;
+  rdfs:subPropertyOf rdfs:label ;
+  owl:equivalentProperty <http://xmlns.com/foaf/0.1/name> ;
+.
+org:hasShortName
+  rdf:type owl:DatatypeProperty ;
+  rdfs:subPropertyOf org:hasName ;
+.
+<http://xmlns.com/foaf/0.1/Person>
+  rdf:type owl:Class ;
+  rdfs:subClassOf org:Person ;
+.

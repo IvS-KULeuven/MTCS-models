@@ -1,0 +1,57 @@
+# baseURI: http://www.mercator.iac.es/onto/metamodels/models
+# imports: http://www.mercator.iac.es/onto/metamodels/systems
+
+@prefix mod: <http://www.mercator.iac.es/onto/metamodels/models#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sys: <http://www.mercator.iac.es/onto/metamodels/systems#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.mercator.iac.es/onto/metamodels/models>
+  rdf:type owl:Ontology ;
+  owl:imports <http://www.mercator.iac.es/onto/metamodels/systems> ;
+  owl:versionInfo "Created with TopBraid Composer"^^xsd:string ;
+.
+mod:Model
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Class ;
+      owl:intersectionOf (
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty mod:represents ;
+            owl:someValuesFrom sys:System ;
+          ]
+          [
+            rdf:type owl:Restriction ;
+            owl:onProperty mod:hasPurpose ;
+            owl:someValuesFrom mod:Purpose ;
+          ]
+        ) ;
+    ] ;
+.
+mod:Purpose
+  rdf:type owl:Class ;
+  rdfs:subClassOf owl:Thing ;
+  owl:equivalentClass [
+      rdf:type owl:Restriction ;
+      owl:minCardinality "1"^^xsd:nonNegativeInteger ;
+      owl:onProperty mod:isPurposeOf ;
+    ] ;
+.
+mod:hasPurpose
+  rdf:type owl:AsymmetricProperty ;
+  rdfs:range mod:Purpose ;
+  rdfs:subPropertyOf sys:hasProperty ;
+.
+mod:isPurposeOf
+  rdf:type owl:ObjectProperty ;
+  owl:inverseOf mod:hasPurpose ;
+.
+mod:represents
+  rdf:type owl:AsymmetricProperty ;
+  rdf:type owl:IrreflexiveProperty ;
+  rdf:type owl:TransitiveProperty ;
+.
