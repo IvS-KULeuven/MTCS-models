@@ -1,0 +1,11 @@
+*.js
+*.map
+.idea/
+.directory
+.metadata/
+.project
+*.map
+**/
+jsonld/**/*.jsonld
+*.topbraid.header
+**.topbraid.header
