@@ -596,7 +596,15 @@ beckhoff.ADD IO_MODULE_TYPE(
         7  : -> symbol: "+Uv"   , comment: "Supply voltage output = 5V"
         8  : -> symbol: "S"     , comment: "Shield"
     channels:
-        1  : -> terminals: self.terminals[i] for i in [1..8]
+        1  : -> terminals: [ self.terminals[0],
+                             self.terminals[1],
+                             self.terminals[2],
+                             self.terminals[3],
+                             self.terminals[4],
+                             self.terminals[5],
+                             self.terminals[6],
+                             self.terminals[7],
+                             self.terminals[8] ]
     soft_interface:
         WcState       : -> { type: t_bool  , comment: 'EtherCAT working counter state (false = data valid, true = data invalid)' }
         InfoDataState : -> { type: t_uint16, comment: 'EtherCAT info data state (e.g. INIT, PREOP, OP, ...)' }
@@ -617,7 +625,15 @@ beckhoff.ADD IO_MODULE_TYPE(
         7  : -> symbol: "1A"    , comment: "1 Amp input"
         8  : -> symbol: "S"     , comment: "Shield"
     channels:
-        1  : -> terminals: self.terminals[i] for i in [1..8]
+        1  : -> terminals: [ self.terminals[0],
+                             self.terminals[1],
+                             self.terminals[2],
+                             self.terminals[3],
+                             self.terminals[4],
+                             self.terminals[5],
+                             self.terminals[6],
+                             self.terminals[7],
+                             self.terminals[8] ]
     soft_interface:
         WcState       : -> { type: t_bool  , comment: 'EtherCAT working counter state (false = data valid, true = data invalid)' }
         InfoDataState : -> { type: t_uint16, comment: 'EtherCAT info data state (e.g. INIT, PREOP, OP, ...)' }
