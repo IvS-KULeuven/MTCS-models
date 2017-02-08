@@ -109,9 +109,10 @@ MTCS_MAKE_CONFIG THISLIB, "MTCSParkPositionsConfig",
 ########################################################################################################################
 MTCS_MAKE_CONFIG THISLIB, "MTCSEndOfNightStepConfig",
     items:
-        parkAxes              : { type: t_bool   , comment: "Park the telescope" }
-        parkAxesPosition      : { type: t_string , comment: "Position to park the telescope" }
-        parkTelescopeWait     : { type: t_bool   , comment: "Wait until the telescope is parked" }
+        description           : { type: t_string , comment: "Description of this step (to show in HMI)" }
+        parkAxes              : { type: t_bool   , comment: "Park the axes" }
+        parkAxesPosition      : { type: t_string , comment: "Position to park the axes" }
+        parkAxesWait          : { type: t_bool   , comment: "Wait until the axes is parked" }
         parkM3                : { type: t_bool   , comment: "Park M3" }
         parkM3Position        : { type: t_string , comment: "Position to park M3" }
         parkM3Wait            : { type: t_bool   , comment: "Wait until M3 is parked" }
