@@ -1988,7 +1988,7 @@ MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusReadCoilProcess",
         address      : { type: t_uint16 , comment: "Modbus data address"}
     variables:
         value        : { type: t_bool, comment: "Value of the coil" }
-        errorId      : { type: t_uint16, comment: "Error Id. Modbus error code" }
+        errorId      : { type: t_int16, comment: "Error Id. Modbus error code" }
 
 ########################################################################################################################
 # ModbusRTUBusWriteCoilProcess
@@ -2000,7 +2000,7 @@ MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusWriteCoilProcess",
         address      : { type: t_uint16 , comment: "Modbus data address"}
         value        : { type: t_bool, comment: "Value to write on the coil" }
     variables:
-        errorId      : { type: t_uint8, comment: "Error Id. Modbus error code" }
+        errorId      : { type: t_int16, comment: "Error Id. Modbus error code" }
 
 ########################################################################################################################
 # ModbusRTUBusReadRegisterProcess
@@ -2012,7 +2012,7 @@ MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusReadRegisterProcess",
         address      : { type: t_uint16 , comment: "Modbus data address"}
     variables:
         value        : { type: t_int16, comment: "Value of the register" }
-        errorId      : { type: t_uint8, comment: "Error Id. Modbus error code" }
+        errorId      : { type: t_int16, comment: "Error Id. Modbus error code" }
 
 ########################################################################################################################
 # ModbusRTUBusWriteRegisterProcess
@@ -2024,7 +2024,7 @@ MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusWriteRegisterProcess",
         address      : { type: t_uint16 , comment: "Modbus data address"}
         value        : { type: t_int16, comment: "Value to write on the register" }
     variables:
-        errorId      : { type: t_uint8, comment: "Error Id. Modbus error code" }
+        errorId      : { type: t_int16, comment: "Error Id. Modbus error code" }
         
 ########################################################################################################################
 # ModbusRTUBus

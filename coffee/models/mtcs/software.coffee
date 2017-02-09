@@ -317,6 +317,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
             expand: false
             arguments:
                 operatorStatus          : { type: COMMONLIB.OperatorStatus, expand: false }
+                domeApertureStatus      : { type: COMMONLIB.ApertureStatus, expand: false }
             attributes:
                 statuses:
                     attributes:
@@ -383,6 +384,13 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
                 aziPos                  : { type: COMMONLIB.AngularPosition, expand: false }
             attributes:
                 isTracking              : { type: t_bool }
+                parts:
+                    attributes:
+                        shutter:
+                            attributes:
+                                statuses:
+                                    attributes:
+                                        apertureStatus: { type: COMMONLIB.ApertureStatus, expand: false}
                 statuses:
                     attributes:
                         poweredStatus   : { type: COMMONLIB.PoweredStatus }
@@ -456,6 +464,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
             operatorStatus      : -> self.statuses.operatorStatus
         services:
             operatorStatus      : -> self.statuses.operatorStatus
+            domeApertureStatus  : -> self.parts.dome.parts.shutter.statuses.apertureStatus
         telemetry:
             operatorStatus      : -> self.statuses.operatorStatus
         m1:
