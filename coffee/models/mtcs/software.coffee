@@ -20,7 +20,6 @@ REQUIRE "models/mtcs/dome/software.coffee"
 MODEL "http://www.mercator.iac.es/onto/models/mtcs/software" : "mtcs_soft"
 
 mtcs_soft.IMPORT common_soft
-mtcs_soft.IMPORT cover_elec
 mtcs_soft.IMPORT cover_soft
 mtcs_soft.IMPORT m1_soft
 mtcs_soft.IMPORT m2_soft
@@ -535,19 +534,14 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
 
 # TODO: currently only proof-of-concept, must be expanded!!!
 
-mtcs_soft.ADD MTCS_MAKE_INTERFACE(THISLIB.MTCS, "interface")
-
-
-#MTCS_SOFT_ELEC_INTERFACE THISLIB.MTCS, "interface",
-#    [
-#        [ mtcs_soft.interface.parts.cover.parts.top.parts.p1.encoderErrorSignal, cover_elec.TC.slot3.soft_interface.p1 ]
-#    ]
+#mtcs_soft.ADD MTCS_MAKE_INTERFACE(THISLIB.MTCS, "interface")
 
 
 
-for i in [1..4]
-    mtcs_soft.interface.parts.cover.parts.top.parts["p#{i}"].encoderErrorSignal.ADD sys.isInterfacedWith cover_elec.TC.io.slot3.soft_interface["input#{i}"]
-    mtcs_soft.interface.parts.cover.parts.bottom.parts["p#{i}"].encoderErrorSignal.ADD sys.isInterfacedWith cover_elec.TC.io.slot3.soft_interface["input#{4+i}"]
+
+#for i in [1..4]
+#    mtcs_soft.interface.parts.cover.parts.top.parts["p#{i}"].encoderErrorSignal.ADD sys.isInterfacedWith cover_elec.TC.io.slot3.soft_interface["input#{i}"]
+#    mtcs_soft.interface.parts.cover.parts.bottom.parts["p#{i}"].encoderErrorSignal.ADD sys.isInterfacedWith cover_elec.TC.io.slot3.soft_interface["input#{4+i}"]
 
 #for i in [1..13]
 #    mtcs_soft.interface.parts.cover.parts.io.parts["slot#{i}"].wcState.ADD sys.isInterfacedWith cover_elec.TC.io["slot#{i}"].soft_interface.WcState
