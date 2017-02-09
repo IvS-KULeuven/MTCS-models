@@ -390,7 +390,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
                             attributes:
                                 statuses:
                                     attributes:
-                                        apertureStatus: { type: COMMONLIB.ApertureStatus, expand: false}
+                                        apertureStatus: { type: COMMONLIB.ApertureStatus }
                 statuses:
                     attributes:
                         poweredStatus   : { type: COMMONLIB.PoweredStatus }
@@ -403,7 +403,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
             comment                     : "The config manager (to load/save/activate configuration data)"
             type                        : COMMONLIB.ConfigManager
     statuses:
-        initializationStatus        : { type: COMMONLIB.InitializationStatus }
+        initializationStatus        : { type: ABORT(self.parts.dome) }#COMMONLIB.InitializationStatus }
         healthStatus                : { type: COMMONLIB.HealthStatus }
         busyStatus                  : { type: COMMONLIB.BusyStatus }
         operatorStatus              : { type: COMMONLIB.OperatorStatus }
