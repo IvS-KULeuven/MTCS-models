@@ -163,6 +163,16 @@ MTCS_MAKE_CONFIG THISLIB, "ServicesMeteoConfig",
             comment: "Config for the 3.5 V reference voltage"
             expand: false
 
+########################################################################################################################
+# ServicesWestConfig
+########################################################################################################################
+
+MTCS_MAKE_CONFIG THISLIB, "ServicesWestConfig",
+    items:
+        pollingInterval :
+            type: t_double
+            comment: "Time between West reads in seconds"
+
 
 
 ########################################################################################################################
@@ -178,6 +188,10 @@ MTCS_MAKE_CONFIG THISLIB, "ServicesConfig",
         meteo:
             type: THISLIB.ServicesMeteoConfig
             comment: "Meteo config"
+        west:
+            type: THISLIB.ServicesWestConfig
+            comment: "West config"
+
 
 
 ########################################################################################################################
@@ -209,6 +223,15 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Services",
                 statuses:
                     attributes:
                         healthStatus    : { type: COMMONLIB.HealthStatus }
+        west:
+            comment                     : "West service"
+            arguments:
+                config                  : {}
+                operatorStatus          : {}                
+            attributes:
+                statuses:
+                    attributes:
+                        healthStatus    : { type: COMMONLIB.HealthStatus }       
         io:
             comment                     : "I/O modules"
             attributes:
@@ -242,8 +265,14 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Services",
         operatingStatus:
             superState                  : -> self.statuses.initializationStatus.initialized
         healthStatus:
-            isGood                      : -> MTCS_SUMMARIZE_GOOD(self.parts.timing, self.parts.meteo, self.parts.io)
-            hasWarning                  : -> MTCS_SUMMARIZE_WARN(self.parts.timing, self.parts.meteo, self.parts.io)
+            isGood                      : -> AND(self.parts.timing.healthStatus.good, 
+                                                 self.parts.meteo.healthStatus.good,
+                                                 self.parts.west.healthStatus.good,
+                                                 self.parts.io.healthStatus.good)
+            hasWarning                  : -> OR(self.parts.timing.healthStatus.warning, 
+                                                self.parts.meteo.healthStatus.warning,
+                                                self.parts.west.healthStatus.warning,
+                                                self.parts.io.healthStatus.warning)
         busyStatus:
             isBusy                      : -> self.statuses.initializationStatus.initializing
         configManager:
@@ -253,6 +282,9 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Services",
             config                      : -> self.config.timing
         meteo:
             config                      : -> self.config.meteo
+        west:
+            config                      : -> self.config.west
+            operatorStatus              : -> self.operatorStatus
 
 
 ########################################################################################################################
@@ -576,6 +608,173 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesMeteo",
                                                 self.supplyVoltage,
                                                 self.referenceVoltage
                                         )
+
+
+########################################################################################################################
+# ServicesWest
+########################################################################################################################
+
+MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesWest",
+    typeOf                              : [ THISLIB.ServicesParts.west ]
+    variables:
+        # measurements
+        windSpeedMinimum            : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Wind speed minimum" }
+        windSpeedAverage            : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Wind speed average" }
+        windSpeedMaximum            : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Wind speed maximum" }
+        windDirectionMinimum        : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Wind direction minimum" }
+        windDirectionAverage        : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Wind direction average" }
+        windDirectionMaximum        : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Wind direction maximum" }
+        airPressure                 : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Air pressure" }
+        airTemperature              : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Air temperature" }
+        internalTemperature         : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Internal temperature" }
+        relativeHumidity            : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Relative humidity" }
+        rainAccumulation            : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Rain accumulation" }
+        rainDuration                : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Rain duration" }
+        rainIntensity               : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Rain intensity" }
+        rainPeakIntensity           : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Rain peak intensity" }
+        hailAccumulation            : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Hail accumulation" }
+        hailDuration                : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Hail duration" }
+        hailIntensity               : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Hail intensity" }
+        hailPeakIntensity           : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Hail peak intensity" }
+        heatingTemperature          : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Heating temperature" }
+        heatingVoltage              : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Heating voltage" }
+        supplyVoltage               : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Supply voltage" }
+        referenceVoltage            : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Reference voltage" }
+        # durationOK
+        durationOK                  : { type: COMMONLIB.Duration                , comment: "Duration that the meteo is OK" }
+        dewpoint                    : { type: COMMONLIB.Temperature             , comment: "Calculated dewpoint" }
+        wet                         : { type: t_bool                            , comment: "Wet if (rainIntensity+hailIntensity) > config.wetLimit" }
+        heating                     : { type: t_bool                            , comment: "Heating or not?"}
+        windDirectionMinimumString  : { type: t_string                          , comment: "Average direction of the wind as a string"}
+        windDirectionAverageString  : { type: t_string                          , comment: "Average direction of the wind as a string"}
+        windDirectionMaximumString  : { type: t_string                          , comment: "Average direction of the wind as a string"}
+    references:
+        config                      : { type: THISLIB.ServicesMeteoConfig  , comment: "The config" }
+    statuses:
+        meteoHealthStatus            : { type: COMMONLIB.HealthStatus }
+        healthStatus                : { type: COMMONLIB.HealthStatus }
+    processes:
+        {}
+    calls:
+        windSpeedMinimum:
+            id                      : -> THISLIB.ServicesMeteoId.WIND_SPEED_MINIMUM
+            config                  : -> self.config.windSpeedMinimum
+        windSpeedAverage:
+            id                      : -> THISLIB.ServicesMeteoId.WIND_SPEED_AVERAGE
+            config                  : -> self.config.windSpeedAverage
+        windSpeedMaximum:
+            id                      : -> THISLIB.ServicesMeteoId.WIND_SPEED_MAXIMUM
+            config                  : -> self.config.windSpeedMaximum
+        windDirectionMinimum:
+            id                      : -> THISLIB.ServicesMeteoId.WIND_DIRECTION_MINIMUM
+            config                  : -> self.config.windDirectionMinimum
+        windDirectionAverage:
+            id                      : -> THISLIB.ServicesMeteoId.WIND_DIRECTION_AVERAGE
+            config                  : -> self.config.windDirectionAverage
+        windDirectionMaximum:
+            id                      : -> THISLIB.ServicesMeteoId.WIND_DIRECTION_MAXIMUM
+            config                  : -> self.config.windDirectionMaximum
+        airPressure:
+            id                      : -> THISLIB.ServicesMeteoId.AIR_PRESSURE
+            config                  : -> self.config.airPressure
+        airTemperature:
+            id                      : -> THISLIB.ServicesMeteoId.AIR_TEMPERATURE
+            config                  : -> self.config.airTemperature
+        internalTemperature:
+            id                      : -> THISLIB.ServicesMeteoId.INTERNAL_TEMPERATURE
+            config                  : -> self.config.internalTemperature
+        relativeHumidity:
+            id                      : -> THISLIB.ServicesMeteoId.RELATIVE_HUMIDITY
+            config                  : -> self.config.relativeHumidity
+        rainAccumulation:
+            id                      : -> THISLIB.ServicesMeteoId.RAIN_ACCUMULATION
+            config                  : -> self.config.rainAccumulation
+        rainDuration:
+            id                      : -> THISLIB.ServicesMeteoId.RAIN_DURATION
+            config                  : -> self.config.rainDuration
+        rainIntensity:
+            id                      : -> THISLIB.ServicesMeteoId.RAIN_INTENSITY
+            config                  : -> self.config.rainIntensity
+        rainPeakIntensity:
+            id                      : -> THISLIB.ServicesMeteoId.RAIN_PEAK_INTENSITY
+            config                  : -> self.config.rainPeakIntensity
+        hailAccumulation:
+            id                      : -> THISLIB.ServicesMeteoId.HAIL_ACCUMULATION
+            config                  : -> self.config.hailAccumulation
+        hailDuration:
+            id                      : -> THISLIB.ServicesMeteoId.HAIL_DURATION
+            config                  : -> self.config.hailDuration
+        hailIntensity:
+            id                      : -> THISLIB.ServicesMeteoId.HAIL_INTENSITY
+            config                  : -> self.config.hailIntensity
+        hailPeakIntensity:
+            id                      : -> THISLIB.ServicesMeteoId.HAIL_PEAK_INTENSITY
+            config                  : -> self.config.hailPeakIntensity
+        heatingTemperature:
+            id                      : -> THISLIB.ServicesMeteoId.HEATING_TEMPERATURE
+            config                  : -> self.config.heatingTemperature
+        heatingVoltage:
+            id                      : -> THISLIB.ServicesMeteoId.HEATING_VOLTAGE
+            config                  : -> self.config.heatingVoltage
+        supplyVoltage:
+            id                      : -> THISLIB.ServicesMeteoId.SUPPLY_VOLTAGE
+            config                  : -> self.config.supplyVoltage
+        referenceVoltage:
+            id                      : -> THISLIB.ServicesMeteoId.REFERENCE_VOLTAGE
+            config                  : -> self.config.referenceVoltage
+        healthStatus:
+            isGood                  : -> NOT( OR(self.serialTimeout, self.comError) )
+        meteoHealthStatus:
+            superState              : -> self.statuses.healthStatus.good
+            isGood                  : -> MTCS_SUMMARIZE_GOOD_OR_DISABLED(
+                                                self.windSpeedMinimum,
+                                                self.windSpeedAverage,
+                                                self.windSpeedMaximum,
+                                                self.windDirectionMinimum,
+                                                self.windDirectionAverage,
+                                                self.windDirectionMaximum,
+                                                self.airPressure,
+                                                self.airTemperature,
+                                                self.internalTemperature,
+                                                self.relativeHumidity,
+                                                self.rainAccumulation,
+                                                self.rainDuration,
+                                                self.rainIntensity,
+                                                self.rainPeakIntensity,
+                                                self.hailAccumulation,
+                                                self.hailDuration,
+                                                self.hailIntensity,
+                                                self.hailPeakIntensity,
+                                                self.heatingTemperature,
+                                                self.heatingVoltage,
+                                                self.supplyVoltage,
+                                                self.referenceVoltage
+                                        )
+            hasWarning                 : -> MTCS_SUMMARIZE_WARN(
+                                                self.windSpeedMinimum,
+                                                self.windSpeedAverage,
+                                                self.windSpeedMaximum,
+                                                self.windDirectionMinimum,
+                                                self.windDirectionAverage,
+                                                self.windDirectionMaximum,
+                                                self.airPressure,
+                                                self.airTemperature,
+                                                self.internalTemperature,
+                                                self.relativeHumidity,
+                                                self.rainAccumulation,
+                                                self.rainDuration,
+                                                self.rainIntensity,
+                                                self.rainPeakIntensity,
+                                                self.hailAccumulation,
+                                                self.hailDuration,
+                                                self.hailIntensity,
+                                                self.hailPeakIntensity,
+                                                self.heatingTemperature,
+                                                self.heatingVoltage,
+                                                self.supplyVoltage,
+                                                self.referenceVoltage
+                                        )
+
 
 ########################################################################################################################
 # ServicesIO
