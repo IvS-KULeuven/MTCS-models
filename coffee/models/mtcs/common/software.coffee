@@ -1984,7 +1984,7 @@ MTCS_MAKE_CONFIG THISLIB, "InstrumentConfig",
 MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusReadCoilProcess",
     extends: THISLIB.BaseProcess
     arguments:
-        unitID       : { type: t_uint16 , comment: "Modbus station address (1..247)"}
+        unitID       : { type: t_uint8 , comment: "Modbus station address (1..247)"}
         address      : { type: t_uint16 , comment: "Modbus data address"}
     variables:
         value        : { type: t_bool, comment: "Value of the coil" }
@@ -1996,7 +1996,7 @@ MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusReadCoilProcess",
 MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusWriteCoilProcess",
     extends: THISLIB.BaseProcess
     arguments:
-        unitID       : { type: t_uint16 , comment: "Modbus station address (1..247)"}
+        unitID       : { type: t_uint8 , comment: "Modbus station address (1..247)"}
         address      : { type: t_uint16 , comment: "Modbus data address"}
         value        : { type: t_bool, comment: "Value to write on the coil" }
     variables:
@@ -2008,7 +2008,7 @@ MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusWriteCoilProcess",
 MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusReadRegisterProcess",
     extends: THISLIB.BaseProcess
     arguments:
-        unitID       : { type: t_uint16 , comment: "Modbus station address (1..247)"}
+        unitID       : { type: t_uint8 , comment: "Modbus station address (1..247)"}
         address      : { type: t_uint16 , comment: "Modbus data address"}
     variables:
         value        : { type: t_int16, comment: "Value of the register" }
@@ -2020,7 +2020,7 @@ MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusReadRegisterProcess",
 MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusWriteRegisterProcess",
     extends: THISLIB.BaseProcess
     arguments:
-        unitID       : { type: t_uint16 , comment: "Modbus station address (1..247)"}
+        unitID       : { type: t_uint8 , comment: "Modbus station address (1..247)"}
         address      : { type: t_uint16 , comment: "Modbus data address"}
         value        : { type: t_int16, comment: "Value to write on the register" }
     variables:
