@@ -402,7 +402,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
             comment                     : "The config manager (to load/save/activate configuration data)"
             type                        : COMMONLIB.ConfigManager
     statuses:
-        initializationStatus        : { type: ABORT(self.parts.dome) }#COMMONLIB.InitializationStatus }
+        initializationStatus        : { type: COMMONLIB.InitializationStatus }
         healthStatus                : { type: COMMONLIB.HealthStatus }
         busyStatus                  : { type: COMMONLIB.BusyStatus }
         operatorStatus              : { type: COMMONLIB.OperatorStatus }
@@ -527,6 +527,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
         passwordHealthStatus:
             superState          : -> self.statuses.operatorStatus.observer
     disabled_calls: ['axes']
+
 
 ########################################################################################################################
 ## INTERFACE
