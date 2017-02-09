@@ -1976,4 +1976,83 @@ MTCS_MAKE_CONFIG THISLIB, "InstrumentConfig",
 
 
 
+
+
+########################################################################################################################
+# ModbusRTUBusReadCoilProcess
+########################################################################################################################
+MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusReadCoilProcess",
+    extends: THISLIB.BaseProcess
+    arguments:
+        unitID       : { type: t_uint8 , comment: "Modbus station address (1..247)"}
+        address      : { type: t_uint16 , comment: "Modbus data address"}
+    variables:
+        value        : { type: t_bool, comment: "Value of the coil" }
+        errorId      : { type: t_uint16, comment: "Error Id. Modbus error code" }
+
+########################################################################################################################
+# ModbusRTUBusWriteCoilProcess
+########################################################################################################################
+MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusWriteCoilProcess",
+    extends: THISLIB.BaseProcess
+    arguments:
+        unitID       : { type: t_uint8 , comment: "Modbus station address (1..247)"}
+        address      : { type: t_uint16 , comment: "Modbus data address"}
+        value        : { type: t_bool, comment: "Value to write on the coil" }
+    variables:
+        errorId      : { type: t_uint8, comment: "Error Id. Modbus error code" }
+
+########################################################################################################################
+# ModbusRTUBusReadRegisterProcess
+########################################################################################################################
+MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusReadRegisterProcess",
+    extends: THISLIB.BaseProcess
+    arguments:
+        unitID       : { type: t_uint8 , comment: "Modbus station address (1..247)"}
+        address      : { type: t_uint16 , comment: "Modbus data address"}
+    variables:
+        value        : { type: t_int16, comment: "Value of the register" }
+        errorId      : { type: t_uint8, comment: "Error Id. Modbus error code" }
+
+########################################################################################################################
+# ModbusRTUBusWriteRegisterProcess
+########################################################################################################################
+MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusWriteRegisterProcess",
+    extends: THISLIB.BaseProcess
+    arguments:
+        unitID       : { type: t_uint8 , comment: "Modbus station address (1..247)"}
+        address      : { type: t_uint16 , comment: "Modbus data address"}
+        value        : { type: t_int16, comment: "Value to write on the register" }
+    variables:
+        errorId      : { type: t_uint8, comment: "Error Id. Modbus error code" }
+        
+########################################################################################################################
+# ModbusRTUBus
+########################################################################################################################
+MTCS_MAKE_STATEMACHINE THISLIB, "ModbusRTUBus",
+    variables_hidden:
+        isEnabled       : { type: t_bool , comment: "Is control enabled?" }
+    processes:
+        readCoil       : { type: THISLIB.ModbusRTUBusReadCoilProcess, comment: "Read coil" }
+        writeCoil      : { type: THISLIB.ModbusRTUBusWriteCoilProcess, comment: "Write coil" }
+        readRegister   : { type: THISLIB.ModbusRTUBusReadRegisterProcess, comment: "Read register" }
+        writeRegister  : { type: THISLIB.ModbusRTUBusWriteRegisterProcess, comment: "Write register" }    
+    statuses:
+        busyStatus      : { type: THISLIB.BusyStatus            , comment: "Is the config manager in a busy state?" }
+    calls:
+        busyStatus:
+            isBusy      : -> OR( self.processes.readCoil.statuses.busyStatus.busy,
+                                 self.processes.writeCoil.statuses.busyStatus.busy,
+                                 self.processes.readRegister.statuses.busyStatus.busy,
+                                 self.processes.writeRegister.statuses.busyStatus.busy )        
+        readCoil:
+            isEnabled  : -> AND( self.isEnabled, self.statuses.busyStatus.idle )
+        writeCoil:
+            isEnabled  : -> AND( self.isEnabled, self.statuses.busyStatus.idle ) 
+        readRegister:
+            isEnabled  : -> AND( self.isEnabled, self.statuses.busyStatus.idle )
+        writeRegister:
+            isEnabled  : -> AND( self.isEnabled, self.statuses.busyStatus.idle )
+
+
 common_soft.WRITE "models/mtcs/common/software.jsonld"

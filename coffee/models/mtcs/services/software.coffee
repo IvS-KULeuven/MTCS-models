@@ -163,6 +163,16 @@ MTCS_MAKE_CONFIG THISLIB, "ServicesMeteoConfig",
             comment: "Config for the 3.5 V reference voltage"
             expand: false
 
+########################################################################################################################
+# ServicesWestConfig
+########################################################################################################################
+
+MTCS_MAKE_CONFIG THISLIB, "ServicesWestConfig",
+    items:
+        pollingInterval :
+            type: t_double
+            comment: "Time between West reads in seconds"
+
 
 
 ########################################################################################################################
@@ -178,6 +188,10 @@ MTCS_MAKE_CONFIG THISLIB, "ServicesConfig",
         meteo:
             type: THISLIB.ServicesMeteoConfig
             comment: "Meteo config"
+        west:
+            type: THISLIB.ServicesWestConfig
+            comment: "West config"
+
 
 
 ########################################################################################################################
@@ -209,6 +223,15 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Services",
                 statuses:
                     attributes:
                         healthStatus    : { type: COMMONLIB.HealthStatus }
+        west:
+            comment                     : "West service"
+            arguments:
+                operatorStatus          : {}
+                config                  : {}           
+            attributes:
+                statuses:
+                    attributes:
+                        healthStatus    : { type: COMMONLIB.HealthStatus }       
         io:
             comment                     : "I/O modules"
             attributes:
@@ -242,8 +265,14 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Services",
         operatingStatus:
             superState                  : -> self.statuses.initializationStatus.initialized
         healthStatus:
-            isGood                      : -> MTCS_SUMMARIZE_GOOD(self.parts.timing, self.parts.meteo, self.parts.io)
-            hasWarning                  : -> MTCS_SUMMARIZE_WARN(self.parts.timing, self.parts.meteo, self.parts.io)
+            isGood                      : -> MTCS_SUMMARIZE_GOOD(self.parts.timing, 
+                                                                 self.parts.meteo,
+                                                                 self.parts.west,
+                                                                 self.parts.io)
+            hasWarning                  : -> MTCS_SUMMARIZE_WARN(self.parts.timing, 
+                                                                 self.parts.meteo,
+                                                                 self.parts.west,
+                                                                 self.parts.io)
         busyStatus:
             isBusy                      : -> self.statuses.initializationStatus.initializing
         configManager:
@@ -253,6 +282,9 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Services",
             config                      : -> self.config.timing
         meteo:
             config                      : -> self.config.meteo
+        west:
+            operatorStatus              : -> self.operatorStatus
+            config                      : -> self.config.west
 
 
 ########################################################################################################################
@@ -576,6 +608,57 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesMeteo",
                                                 self.supplyVoltage,
                                                 self.referenceVoltage
                                         )
+
+########################################################################################################################
+# ServicesWestController
+########################################################################################################################
+#MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesWestController",
+#    references:
+#        config: { type: THISLIB.ServicesWestControllerConfig, comment: "A small config only for a single WEST controller" }
+#    variables:
+#        isPolling : {}
+
+
+
+########################################################################################################################
+# ServicesWest
+########################################################################################################################
+
+MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesWest",
+    typeOf                          : [ THISLIB.ServicesParts.west ]
+    variables:
+        {}
+    references:
+        operatorStatus              : { type: COMMONLIB.OperatorStatus    , comment: "Shared operator status" }
+        config                      : { type: THISLIB.ServicesWestConfig  , comment: "The config" }
+    statuses:
+        healthStatus                : { type: COMMONLIB.HealthStatus      , comment: "Are the WESTs in healthy state (good) or not (bad)" }
+        operatingStatus             : { type: COMMONLIB.OperatingStatus   , comment: "Are the WESTs being polled (auto) or not (manual)?" }
+    parts:
+        bus                         : { type: COMMONLIB.ModbusRTUBus      , comment: "The shared Modbus RTU bus" }
+        # domeTemperature             : { type: THISLIB.ServicesWestController , comment: "The West controller at the dome to control the temperature " }
+        # firstFloorTemperature       : { type: THISLIB.ServicesWestController , comment: "The West controller at the first floor to control the temperature" }
+        # pumpsRoomTemperature        : { type: THISLIB.ServicesWestController , comment: "The West controller at the pumps room to control the temperature" }
+        # oilHeatExchangerTemperature : { type: THISLIB.ServicesWestController , comment: "The West controller at the heat exchanger to control the oil temperature" }
+    processes:
+        changeOperatingState        : { type: COMMONLIB.ChangeOperatingStateProcess   , comment: "Change the operating state (e.g. AUTO, MANUAL, ...)" }
+    calls:
+        operatingStatus:
+            {}
+        changeOperatingState:
+            isEnabled               : -> self.operatorStatus.tech
+        healthStatus:
+            isGood                  : -> TRUE # MTCS_SUMMARIZE_GOOD(self.parts.domeTemperature,
+                                              #                     self.parts.firstFloorTemperature,
+                                              #                     self.parts.pumpsRoomTemperature,
+                                              #                     self.parts.oilHeatExchangerTemperature)
+            hasWarning              : -> FALSE # MTCS_SUMMARIZE_WARN(self.parts.domeTemperature,
+                                              #                     self.parts.firstFloorTemperature,
+                                              #                     self.parts.pumpsRoomTemperature,
+                                              #                     self.parts.oilHeatExchangerTemperature)
+        bus:
+            isEnabled               : -> AND(self.operatorStatus.tech, self.statuses.operatingStatus.manual)
+
 
 ########################################################################################################################
 # ServicesIO
