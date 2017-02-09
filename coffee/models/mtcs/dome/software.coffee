@@ -43,7 +43,21 @@ MTCS_MAKE_CONFIG THISLIB, "DomeConfig",
 MTCS_MAKE_CONFIG THISLIB, "DomeShutterConfig",
   typeOf: THISLIB.DomeConfig.shutter
   items:
-    wirelessPolling  : { type: t_double, comment: "Polling frequency of the wireless I/O, in seconds. Negative value = no polling." }
+    wirelessPolling         : { type: t_double, comment: "Polling frequency of the wireless I/O device, in seconds. Negative value = no polling." }
+    wirelessIpAddress       : { type: t_string, comment: "IP address of the wireless I/O device" }
+    wirelessPort            : { type: t_uint16, comment: "Port of the wireless I/O device" }
+    wirelessUnitID          : { type: t_uint8 , comment: "Unit ID the wireless I/O device" }
+    wirelessTimeoutSeconds  : { type: t_double, comment: "The timeout of a single command. Does not lead to an error (yet), because we still retry."}
+    wirelessRetriesSeconds  : { type: t_double, comment: "The total timeout of the retries. If no valid data is received after this time, then we consider the shutters in error." }
+    upperEstimatedOpenTime  : { type: t_double, comment: "Estimated opening time of the upper panel, in seconds"}
+    upperEstimatedCloseTime : { type: t_double, comment: "Estimated closing time of the upper panel, in seconds"}
+    lowerEstimatedOpenTime  : { type: t_double, comment: "Estimated opening time of the lower panel, in seconds"}
+    lowerEstimatedCloseTime : { type: t_double, comment: "Estimated closing time of the lower panel, in seconds"}
+    lowerOpenTimeout        : { type: t_double, comment: "Opening timeout of the lower panel, in seconds"}
+    lowerCloseTimeout       : { type: t_double, comment: "Closing timeout of the lower panel, in seconds"}
+    upperOpenTimeout        : { type: t_double, comment: "Opening timeout of the upper panel, in seconds"}
+    upperCloseTimeout       : { type: t_double, comment: "Closing timeout of the upper panel, in seconds"}
+    timeAfterStop           : { type: t_double, comment: "Time to wait after a stop command, in seconds"}
 
 ##########################################################################
 # DomeRotationConfig
@@ -74,7 +88,6 @@ MTCS_MAKE_STATEMACHINE THISLIB, "Dome",
     shutter:
       comment                   : "Shutter mechanism"
       arguments:
-        openingAllowed          : { comment: "True if opening is allowed by observer" }
         initializationStatus    : { comment: "Dome initialization status (initialized/initializing/...)" }
         operatorStatus          : { comment: "MTCS operator (observer/tech)" }
         operatingStatus         : { comment: "Dome operating status (manual/auto)" }
@@ -153,7 +166,6 @@ MTCS_MAKE_STATEMACHINE THISLIB, "Dome",
       isEnabled                 : -> self.statuses.poweredStatus.enabled
     # parts
     shutter:
-      openingAllowed            : -> OR(self.operatorStatus.tech, self.statuses.poweredStatus.enabled) # observer can only open if powered on
       initializationStatus      : -> self.statuses.initializationStatus
       operatorStatus            : -> self.operatorStatus
       operatingStatus           : -> self.statuses.operatingStatus
@@ -190,7 +202,6 @@ MTCS_MAKE_STATEMACHINE THISLIB, "Dome",
 MTCS_MAKE_STATEMACHINE THISLIB, "DomeShutter",
   typeOf: THISLIB.DomeParts.shutter
   variables:
-    openingAllowed          : { type: t_bool                            , comment: "True if opening is allowed by observer" }
     lowerOpenSignal         : { type: t_bool                            , comment: "False if the signal is not present OR if there is a communication error" }
     lowerClosedSignal       : { type: t_bool                            , comment: "False if the signal is not present OR if there is a communication error" }
     upperOpenSignal         : { type: t_bool                            , comment: "False if the signal is not present OR if there is a communication error" }
@@ -198,6 +209,9 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeShutter",
     wirelessTimeout         : { type: t_bool                            , comment: "True if the wireless communication to the shutter signals is timing out" }
     wirelessError           : { type: t_bool                            , comment: "True if the wireless communication to the shutter signals is in error (other than timeout)" }
     wirelessErrorId         : { type: t_uint32                          , comment: "The error id if wirelessError is true" }
+    wirelessData            : { type: t_uint16                          , comment: "The received wireless data" }
+    upperTimeRemaining      : { type: COMMONLIB.Duration                , comment: "Estimated time remaining to open/close the upper panel" }
+    lowerTimeRemaining      : { type: COMMONLIB.Duration                , comment: "Estimated time remaining to open/close the lower panel" }
   references:
     initializationStatus    : { type: COMMONLIB.InitializationStatus    , comment: "Dome initialization status (initialized/initializing/...)"}
     operatorStatus          : { type: COMMONLIB.OperatorStatus          , comment: "MTCS operator (observer/tech)"}
@@ -231,7 +245,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeShutter",
     reset:
       isEnabled             : -> TRUE
     open:
-      isEnabled             : -> AND(OR(self.openingAllowed, self.operatorStatus.tech), self.statuses.busyStatus.idle, self.initializationStatus.initialized)
+      isEnabled             : -> AND(self.statuses.busyStatus.idle, self.initializationStatus.initialized)
     lowerOpen:
       isEnabled             : -> self.processes.open.isEnabled # same as processes.open
     upperOpen:
