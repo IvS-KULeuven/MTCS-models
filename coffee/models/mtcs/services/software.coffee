@@ -265,14 +265,14 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Services",
         operatingStatus:
             superState                  : -> self.statuses.initializationStatus.initialized
         healthStatus:
-            isGood                      : -> AND(self.parts.timing.healthStatus.good, 
-                                                 self.parts.meteo.healthStatus.good,
-                                                 self.parts.west.healthStatus.good,
-                                                 self.parts.io.healthStatus.good)
-            hasWarning                  : -> OR(self.parts.timing.healthStatus.warning, 
-                                                self.parts.meteo.healthStatus.warning,
-                                                self.parts.west.healthStatus.warning,
-                                                self.parts.io.healthStatus.warning)
+            isGood                      : -> MTCS_SUMMARIZE_GOOD(self.parts.timing, 
+                                                                 self.parts.meteo,
+                                                                 self.parts.west,
+                                                                 self.parts.io)
+            hasWarning                  : -> MTCS_SUMMARIZE_WARN(self.parts.timing, 
+                                                                 self.parts.meteo,
+                                                                 self.parts.west,
+                                                                 self.parts.io)
         busyStatus:
             isBusy                      : -> self.statuses.initializationStatus.initializing
         configManager:
