@@ -761,19 +761,19 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesWest",
         bus:
             isEnabled               : -> AND(self.operatorStatus.tech, self.statuses.operatingStatus.manual)
         domeTemperature:
-            isEnabled               : -> self.bus.isEnabled
+            isEnabled               : -> self.parts.bus.isEnabled
             unit                    : -> COMMONLIB.Units.DEGREES_CELSIUS
             config                  : -> self.config.domeTemperature
         firstFloorTemperature:
-            isEnabled               : -> self.bus.isEnabled
+            isEnabled               : -> self.parts.bus.isEnabled
             unit                    : -> COMMONLIB.Units.DEGREES_CELSIUS
             config                  : -> self.config.firstFloorTemperature
         pumpsRoomTemperature:
-            isEnabled               : -> self.bus.isEnabled
+            isEnabled               : -> self.parts.bus.isEnabled
             unit                    : -> COMMONLIB.Units.DEGREES_CELSIUS
             config                  : -> self.config.pumpsRoomTemperature
         oilHeatExchangerTemperature:
-            isEnabled               : -> self.bus.isEnabled
+            isEnabled               : -> self.parts.bus.isEnabled
             unit                    : -> COMMONLIB.Units.DEGREES_CELSIUS
             config                  : -> self.config.oilHeatExchangerTemperature
 
