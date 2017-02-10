@@ -1984,11 +1984,11 @@ MTCS_MAKE_CONFIG THISLIB, "InstrumentConfig",
 MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusReadCoilProcess",
     extends: THISLIB.BaseProcess
     arguments:
-        unitID       : { type: t_uint8 , comment: "Modbus station address (1..247)"}
+        unitID       : { type: t_uint8  , comment: "Modbus station address (1..247)"}
         address      : { type: t_uint16 , comment: "Modbus data address"}
     variables:
         value        : { type: t_bool, comment: "Value of the coil" }
-        errorId      : { type: t_uint16, comment: "Error Id. Modbus error code" }
+        errorId      : { type: t_int16, comment: "Error Id. Modbus error code" }
 
 ########################################################################################################################
 # ModbusRTUBusWriteCoilProcess
@@ -1996,11 +1996,11 @@ MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusReadCoilProcess",
 MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusWriteCoilProcess",
     extends: THISLIB.BaseProcess
     arguments:
-        unitID       : { type: t_uint8 , comment: "Modbus station address (1..247)"}
+        unitID       : { type: t_uint8  , comment: "Modbus station address (1..247)"}
         address      : { type: t_uint16 , comment: "Modbus data address"}
-        value        : { type: t_bool, comment: "Value to write on the coil" }
+        value        : { type: t_bool   , comment: "Value to write on the coil" }
     variables:
-        errorId      : { type: t_uint8, comment: "Error Id. Modbus error code" }
+        errorId      : { type: t_int16  , comment: "Error Id. Modbus error code" }
 
 ########################################################################################################################
 # ModbusRTUBusReadRegisterProcess
@@ -2008,11 +2008,11 @@ MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusWriteCoilProcess",
 MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusReadRegisterProcess",
     extends: THISLIB.BaseProcess
     arguments:
-        unitID       : { type: t_uint8 , comment: "Modbus station address (1..247)"}
+        unitID       : { type: t_uint8  , comment: "Modbus station address (1..247)"}
         address      : { type: t_uint16 , comment: "Modbus data address"}
     variables:
         value        : { type: t_int16, comment: "Value of the register" }
-        errorId      : { type: t_uint8, comment: "Error Id. Modbus error code" }
+        errorId      : { type: t_int16, comment: "Error Id. Modbus error code" }
 
 ########################################################################################################################
 # ModbusRTUBusWriteRegisterProcess
@@ -2020,11 +2020,11 @@ MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusReadRegisterProcess",
 MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusWriteRegisterProcess",
     extends: THISLIB.BaseProcess
     arguments:
-        unitID       : { type: t_uint8 , comment: "Modbus station address (1..247)"}
+        unitID       : { type: t_uint8  , comment: "Modbus station address (1..247)"}
         address      : { type: t_uint16 , comment: "Modbus data address"}
-        value        : { type: t_int16, comment: "Value to write on the register" }
+        value        : { type: t_int16  , comment: "Value to write on the register" }
     variables:
-        errorId      : { type: t_uint8, comment: "Error Id. Modbus error code" }
+        errorId      : { type: t_int16, comment: "Error Id. Modbus error code" }
         
 ########################################################################################################################
 # ModbusRTUBus
@@ -2032,6 +2032,8 @@ MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusWriteRegisterProcess",
 MTCS_MAKE_STATEMACHINE THISLIB, "ModbusRTUBus",
     variables_hidden:
         isEnabled       : { type: t_bool , comment: "Is control enabled?" }
+    variables:
+        retries         : { type: t_int16   , initial: int(3),  comment: "Number of retries for a succesfull process" }
     processes:
         readCoil       : { type: THISLIB.ModbusRTUBusReadCoilProcess, comment: "Read coil" }
         writeCoil      : { type: THISLIB.ModbusRTUBusWriteCoilProcess, comment: "Write coil" }

@@ -163,6 +163,61 @@ MTCS_MAKE_CONFIG THISLIB, "ServicesMeteoConfig",
             comment: "Config for the 3.5 V reference voltage"
             expand: false
 
+
+
+
+########################################################################################################################
+# ServicesWestTemperatureTimeConfig
+########################################################################################################################
+
+MTCS_MAKE_CONFIG THISLIB, "ServicesWestTemperatureTimeConfig",
+    items:
+        enable:
+            type: t_bool
+            comment: "Enable this time (TRUE) or not (FALSE)"
+        hour:
+            type: t_double
+            comment: "The time to change the setpoint, as decimal hour (e.g. 9.5 = 9:30 am)"
+        offset:
+            type: t_double
+            comment: "Setpoint = air temperature of meteo station + this offset (in degrees celsius)"
+
+
+########################################################################################################################
+# ServicesWestTemperatureUpdateConfig
+########################################################################################################################
+
+MTCS_MAKE_CONFIG THISLIB, "ServicesWestTemperatureUpdateConfig",
+    items:
+        time0: { type: THISLIB.ServicesWestTemperatureTimeConfig, comment: "Time config 0" }
+        time1: { type: THISLIB.ServicesWestTemperatureTimeConfig, comment: "Time config 1" }
+        time2: { type: THISLIB.ServicesWestTemperatureTimeConfig, comment: "Time config 2" }
+        time3: { type: THISLIB.ServicesWestTemperatureTimeConfig, comment: "Time config 3" }
+        time4: { type: THISLIB.ServicesWestTemperatureTimeConfig, comment: "Time config 4" }
+
+
+########################################################################################################################
+# ServicesWestControllerConfig
+########################################################################################################################
+
+MTCS_MAKE_CONFIG THISLIB, "ServicesWestControllerConfig",
+    items:
+        address:
+            type: t_uint8
+            comment: "The address of the controller"
+        measurement:
+            type: COMMONLIB.MeasurementConfig
+            comment: "The measurement config"
+        update:
+            type: t_bool
+            comment: "True to automatically update the setpoint"
+        updateMinimumSetpoint:
+            type: t_double
+            comment: "Minimum setpoint when the PLC updates the value"
+        warningMessage:
+            type: t_string
+            comment: "A warning message (empty = not shown)"
+
 ########################################################################################################################
 # ServicesWestConfig
 ########################################################################################################################
@@ -171,7 +226,22 @@ MTCS_MAKE_CONFIG THISLIB, "ServicesWestConfig",
     items:
         pollingInterval :
             type: t_double
-            comment: "Time between West reads in seconds"
+            comment: "Time between bus reads in seconds"
+        domeTemperature:
+            type: THISLIB.ServicesWestControllerConfig
+            comment: "The address of the Dome temperature controller"
+        firstFloorTemperature:
+            type: THISLIB.ServicesWestControllerConfig
+            comment: "The address of the first floor temperature controller"
+        pumpsRoomTemperature:
+            type: THISLIB.ServicesWestControllerConfig
+            comment: "The address of the pumps room temperature controller"
+        oilHeatExchangerTemperature:
+            type: THISLIB.ServicesWestControllerConfig
+            comment: "The address of the oil heat exchanger temperature controller"
+        temperatureUpdate:
+            type: THISLIB.ServicesWestTemperatureUpdateConfig
+            comment: "The config for the temperature setpoint"
 
 
 
@@ -203,6 +273,7 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Services",
         editableConfig                  : { type: THISLIB.ServicesConfig        , comment: "Editable configuration of the Services subsystem", expand: false }
     references:
         operatorStatus                  : { type: COMMONLIB.OperatorStatus      , comment: "Shared operator status" }
+        domeApertureStatus              : { type: COMMONLIB.ApertureStatus      , comment: "Is the dome open or closed?", expand: false }
     variables_read_only:
         config                          : { type: THISLIB.ServicesConfig        , comment: "Active configuration of the Services subsystem" }
     parts:
@@ -220,6 +291,7 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Services",
             arguments:
                 config                  : {}
             attributes:
+                airTemperature          : {}
                 statuses:
                     attributes:
                         healthStatus    : { type: COMMONLIB.HealthStatus }
@@ -227,7 +299,9 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Services",
             comment                     : "West service"
             arguments:
                 operatorStatus          : {}
-                config                  : {}           
+                config                  : {}
+                airTemperature          : {}
+                domeApertureStatus      : {}
             attributes:
                 statuses:
                     attributes:
@@ -285,6 +359,8 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Services",
         west:
             operatorStatus              : -> self.operatorStatus
             config                      : -> self.config.west
+            airTemperature              : -> self.parts.meteo.airTemperature
+            domeApertureStatus          : -> self.domeApertureStatus
 
 
 ########################################################################################################################
@@ -609,14 +685,46 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesMeteo",
                                                 self.referenceVoltage
                                         )
 
+
+
+
 ########################################################################################################################
 # ServicesWestController
 ########################################################################################################################
-#MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesWestController",
-#    references:
-#        config: { type: THISLIB.ServicesWestControllerConfig, comment: "A small config only for a single WEST controller" }
-#    variables:
-#        isPolling : {}
+MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesWestController",
+    variables:
+        isEnabled       : { type: t_bool, comment: "Are the processes enabled?" }
+        unit            : { type: COMMONLIB.Units }
+    variables_read_only:
+        invalidData     : { type: t_bool                 , comment: "True if there is invalid data"}
+        processValue    : { type: COMMONLIB.QuantityValue, comment: "The process value" }
+        outputPower     : { type: COMMONLIB.QuantityValue, comment: "The output power" }
+        setpoint        : { type: COMMONLIB.QuantityValue, comment: "The setpoint" }
+    references:
+        config          : { type: THISLIB.ServicesWestControllerConfig, comment: "A small config only for a single WEST controller" }
+        bus             : { type: COMMONLIB.ModbusRTUBus         , comment: "The shared Modbus RTU bus" }
+    processes:
+        update          : { type: COMMONLIB.Process, comment: "Read the process value"}
+        writeSetpoint   : { type: COMMONLIB.ChangeSetpointProcess, comment: "Write the setpoint"}
+    statuses:
+        healthStatus        : { type: COMMONLIB.HealthStatus        , comment: "Is the data valid and within range?" }
+        alarmStatus         : { type: COMMONLIB.HiHiLoLoAlarmStatus , comment: "Alarm status"}
+    calls:
+        alarmStatus:
+            superState   : -> self.config.measurement.enabled
+            config       : -> self.config.measurement.alarms
+            value        : -> self.processValue.value
+        healthStatus:
+            superState   : -> self.config.measurement.enabled
+            isGood       : -> NOT( OR(self.invalidData,
+                                      self.statuses.alarmStatus.hiHi,
+                                      self.statuses.alarmStatus.loLo))
+            hasWarning   : -> OR( self.statuses.alarmStatus.hi,
+                                  self.statuses.alarmStatus.lo )
+        update:
+            isEnabled:  -> self.isEnabled
+        writeSetpoint:
+            isEnabled:  -> self.isEnabled
 
 
 
@@ -629,17 +737,19 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesWest",
     variables:
         {}
     references:
-        operatorStatus              : { type: COMMONLIB.OperatorStatus    , comment: "Shared operator status" }
-        config                      : { type: THISLIB.ServicesWestConfig  , comment: "The config" }
+        operatorStatus              : { type: COMMONLIB.OperatorStatus          , comment: "Shared operator status" }
+        config                      : { type: THISLIB.ServicesWestConfig        , comment: "The config" }
+        airTemperature              : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Air temperature" }
+        domeApertureStatus          : { type: COMMONLIB.ApertureStatus      , comment: "Is the dome open or closed?", expand: false }
     statuses:
         healthStatus                : { type: COMMONLIB.HealthStatus      , comment: "Are the WESTs in healthy state (good) or not (bad)" }
         operatingStatus             : { type: COMMONLIB.OperatingStatus   , comment: "Are the WESTs being polled (auto) or not (manual)?" }
     parts:
-        bus                         : { type: COMMONLIB.ModbusRTUBus      , comment: "The shared Modbus RTU bus" }
-        # domeTemperature             : { type: THISLIB.ServicesWestController , comment: "The West controller at the dome to control the temperature " }
-        # firstFloorTemperature       : { type: THISLIB.ServicesWestController , comment: "The West controller at the first floor to control the temperature" }
-        # pumpsRoomTemperature        : { type: THISLIB.ServicesWestController , comment: "The West controller at the pumps room to control the temperature" }
-        # oilHeatExchangerTemperature : { type: THISLIB.ServicesWestController , comment: "The West controller at the heat exchanger to control the oil temperature" }
+        bus                         : { type: COMMONLIB.ModbusRTUBus         , comment: "The shared Modbus RTU bus" }
+        domeTemperature             : { type: THISLIB.ServicesWestController , comment: "The West controller at the dome to control the temperature " }
+        firstFloorTemperature       : { type: THISLIB.ServicesWestController , comment: "The West controller at the first floor to control the temperature" }
+        pumpsRoomTemperature        : { type: THISLIB.ServicesWestController , comment: "The West controller at the pumps room to control the temperature" }
+        oilHeatExchangerTemperature : { type: THISLIB.ServicesWestController , comment: "The West controller at the heat exchanger to control the oil temperature" }
     processes:
         changeOperatingState        : { type: COMMONLIB.ChangeOperatingStateProcess   , comment: "Change the operating state (e.g. AUTO, MANUAL, ...)" }
     calls:
@@ -648,16 +758,36 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesWest",
         changeOperatingState:
             isEnabled               : -> self.operatorStatus.tech
         healthStatus:
-            isGood                  : -> TRUE # MTCS_SUMMARIZE_GOOD(self.parts.domeTemperature,
-                                              #                     self.parts.firstFloorTemperature,
-                                              #                     self.parts.pumpsRoomTemperature,
-                                              #                     self.parts.oilHeatExchangerTemperature)
-            hasWarning              : -> FALSE # MTCS_SUMMARIZE_WARN(self.parts.domeTemperature,
-                                              #                     self.parts.firstFloorTemperature,
-                                              #                     self.parts.pumpsRoomTemperature,
-                                              #                     self.parts.oilHeatExchangerTemperature)
+            isGood                  : -> MTCS_SUMMARIZE_GOOD(self.parts.domeTemperature,
+                                                             self.parts.firstFloorTemperature,
+                                                             self.parts.pumpsRoomTemperature,
+                                                             self.parts.oilHeatExchangerTemperature)
+            hasWarning              : -> MTCS_SUMMARIZE_WARN(self.parts.domeTemperature,
+                                                             self.parts.firstFloorTemperature,
+                                                             self.parts.pumpsRoomTemperature,
+                                                             self.parts.oilHeatExchangerTemperature)
         bus:
             isEnabled               : -> AND(self.operatorStatus.tech, self.statuses.operatingStatus.manual)
+        domeTemperature:
+            isEnabled               : -> self.parts.bus.isEnabled
+            unit                    : -> COMMONLIB.Units.DEGREES_CELSIUS
+            config                  : -> self.config.domeTemperature
+            bus                     : -> self.parts.bus
+        firstFloorTemperature:
+            isEnabled               : -> self.parts.bus.isEnabled
+            unit                    : -> COMMONLIB.Units.DEGREES_CELSIUS
+            config                  : -> self.config.firstFloorTemperature
+            bus                     : -> self.parts.bus
+        pumpsRoomTemperature:
+            isEnabled               : -> self.parts.bus.isEnabled
+            unit                    : -> COMMONLIB.Units.DEGREES_CELSIUS
+            config                  : -> self.config.pumpsRoomTemperature
+            bus                     : -> self.parts.bus
+        oilHeatExchangerTemperature:
+            isEnabled               : -> self.parts.bus.isEnabled
+            unit                    : -> COMMONLIB.Units.DEGREES_CELSIUS
+            config                  : -> self.config.oilHeatExchangerTemperature
+            bus                     : -> self.parts.bus
 
 
 ########################################################################################################################

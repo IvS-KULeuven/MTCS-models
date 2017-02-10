@@ -269,12 +269,15 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeShutter",
       isEnabled             : -> self.operatorStatus.tech
     # statuses
     lowerApertureStatus:
+      superState            : -> NOT(OR(self.wirelessTimeout,self.wirelessError))
       isOpen                : -> self.lowerOpenSignal
       isClosed              : -> self.lowerClosedSignal
     upperApertureStatus:
+      superState            : -> NOT(OR(self.wirelessTimeout,self.wirelessError))
       isOpen                : -> self.upperOpenSignal
       isClosed              : -> self.upperClosedSignal
     apertureStatus:
+      superState            : -> NOT(OR(self.wirelessTimeout,self.wirelessError))
       isOpen                : -> AND(self.statuses.lowerApertureStatus.open     , self.statuses.upperApertureStatus.open )
       isClosed              : -> AND(self.statuses.lowerApertureStatus.closed   , self.statuses.upperApertureStatus.closed )
     healthStatus:
