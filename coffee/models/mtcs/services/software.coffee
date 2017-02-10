@@ -733,6 +733,7 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesWest",
         operatorStatus              : { type: COMMONLIB.OperatorStatus          , comment: "Shared operator status" }
         config                      : { type: THISLIB.ServicesWestConfig        , comment: "The config" }
         airTemperature              : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Air temperature" }
+        domeApertureStatus          : { type: COMMONLIB.ApertureStatus      , comment: "Is the dome open or closed?", expand: false }
     statuses:
         healthStatus                : { type: COMMONLIB.HealthStatus      , comment: "Are the WESTs in healthy state (good) or not (bad)" }
         operatingStatus             : { type: COMMONLIB.OperatingStatus   , comment: "Are the WESTs being polled (auto) or not (manual)?" }
