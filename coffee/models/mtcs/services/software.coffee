@@ -696,6 +696,7 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesWestController",
         setpoint        : { type: COMMONLIB.QuantityValue, comment: "The setpoint" }
     references:
         config          : { type: THISLIB.ServicesWestControllerConfig, comment: "A small config only for a single WEST controller" }
+        bus             : { type: COMMONLIB.ModbusRTUBus         , comment: "The shared Modbus RTU bus" }
     processes:
         update          : { type: COMMONLIB.Process, comment: "Read the process value"}
         writeSetpoint   : { type: COMMONLIB.ChangeSetpointProcess, comment: "Write the setpoint"}
@@ -765,18 +766,22 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesWest",
             isEnabled               : -> self.parts.bus.isEnabled
             unit                    : -> COMMONLIB.Units.DEGREES_CELSIUS
             config                  : -> self.config.domeTemperature
+            bus                     : -> self.parts.bus
         firstFloorTemperature:
             isEnabled               : -> self.parts.bus.isEnabled
             unit                    : -> COMMONLIB.Units.DEGREES_CELSIUS
             config                  : -> self.config.firstFloorTemperature
+            bus                     : -> self.parts.bus
         pumpsRoomTemperature:
             isEnabled               : -> self.parts.bus.isEnabled
             unit                    : -> COMMONLIB.Units.DEGREES_CELSIUS
             config                  : -> self.config.pumpsRoomTemperature
+            bus                     : -> self.parts.bus
         oilHeatExchangerTemperature:
             isEnabled               : -> self.parts.bus.isEnabled
             unit                    : -> COMMONLIB.Units.DEGREES_CELSIUS
             config                  : -> self.config.oilHeatExchangerTemperature
+            bus                     : -> self.parts.bus
 
 
 ########################################################################################################################
