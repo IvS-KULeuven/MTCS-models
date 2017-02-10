@@ -211,6 +211,12 @@ MTCS_MAKE_CONFIG THISLIB, "ServicesWestControllerConfig",
         update:
             type: t_bool
             comment: "True to automatically update the setpoint"
+        updateMinimumSetpoint:
+            type: t_double
+            comment: "Minimum setpoint when the PLC updates the value"
+        warningMessage:
+            type: t_string
+            comment: "A warning message (empty = not shown)"
 
 ########################################################################################################################
 # ServicesWestConfig
