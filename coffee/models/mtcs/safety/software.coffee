@@ -120,6 +120,17 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Safety",
                     attributes:
                         healthStatus    : { type: COMMONLIB.HealthStatus }
                         busyStatus      : { type: COMMONLIB.BusyStatus }
+        domeShutter:
+            comment                     : "Dome Shutter"
+            arguments:
+                activityStatus          : {}
+                emergencyStops          : {}
+            attributes:
+                statuses:
+                    attributes:
+                        healthStatus    : { type: COMMONLIB.HealthStatus }
+                        busyStatus      : { type: COMMONLIB.BusyStatus }
+
         io:
             comment                     : "I/O modules"
             attributes:
@@ -160,17 +171,20 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Safety",
                                                                  self.parts.hydraulics,
                                                                  self.parts.emergencyStops,
                                                                  self.parts.domeAccess,
-                                                                 self.parts.motionBlocking)
+                                                                 self.parts.motionBlocking,
+                                                                 self.parts.domeShutter)
             hasWarning                  : -> MTCS_SUMMARIZE_WARN(self.parts.io,
                                                                  self.parts.hydraulics,
                                                                  self.parts.emergencyStops,
                                                                  self.parts.domeAccess,
-                                                                 self.parts.motionBlocking )
+                                                                 self.parts.motionBlocking,
+                                                                 self.parts.domeShutter)
         busyStatus:
             isBusy                      : -> OR(self.statuses.initializationStatus.initializing,
                                                 self.parts.emergencyStops.statuses.busyStatus.busy,
                                                 self.parts.domeAccess.statuses.busyStatus.busy,
                                                 self.parts.hydraulics.statuses.busyStatus.busy,
+                                                self.parts.domeShutter.statuses.busyStatus.busy,
                                                 self.parts.motionBlocking.statuses.busyStatus.busy)
         configManager:
             isEnabled                   : -> self.operatorStatus.tech
@@ -186,7 +200,9 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Safety",
             hydraulics                  : -> self.parts.hydraulics
             emergencyStops              : -> self.parts.emergencyStops
             domeAccess                  : -> self.parts.domeAccess
-
+        domeShutter:
+            activityStatus              : -> self.activityStatus
+            emergencyStops              : -> self.parts.emergencyStops
 
 ########################################################################################################################
 # SafetyIO
@@ -576,6 +592,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "SafetyMotionBlocking",
         telescopeAzimuthReleaseOK   : { type: t_bool, address: "%I*"        , comment: "TRUE if the telescope azimuth axis is released" }
         telescopeElevationReleaseOK : { type: t_bool, address: "%I*"        , comment: "TRUE if the telescope elevation axis is released" }
         telescopeRotationReleaseOK  : { type: t_bool, address: "%I*"        , comment: "TRUE if the telescope rotation axes are released" }
+        domeRotationReleaseOK       : { type: t_bool, address: "%I*"        , comment: "TRUE if the dome rotation axis is released" }
         motionAllowed               : { type: t_bool, address: "%I*"        , comment: "TRUE if motion is allowed"}
     references:
         activityStatus              : { type: COMMONLIB.ActivityStatus      , comment: "Shared activity status"}
@@ -594,9 +611,51 @@ MTCS_MAKE_STATEMACHINE THISLIB, "SafetyMotionBlocking",
             isBusy              : -> self.processes.reset.statuses.busyStatus.busy
         healthStatus:
             isGood              : -> NOT( OR( self.groupComError, self.groupFbError, self.groupOutError ) )
-            hasWarning          : -> AND( OR(self.activityStatus.awake, self.activityStatus.moving), NOT( AND(self.telescopeAzimuthReleaseOK, self.telescopeElevationReleaseOK, self.telescopeRotationReleaseOK)))
+            hasWarning          : -> AND( OR(self.activityStatus.awake, self.activityStatus.moving), NOT( AND(self.telescopeAzimuthReleaseOK, self.telescopeElevationReleaseOK, self.telescopeRotationReleaseOK, self.domeRotationReleaseOK)))
         reset:
             isEnabled            : -> NOT( self.processes.reset.statuses.busyStatus.busy )
+
+
+########################################################################################################################
+# SafetyDomeShutter
+########################################################################################################################
+
+MTCS_MAKE_STATEMACHINE THISLIB, "SafetyDomeShutter",
+    typeOf                      : [ THISLIB.SafetyParts.domeShutter ]
+    variables:
+        # group variables
+        groupComError               : { type: t_bool, address: "%I*"        , comment: "TwinSAFE group communication error"}
+        groupFbError                : { type: t_bool, address: "%I*"        , comment: "TwinSAFE group function block error"}
+        groupOutError               : { type: t_bool, address: "%I*"        , comment: "TwinSAFE group output error"}
+        shutterAllowed              : { type: t_bool, address: "%I*"        , comment: "TRUE if dome shutter is allowed"}
+        lowerOpenOutput             : { type: t_bool, address: "%I*"        , comment: "Non safety open lower shutter command"}
+        lowerOpenSafeOutput         : { type: t_bool, address: "%I*"        , comment: "Safety open lower shutter command"}
+        lowerCloseOutput            : { type: t_bool, address: "%I*"        , comment: "Non safety close lower shutter command"}
+        lowerCloseSafeOutput        : { type: t_bool, address: "%I*"        , comment: "Safety close lower shutter command"}
+        upperOpenOutput             : { type: t_bool, address: "%I*"        , comment: "Non safety open upper shutter command"}
+        upperOpenSafeOutput         : { type: t_bool, address: "%I*"        , comment: "Safety open upper shutter command"}
+        upperCloseOutput            : { type: t_bool, address: "%I*"        , comment: "Non safety close upper shutter command"}
+        upperCloseSafeOutput        : { type: t_bool, address: "%I*"        , comment: "Safety close upper shutter command"}
+        pumpOnOutput                : { type: t_bool, address: "%I*"        , comment: "Non safety pump on command"}
+        pumpOnSafeOutput            : { type: t_bool, address: "%I*"        , comment: "Safety pump on command"}
+    references:
+        activityStatus              : { type: COMMONLIB.ActivityStatus      , comment: "Shared activity status"}
+        emergencyStops              : { type: THISLIB.SafetyEmergencyStops  , expand: false }
+    variables_read_only:
+        errorAcknowledge            : { type: t_bool, address: "%Q*"        , comment: "Output to restart the TwinSAFE group"}
+    statuses:
+        busyStatus                  : { type: COMMONLIB.BusyStatus          , comment: "Is the safety busy?"  }
+        healthStatus                : { type: COMMONLIB.HealthStatus        , comment: "Is everything unblocked? Good=unblocked, Bad=safe stopped"  }
+    processes:
+        reset                       : { type: COMMONLIB.Process             , comment: "Reset the errors (including the programmed ones and the TwinSAFE group ones)" }
+    calls:
+        busyStatus:
+            isBusy              : -> self.processes.reset.statuses.busyStatus.busy
+        healthStatus:
+            isGood              : -> NOT( OR( self.groupComError, self.groupFbError, self.groupOutError ) )
+        reset:
+            isEnabled            : -> NOT( self.processes.reset.statuses.busyStatus.busy )
+
 
 
 ########################################################################################################################

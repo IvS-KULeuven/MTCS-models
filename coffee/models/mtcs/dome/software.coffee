@@ -308,6 +308,13 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeShutter",
                                                       self.processes.lowerClose,
                                                       self.processes.upperOpen,
                                                       self.processes.upperClose )
+########################################################################################################################
+# DomeMoveProcess
+########################################################################################################################
+MTCS_MAKE_PROCESS THISLIB, "DomeMoveProcess",
+    extends: COMMONLIB.BaseProcess
+    arguments:
+        position     : { type: t_double, comment: "New absolute or relative position value in degrees" }
 
 
 ########################################################################################################################
@@ -341,6 +348,10 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeRotation",
   processes:
     reset                       : { type: COMMONLIB.Process                 , comment: "Reset errors" }
     stop                        : { type: COMMONLIB.Process                 , comment: "Stop the rotation" }
+    moveAbsolute                : { type: THISLIB.DomeMoveProcess           , comment: "Move absolute" }
+    moveRelative                : { type: THISLIB.DomeMoveProcess           , comment: "Move relative" }
+    powerOn                     : { type: COMMONLIB.Process                 , comment: "Power on master and slave" }
+    powerOff                    : { type: COMMONLIB.Process                 , comment: "Power off master and slave" }
   calls:
     reset:
       isEnabled                 : -> self.statuses.busyStatus.idle
