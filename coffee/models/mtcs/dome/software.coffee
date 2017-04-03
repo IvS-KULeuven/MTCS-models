@@ -27,7 +27,7 @@ THISLIB   = dome_soft.mtcs_dome
 
 ##########################################################################
 # DomeConfig
-###########################################################################
+##########################################################################
 
 MTCS_MAKE_CONFIG THISLIB, "DomeConfig",
   items:
@@ -38,7 +38,7 @@ MTCS_MAKE_CONFIG THISLIB, "DomeConfig",
 
 ##########################################################################
 # DomeShutterConfig
-###########################################################################
+##########################################################################
 
 MTCS_MAKE_CONFIG THISLIB, "DomeShutterConfig",
   typeOf: THISLIB.DomeConfig.shutter
@@ -61,7 +61,7 @@ MTCS_MAKE_CONFIG THISLIB, "DomeShutterConfig",
 
 ##########################################################################
 # DomeRotationConfig
-###########################################################################
+##########################################################################
 
 MTCS_MAKE_CONFIG THISLIB, "DomeRotationConfig",
   typeOf: THISLIB.DomeConfig.rotation
@@ -254,7 +254,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeShutter",
       isEnabled             : -> AND(self.statuses.busyStatus.idle, self.initializationStatus.initialized)
     lowerClose:
       isEnabled             : -> self.processes.close.isEnabled # same as processes.close
-    upperOpen:
+    upperClose:
       isEnabled             : -> self.processes.close.isEnabled # same as processes.close
     # relays
     pumpsRelay:
