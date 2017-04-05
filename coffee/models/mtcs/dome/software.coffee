@@ -9,10 +9,12 @@ require "ontoscript"
 # models
 REQUIRE "models/mtcs/common/software.coffee"
 REQUIRE "models/util/softwarefactories.coffee"
+REQUIRE "models/mtcs/safety/software.coffee"
 
 MODEL "http://www.mercator.iac.es/onto/models/mtcs/dome/software" : "dome_soft"
 
 dome_soft.IMPORT common_soft
+dome_soft.IMPORT safety_soft
 
 ##########################################################################
 # Define the containing PLC library
@@ -23,22 +25,56 @@ dome_soft.ADD MTCS_MAKE_LIB "mtcs_dome"
 # make aliases (with scope of this file only)
 COMMONLIB = common_soft.mtcs_common
 THISLIB   = dome_soft.mtcs_dome
+SAFETYLIB = safety_soft.mtcs_safety
 
 
 ##########################################################################
 # DomeConfig
-###########################################################################
+##########################################################################
 
 MTCS_MAKE_CONFIG THISLIB, "DomeConfig",
   items:
     shutter             : { comment: "The config of the shutter mechanism" }
     rotation            : { comment: "The config of the bottom panel set" }
     maxTrackingDistance : { comment: "The maximum distance between telescope and dome while tracking",  type: t_double }
+    trackingLoopTime    : { type: t_double, comment: "Loop time, in seconds, of the tracking." }
+    knownPositions      : { comment: "The known positions of the dome" }
+
+
+########################################################################################################################
+# DomeKnownPositionConfig
+########################################################################################################################
+MTCS_MAKE_CONFIG THISLIB, "DomeKnownPositionConfig",
+    items:
+        name:
+            type: t_string
+            comment: "The name of the position (e.g. 'PARK')"
+        position:
+            type: t_double
+            comment: "Azimuth in degrees"
+
+
+########################################################################################################################
+# DomeKnownPositionsConfig
+########################################################################################################################
+MTCS_MAKE_CONFIG THISLIB, "DomeKnownPositionsConfig",
+    typeOf: THISLIB.DomeConfig.knownPositions
+    items:
+        position0     : { type: THISLIB.DomeKnownPositionConfig, comment : "Known position 0"   , expand: false }
+        position1     : { type: THISLIB.DomeKnownPositionConfig, comment : "Known position 1"   , expand: false }
+        position2     : { type: THISLIB.DomeKnownPositionConfig, comment : "Known position 2"   , expand: false }
+        position3     : { type: THISLIB.DomeKnownPositionConfig, comment : "Known position 3"   , expand: false }
+        position4     : { type: THISLIB.DomeKnownPositionConfig, comment : "Known position 4"   , expand: false }
+        position5     : { type: THISLIB.DomeKnownPositionConfig, comment : "Known position 5"   , expand: false }
+        position6     : { type: THISLIB.DomeKnownPositionConfig, comment : "Known position 6"   , expand: false }
+        position7     : { type: THISLIB.DomeKnownPositionConfig, comment : "Known position 7"   , expand: false }
+        position8     : { type: THISLIB.DomeKnownPositionConfig, comment : "Known position 8"   , expand: false }
+        position9     : { type: THISLIB.DomeKnownPositionConfig, comment : "Known position 9"   , expand: false }
 
 
 ##########################################################################
 # DomeShutterConfig
-###########################################################################
+##########################################################################
 
 MTCS_MAKE_CONFIG THISLIB, "DomeShutterConfig",
   typeOf: THISLIB.DomeConfig.shutter
@@ -61,13 +97,30 @@ MTCS_MAKE_CONFIG THISLIB, "DomeShutterConfig",
 
 ##########################################################################
 # DomeRotationConfig
-###########################################################################
+##########################################################################
 
 MTCS_MAKE_CONFIG THISLIB, "DomeRotationConfig",
   typeOf: THISLIB.DomeConfig.rotation
   items:
-    maxMasterSlaveLag  : { type: t_double, comment: "Below this lag value (in degrees), the lag is considered not an error" }
+    maxMovingVelocity     : { type: t_double, comment: "Maximum velocity when moving absolute or relative, in degrees per second" }
+    maxMasterSlaveLag     : { type: t_double, comment: "Below this lag value (in degrees), the lag is considered not an error" }
+    torqueCoefficientV    : { type: t_double, comment: "Coefficient v in 'SlaveTorque = v * MasterVelo + a * MasterAcceleration" }
+    torqueCoefficientA    : { type: t_double, comment: "Coefficient a in 'SlaveTorque = v * MasterVelo + a * MasterAcceleration" }
+    homePosition          : { type: t_double, comment: "Azimuth position of the home sensor, in degrees" }
+    homingStage1Velocity  : { type: t_double, comment: "Velocity, in degrees per second, of the first homing stage" }
+    homingStage1MaxRange  : { type: t_double, comment: "Maximum position range, in degrees, of the first homing stage" }
+    homingStage2Velocity  : { type: t_double, comment: "Velocity, in degrees per second, of the second homing stage" }
+    homingStage2MaxRange  : { type: t_double, comment: "Maximum position range, in degrees, of the first homing stage" }
+    homingDoTwoStages     : { type: t_bool  , comment: "True for 2-stages homing, False for 1-stage homing." }
 
+
+########################################################################################################################
+# DomeMoveKnownPositionProcess
+########################################################################################################################
+MTCS_MAKE_PROCESS THISLIB, "DomeMoveKnownPositionProcess",
+    extends: COMMONLIB.BaseProcess
+    arguments:
+        name        : { type: t_string  , comment: "Name of the position to move to"}
 
 
 ########################################################################################################################
@@ -79,11 +132,16 @@ MTCS_MAKE_STATEMACHINE THISLIB, "Dome",
     editableConfig              : { type: THISLIB.DomeConfig                , comment: "Editable configuration of the cover" }
   references:
     operatorStatus              : { type: COMMONLIB.OperatorStatus          , comment: "Reference to the operator (observer/tech)"}
-    aziPos                      : { type: COMMONLIB.AngularPosition         , comment: "Actual azimuth position of the telescope Axes"}
+    activityStatus              : { type: COMMONLIB.ActivityStatus          , comment: "Shared activity status"}
+    aziTargetPos                : { type: COMMONLIB.AngularPosition         , comment: "Azimuth target position of the telescope Axes"}
+    safetyDomeShutter           : { type: SAFETYLIB.SafetyDomeShutter       , comment: "Reference to the dome shutter safety", expand: false }
+    safetyMotionBlocking        : { type: SAFETYLIB.SafetyMotionBlocking    , comment: "Reference to the motion blocking safety", expand: false }
+    safetyDomeAccess            : { type: SAFETYLIB.SafetyDomeAccess        , comment: "Reference to the dome access safety", expand: false }
   variables_read_only:
     config                      : { type: THISLIB.DomeConfig                , comment: "Active configuration of the cover" }
     isPoweredOffByPersonInDome  : { type: t_bool                            , comment: "True if the dome is powered off due to a person entering the dome" }
     isTracking                  : { type: t_bool                            , comment: "True if the dome is tracking the telescope" }
+    telescopeTargetDistance     : { type: COMMONLIB.AngularPosition         , comment: "Actual distance between telescope target and dome" }
   parts:
     shutter:
       comment                   : "Shutter mechanism"
@@ -91,6 +149,8 @@ MTCS_MAKE_STATEMACHINE THISLIB, "Dome",
         initializationStatus    : { comment: "Dome initialization status (initialized/initializing/...)" }
         operatorStatus          : { comment: "MTCS operator (observer/tech)" }
         operatingStatus         : { comment: "Dome operating status (manual/auto)" }
+        activityStatus          : { comment: "Shared activity status"}
+        safety                  : { comment: "The dome shutter safety" }
         config                  : { comment: "The shutter config" }
       attributes:
         statuses:
@@ -134,8 +194,10 @@ MTCS_MAKE_STATEMACHINE THISLIB, "Dome",
     powerOn                     : { type: COMMONLIB.Process                     , comment: "Power on the dome" }
     powerOff                    : { type: COMMONLIB.Process                     , comment: "Power off the dome" }
     syncWithAxes                : { type: COMMONLIB.Process                     , comment: "Synchronize the dome once with the axes" }
-    trackAxes                   : { type: COMMONLIB.Process                     , comment: "Start tracking the axes" }
+    startTracking               : { type: COMMONLIB.Process                     , comment: "Start tracking the axes" }
+    stopTracking                : { type: COMMONLIB.Process                     , comment: "Stop tracking the axes" }
     stop                        : { type: COMMONLIB.Process                     , comment: "Stop the rotation movement and/or tracking" }
+    moveKnownPosition           : { type: THISLIB.DomeMoveKnownPositionProcess  , comment: "Move the dome to the given known position" }
   calls:
     # processes
     initialize:
@@ -162,13 +224,25 @@ MTCS_MAKE_STATEMACHINE THISLIB, "Dome",
                                          self.processes.powerOff.statuses.busyStatus.idle )
     stop:
       isEnabled                 : -> OR(self.statuses.busyStatus.busy, self.isTracking)
-    trackAxes:
-      isEnabled                 : -> self.statuses.poweredStatus.enabled
+    startTracking:
+      isEnabled                 : -> AND(self.statuses.poweredStatus.enabled, NOT(self.isTracking))
+    stopTracking:
+      isEnabled                 : -> self.isTracking
+    moveKnownPosition:
+        isEnabled               : -> AND(self.statuses.initializationStatus.initialized,
+                                         self.statuses.busyStatus.idle,
+                                         self.statuses.poweredStatus.enabled)
+    syncWithAxes:
+        isEnabled               : -> AND(self.statuses.initializationStatus.initialized,
+                                         self.statuses.busyStatus.idle,
+                                         self.statuses.poweredStatus.enabled)
     # parts
     shutter:
       initializationStatus      : -> self.statuses.initializationStatus
       operatorStatus            : -> self.operatorStatus
       operatingStatus           : -> self.statuses.operatingStatus
+      activityStatus            : -> self.activityStatus
+      safety                    : -> self.safetyDomeShutter
       config                    : -> self.config.shutter
     rotation:
       initializationStatus      : -> self.statuses.initializationStatus
@@ -212,10 +286,14 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeShutter",
     wirelessData            : { type: t_uint16                          , comment: "The received wireless data" }
     upperTimeRemaining      : { type: COMMONLIB.Duration                , comment: "Estimated time remaining to open/close the upper panel" }
     lowerTimeRemaining      : { type: COMMONLIB.Duration                , comment: "Estimated time remaining to open/close the lower panel" }
+    isLowerMonitored        : { type: t_bool                            , comment: "TRUE if the lower shutter panel is being monitored" }
+    noOfLowerAutoClosings   : { type: t_int16                           , comment: "The number of times that the lower panel has been closed automatically, by monitoring" }
   references:
     initializationStatus    : { type: COMMONLIB.InitializationStatus    , comment: "Dome initialization status (initialized/initializing/...)"}
     operatorStatus          : { type: COMMONLIB.OperatorStatus          , comment: "MTCS operator (observer/tech)"}
     operatingStatus         : { type: COMMONLIB.OperatingStatus         , comment: "Dome operating status (manual/auto)"}
+    activityStatus          : { type: COMMONLIB.ActivityStatus          , comment: "Shared activity status"}
+    safety                  : { type: SAFETYLIB.SafetyDomeShutter       , comment: "The dome shutter safety", expand: false }
     config                  : { type: THISLIB.DomeShutterConfig         , comment: "The shutter config"}
   parts:
     pumpsRelay              : { type: COMMONLIB.SimpleRelay             , comment: "Relay to start the pumps motors" }
@@ -245,7 +323,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeShutter",
     reset:
       isEnabled             : -> TRUE
     open:
-      isEnabled             : -> AND(self.statuses.busyStatus.idle, self.initializationStatus.initialized)
+      isEnabled             : -> OR(self.operatorStatus.tech, AND(self.statuses.busyStatus.idle, self.initializationStatus.initialized, OR(self.activityStatus.awake, self.activityStatus.moving) ) )
     lowerOpen:
       isEnabled             : -> self.processes.open.isEnabled # same as processes.open
     upperOpen:
@@ -254,7 +332,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeShutter",
       isEnabled             : -> AND(self.statuses.busyStatus.idle, self.initializationStatus.initialized)
     lowerClose:
       isEnabled             : -> self.processes.close.isEnabled # same as processes.close
-    upperOpen:
+    upperClose:
       isEnabled             : -> self.processes.close.isEnabled # same as processes.close
     # relays
     pumpsRelay:
@@ -291,14 +369,17 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeShutter",
                                                         self.processes.lowerClose,
                                                         self.processes.upperOpen,
                                                         self.processes.upperClose ))
-      hasWarning            : -> MTCS_SUMMARIZE_WARN( self.processes.reset,
-                                                      self.processes.open,
-                                                      self.processes.close,
-                                                      self.processes.stop,
-                                                      self.processes.lowerOpen,
-                                                      self.processes.lowerClose,
-                                                      self.processes.upperOpen,
-                                                      self.processes.upperClose )
+      hasWarning            : -> OR(
+                                     MTCS_SUMMARIZE_WARN( self.processes.reset,
+                                                          self.processes.open,
+                                                          self.processes.close,
+                                                          self.processes.stop,
+                                                          self.processes.lowerOpen,
+                                                          self.processes.lowerClose,
+                                                          self.processes.upperOpen,
+                                                          self.processes.upperClose ),
+                                     AND(self.statuses.busyStatus.idle, self.statuses.lowerApertureStatus.partiallyOpen),
+                                     AND(self.statuses.busyStatus.idle, self.statuses.upperApertureStatus.partiallyOpen))
     busyStatus:
       isBusy                : -> MTCS_SUMMARIZE_BUSY( self.processes.reset,
                                                       self.processes.open,
@@ -326,12 +407,12 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeRotation",
   variables_read_only:
     actPos                      : { type: COMMONLIB.AngularPosition         , comment: "The actual position (same as parts.masterAxis!)", expand: false }
     actVelo                     : { type: COMMONLIB.AngularVelocity         , comment: "The actual velocity (same as parts.masterAxis!)", expand: false }
-    actAcc                      : { type: COMMONLIB.AngularAcceleration     , comment: "The actual acceleration (same as parts.masterAxis!)", expand: false }
     actTorqueMaster             : { type: COMMONLIB.Torque                  , comment: "The actual torque on the telescope axis by the master motor", expand: false }
     actTorqueSlave              : { type: COMMONLIB.Torque                  , comment: "The actual torque on the telescope axis by the slave motor", expand: false }
     masterSlaveLag              : { type: COMMONLIB.AngularPosition         , comment: "masterAxis.actPos - slaveAxis.actPos" }
-    masterSlaveLagError         : { type: t_bool                            , comment: "masterSlaveLag >= config.maxMasterSlaveLag" }
+    masterSlaveLagError         : { type: t_bool                            , comment: "(ABS(masterSlaveLag) >= config.maxMasterSlaveLag) AND isHomed AND poweredOn" }
     homingSensorSignal          : { type: t_bool                            , comment: "True = at home position"}
+    isHomed                     : { type: t_bool                            , comment: "True if homing was done" }
   references:
     initializationStatus        : { type: COMMONLIB.InitializationStatus    , comment: "Reference to the MTCS initialization status"}
     operatorStatus              : { type: COMMONLIB.OperatorStatus          , comment: "Reference to the MTCS operator status"}
@@ -350,6 +431,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeRotation",
     stop                        : { type: COMMONLIB.Process                 , comment: "Stop the rotation" }
     moveAbsolute                : { type: THISLIB.DomeMoveProcess           , comment: "Move absolute" }
     moveRelative                : { type: THISLIB.DomeMoveProcess           , comment: "Move relative" }
+    home                        : { type: COMMONLIB.Process                 , comment: "Perform a homing" }
     powerOn                     : { type: COMMONLIB.Process                 , comment: "Power on master and slave" }
     powerOff                    : { type: COMMONLIB.Process                 , comment: "Power off master and slave" }
   calls:
@@ -357,6 +439,16 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeRotation",
       isEnabled                 : -> self.statuses.busyStatus.idle
     stop:
       isEnabled                 : -> self.statuses.busyStatus.busy
+    moveAbsolute:
+      isEnabled                 : -> AND(self.statuses.busyStatus.idle, self.statuses.poweredStatus.enabled)
+    moveRelative:
+      isEnabled                 : -> self.processes.moveAbsolute.isEnabled # same as moveAbsolute
+    home:
+      isEnabled                 : -> self.processes.moveAbsolute.isEnabled # same as moveAbsolute
+    powerOn:
+      isEnabled                 : -> self.statuses.busyStatus.idle
+    powerOff:
+      isEnabled                 : -> self.statuses.busyStatus.idle
     # parts
     masterAxis:
       isEnabled                 : -> self.operatorStatus.tech
