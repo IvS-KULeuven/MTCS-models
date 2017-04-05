@@ -44,12 +44,14 @@ iec61131.ADD iec61131.FunctionBlock "MkFunctionBlock" : (args = {}) -> [
 root.PLC_FB = iec61131.MkFunctionBlock
 
 
-iec61131.ADD soft.Qualifier "MkPlcOpenAttribute" : (symbol,value) -> [
-    if symbol?
-        iec61131.hasSymbol symbol
+iec61131.ADD soft.Qualifier "MkPlcOpenAttribute" : (args = {}) -> [
+    CHECK_ARGS("MkPlcOpenAttribute", args, ["symbol", "value"])
 
-    if value?
-        expr.hasValue value
+    if args.symbol?
+        iec61131.hasSymbol args.symbol
+
+    if args.value?
+        expr.hasValue args.value
 ]
 root.PLC_OPEN_ATTRIBUTE = iec61131.MkPlcOpenAttribute
 
