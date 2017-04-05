@@ -333,6 +333,9 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
                 parts:
                     attributes:
                         hydraulics      : { type: SAFETYLIB.SafetyHydraulics, expand: false }
+                        domeShutter     : { type: SAFETYLIB.SafetyDomeShutter, expand: false }
+                        motionBlocking  : { type: SAFETYLIB.SafetyMotionBlocking, expand: false }
+                        domeAccess      : { type: SAFETYLIB.SafetyDomeAccess, expand: false }
                         io              : { type: SAFETYLIB.SafetyIO, expand: false }
                 statuses:
                     attributes:
@@ -358,6 +361,9 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
             expand: false
             attributes:
                 isTracking              : { type: t_bool }
+                target:
+                    attributes:
+                        aziPos          : { type: COMMONLIB.AngularPosition, expand: false }
                 parts:
                     attributes:
                         azi:
@@ -379,8 +385,12 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
             comment: "The dome"
             expand: false
             arguments:
-                operatorStatus          : { type: COMMONLIB.OperatorStatus, expand: false }
-                aziPos                  : { type: COMMONLIB.AngularPosition, expand: false }
+                operatorStatus          : { type: COMMONLIB.OperatorStatus          , expand: false }
+                activityStatus          : { type: COMMONLIB.ActivityStatus          , expand: false }
+                aziTargetPos            : { type: COMMONLIB.AngularPosition         , expand: false }
+                safetyDomeShutter       : { type: SAFETYLIB.SafetyDomeShutter       , expand: false }
+                safetyMotionBlocking    : { type: SAFETYLIB.SafetyMotionBlocking    , expand: false }
+                safetyDomeAccess        : { type: SAFETYLIB.SafetyDomeAccess        , expand: false }
             attributes:
                 isTracking              : { type: t_bool }
                 parts:
@@ -397,7 +407,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
                         busyStatus      : { type: COMMONLIB.BusyStatus }
                 processes:
                     attributes:
-                        trackAxes       : { type: COMMONLIB.Process }
+                        startTracking   : { type: COMMONLIB.Process }
         configManager:
             comment                     : "The config manager (to load/save/activate configuration data)"
             type                        : COMMONLIB.ConfigManager
@@ -444,7 +454,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
                                          self.parts.m3.statuses.busyStatus.idle)
         point:
             isEnabled           : -> AND(self.parts.axes.processes.point.statuses.enabledStatus.enabled,
-                                         self.parts.dome.processes.trackAxes.statuses.enabledStatus.enabled)
+                                         self.parts.dome.processes.startTracking.statuses.enabledStatus.enabled)
         shutdown:
             isEnabled           : -> self.statuses.operatorStatus.tech
         wakeUp:
@@ -484,7 +494,11 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
             safetyIO            : -> self.parts.safety.parts.io
         dome:
             operatorStatus      : -> self.statuses.operatorStatus
-            aziPos              : -> self.parts.axes.parts.azi.actPos
+            activityStatus      : -> self.statuses.activityStatus
+            aziTargetPos        : -> self.parts.axes.target.aziPos
+            safetyDomeShutter   : -> self.parts.safety.parts.domeShutter
+            safetyDomeAccess    : -> self.parts.safety.parts.domeAccess
+            safetyMotionBlocking: -> self.parts.safety.parts.motionBlocking
         configManager:
             isEnabled           : -> self.statuses.operatorStatus.tech
         activityStatus:

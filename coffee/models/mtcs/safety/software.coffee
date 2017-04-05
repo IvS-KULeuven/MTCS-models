@@ -378,7 +378,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "SafetyDomeAccessIO",
 
 ###################################################################################################
 # SafetyHydraulics
-########################################################################################################################
+###################################################################################################
 
 MTCS_MAKE_STATEMACHINE THISLIB, "SafetyHydraulics",
     typeOf                      : [ THISLIB.SafetyParts.hydraulics ]
@@ -628,15 +628,10 @@ MTCS_MAKE_STATEMACHINE THISLIB, "SafetyDomeShutter",
         groupFbError                : { type: t_bool, address: "%I*"        , comment: "TwinSAFE group function block error"}
         groupOutError               : { type: t_bool, address: "%I*"        , comment: "TwinSAFE group output error"}
         shutterAllowed              : { type: t_bool, address: "%I*"        , comment: "TRUE if dome shutter is allowed"}
-        lowerOpenOutput             : { type: t_bool, address: "%I*"        , comment: "Non safety open lower shutter command"}
         lowerOpenSafeOutput         : { type: t_bool, address: "%I*"        , comment: "Safety open lower shutter command"}
-        lowerCloseOutput            : { type: t_bool, address: "%I*"        , comment: "Non safety close lower shutter command"}
         lowerCloseSafeOutput        : { type: t_bool, address: "%I*"        , comment: "Safety close lower shutter command"}
-        upperOpenOutput             : { type: t_bool, address: "%I*"        , comment: "Non safety open upper shutter command"}
         upperOpenSafeOutput         : { type: t_bool, address: "%I*"        , comment: "Safety open upper shutter command"}
-        upperCloseOutput            : { type: t_bool, address: "%I*"        , comment: "Non safety close upper shutter command"}
         upperCloseSafeOutput        : { type: t_bool, address: "%I*"        , comment: "Safety close upper shutter command"}
-        pumpOnOutput                : { type: t_bool, address: "%I*"        , comment: "Non safety pump on command"}
         pumpOnSafeOutput            : { type: t_bool, address: "%I*"        , comment: "Safety pump on command"}
     references:
         activityStatus              : { type: COMMONLIB.ActivityStatus      , comment: "Shared activity status"}

@@ -968,6 +968,20 @@ MTCS_MAKE_PROCESS THISLIB, "McReadBoolParameter",
         parameterNumber : { type: t_int16   , comment: "Number of the parameter" }
     variables:
         value           : { type: t_bool  , comment: "Value that was read"}
+        
+        
+########################################################################################################################
+# McStartProbing
+########################################################################################################################
+MTCS_MAKE_PROCESS THISLIB, "McProbe",
+    extends: THISLIB.BaseMcProcess
+    arguments:
+        risingEdge       : { type: t_bool    , comment: "True to probe the rising edge, false to probe the falling edge" }
+        timeout          : { type: t_double  , comment: "Timeout, in seconds. After this timeout, probing is aborted. timeout <= 0 means endless probing." }
+    variables:
+        recordedPosition : { type: t_double  , comment: "Value that was probed"}
+
+
 
 ########################################################################################################################
 # BaseAxis
@@ -1007,6 +1021,8 @@ MTCS_MAKE_STATEMACHINE THISLIB, "BaseAxis",
         readBoolParameter   : { type: THISLIB.McReadBoolParameter   , comment: "Read a boolean parameter" }
         writeParameter      : { type: THISLIB.McWriteParameter      , comment: "Write a numerical parameter" }
         writeBoolParameter  : { type: THISLIB.McWriteBoolParameter  , comment: "Write a boolean parameter" }
+        probeStart          : { type: THISLIB.McProbe               , comment: "Start probing a hardware pulse, until a pulse is found" }
+        probeAbort          : { type: THISLIB.McProcess             , comment: "Stop probing even though the probe position is not found (yet)" }
     calls:
         busyStatus:
             isBusy                      : -> OR( self.processes.moveAbsolute.statuses.busyStatus.busy,
@@ -1024,7 +1040,8 @@ MTCS_MAKE_STATEMACHINE THISLIB, "BaseAxis",
                                                  self.processes.readParameter.statuses.busyStatus.busy,
                                                  self.processes.readBoolParameter.statuses.busyStatus.busy,
                                                  self.processes.writeParameter.statuses.busyStatus.busy,
-                                                 self.processes.writeBoolParameter.statuses.busyStatus.busy )
+                                                 self.processes.writeBoolParameter.statuses.busyStatus.busy,
+                                                 self.processes.probeAbort.statuses.busyStatus.busy )
         healthStatus:
             isGood                      : -> NOT(self.axis_ref.Status.Error)
         poweredStatus:
