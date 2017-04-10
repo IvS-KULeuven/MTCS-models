@@ -454,7 +454,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
                                          self.parts.m3.statuses.busyStatus.idle)
         point:
             isEnabled           : -> AND(self.parts.axes.processes.point.statuses.enabledStatus.enabled,
-                                         self.parts.dome.processes.startTracking.statuses.enabledStatus.enabled)
+                                         self.parts.dome.processes.syncWithAxes.statuses.enabledStatus.enabled)
         shutdown:
             isEnabled           : -> self.statuses.operatorStatus.tech
         wakeUp:

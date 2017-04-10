@@ -34,11 +34,12 @@ SAFETYLIB = safety_soft.mtcs_safety
 
 MTCS_MAKE_CONFIG THISLIB, "DomeConfig",
   items:
-    shutter             : { comment: "The config of the shutter mechanism" }
-    rotation            : { comment: "The config of the bottom panel set" }
-    maxTrackingDistance : { comment: "The maximum distance between telescope and dome while tracking",  type: t_double }
-    trackingLoopTime    : { type: t_double, comment: "Loop time, in seconds, of the tracking." }
-    knownPositions      : { comment: "The known positions of the dome" }
+    shutter                 : { comment: "The config of the shutter mechanism" }
+    rotation                : { comment: "The config of the bottom panel set" }
+    maxTrackingDistance     : { comment: "The maximum distance between telescope and dome while tracking",  type: t_double }
+    trackingLoopTime        : { type: t_double, comment: "Loop time, in seconds, of the tracking." }
+    knownPositions          : { comment: "The known positions of the dome" }
+    knownPositionTolerance  : { type: t_double  , comment: "Tolerance (in degrees) to determine if the dome is at a known position" 
 
 
 ########################################################################################################################
@@ -142,6 +143,8 @@ MTCS_MAKE_STATEMACHINE THISLIB, "Dome",
     isPoweredOffByPersonInDome  : { type: t_bool                            , comment: "True if the dome is powered off due to a person entering the dome" }
     isTracking                  : { type: t_bool                            , comment: "True if the dome is tracking the telescope" }
     telescopeTargetDistance     : { type: COMMONLIB.AngularPosition         , comment: "Actual distance between telescope target and dome" }
+    isAtKnownPosition           : { type: t_bool                            , comment: "True if the dome is at a known position" }
+    actualKnownPositionName     : { type: t_string                          , comment: "Name of the known position if isAtKnownPosition is True" }
   parts:
     shutter:
       comment                   : "Shutter mechanism"
