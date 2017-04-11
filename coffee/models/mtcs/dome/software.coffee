@@ -34,11 +34,12 @@ SAFETYLIB = safety_soft.mtcs_safety
 
 MTCS_MAKE_CONFIG THISLIB, "DomeConfig",
   items:
-    shutter             : { comment: "The config of the shutter mechanism" }
-    rotation            : { comment: "The config of the bottom panel set" }
-    maxTrackingDistance : { comment: "The maximum distance between telescope and dome while tracking",  type: t_double }
-    trackingLoopTime    : { type: t_double, comment: "Loop time, in seconds, of the tracking." }
-    knownPositions      : { comment: "The known positions of the dome" }
+    shutter                 : { comment: "The config of the shutter mechanism" }
+    rotation                : { comment: "The config of the bottom panel set" }
+    maxTrackingDistance     : { comment: "The maximum distance between telescope and dome while tracking",  type: t_double }
+    trackingLoopTime        : { type: t_double, comment: "Loop time, in seconds, of the tracking." }
+    knownPositions          : { comment: "The known positions of the dome" }
+    knownPositionTolerance  : { type: t_double  , comment: "Tolerance (in degrees) to determine if the dome is at a known position" }
 
 
 ########################################################################################################################
@@ -112,6 +113,8 @@ MTCS_MAKE_CONFIG THISLIB, "DomeRotationConfig",
     homingStage2Velocity  : { type: t_double, comment: "Velocity, in degrees per second, of the second homing stage" }
     homingStage2MaxRange  : { type: t_double, comment: "Maximum position range, in degrees, of the first homing stage" }
     homingDoTwoStages     : { type: t_bool  , comment: "True for 2-stages homing, False for 1-stage homing." }
+    quickStopDeceleration : { type: t_double, comment: "Quick stop deceleration, in degrees/sec2"}
+    quickStopJerk         : { type: t_double, comment: "Quick stop jerk, in degrees/sec3"}
 
 
 ########################################################################################################################
@@ -142,6 +145,8 @@ MTCS_MAKE_STATEMACHINE THISLIB, "Dome",
     isPoweredOffByPersonInDome  : { type: t_bool                            , comment: "True if the dome is powered off due to a person entering the dome" }
     isTracking                  : { type: t_bool                            , comment: "True if the dome is tracking the telescope" }
     telescopeTargetDistance     : { type: COMMONLIB.AngularPosition         , comment: "Actual distance between telescope target and dome" }
+    isAtKnownPosition           : { type: t_bool                            , comment: "True if the dome is at a known position" }
+    actualKnownPositionName     : { type: t_string                          , comment: "Name of the known position if isAtKnownPosition is True" }
   parts:
     shutter:
       comment                   : "Shutter mechanism"
@@ -211,8 +216,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "Dome",
       isEnabled                 : -> AND(self.operatorStatus.tech,
                                          self.statuses.initializationStatus.locked)
     changeOperatingState:
-      isEnabled                 : -> AND(self.statuses.busyStatus.idle,
-                                         self.statuses.initializationStatus.initialized)
+      isEnabled                 : -> FALSE # we currently don't use AUTO/MANUAL
     reset:
       isEnabled                 : -> AND(self.statuses.busyStatus.idle,
                                          self.statuses.initializationStatus.initialized)
@@ -493,50 +497,30 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeIO",
     slot1       : { type: COMMONLIB.EtherCatDevice , comment: "Slot 1" }
     slot2       : { type: COMMONLIB.EtherCatDevice , comment: "Slot 2" }
     slot3       : { type: COMMONLIB.EtherCatDevice , comment: "Slot 3" }
-    slot4       : { type: COMMONLIB.EtherCatDevice , comment: "Slot 4" }
-    slot5       : { type: COMMONLIB.EtherCatDevice , comment: "Slot 5" }
-    slot6       : { type: COMMONLIB.EtherCatDevice , comment: "Slot 6" }
-    slot7       : { type: COMMONLIB.EtherCatDevice , comment: "Slot 7" }
-    slot8       : { type: COMMONLIB.EtherCatDevice , comment: "Slot 8" }
+    drive       : { type: COMMONLIB.EtherCatDevice , comment: "Drive" }
   calls:
     coupler:
       id      : -> STRING("110A1") "id"
       typeId    : -> STRING("EK1101") "typeId"
     slot1:
-      id      : -> STRING("115A1") "id"
-      typeId    : -> STRING("EL2008") "typeId"
+      id      : -> STRING("111A0") "id"
+      typeId    : -> STRING("ES1008") "typeId"
     slot2:
-      id      : -> STRING("116A1") "id"
-      typeId    : -> STRING("EL4008") "typeId"
+      id      : -> STRING("112A0") "id"
+      typeId    : -> STRING("EL2904") "typeId"
     slot3:
-      id      : -> STRING("117A1") "id"
-      typeId    : -> STRING("EL1088") "typeId"
-    slot4:
-      id      : -> STRING("118A1") "id"
-      typeId    : -> STRING("EL5002") "typeId"
-    slot5:
-      id      : -> STRING("118A5") "id"
-      typeId    : -> STRING("EL5002") "typeId"
-    slot6:
-      id      : -> STRING("119A1") "id"
-      typeId    : -> STRING("EL5002") "typeId"
-    slot7:
-      id      : -> STRING("119A5") "id"
-      typeId    : -> STRING("EL5002") "typeId"
-    slot8:
-      id      : -> STRING("111A1") "id"
-      typeId    : -> STRING("EL2622") "typeId"
+      id      : -> STRING("112A5") "id"
+      typeId    : -> STRING("EL2904") "typeId"
+    drive:
+      id      : -> STRING("10U1") "id"
+      typeId    : -> STRING("AX5206") "typeId"
     healthStatus:
       isGood    : -> MTCS_SUMMARIZE_GOOD(
                           self.parts.coupler,
                           self.parts.slot1,
                           self.parts.slot2,
                           self.parts.slot3,
-                          self.parts.slot4,
-                          self.parts.slot5,
-                          self.parts.slot6,
-                          self.parts.slot7,
-                          self.parts.slot8 )
+                          self.parts.drive )
 
 
 ########################################################################################################################
