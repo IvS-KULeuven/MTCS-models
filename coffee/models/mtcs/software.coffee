@@ -75,35 +75,6 @@ MTCS_MAKE_CONFIG THISLIB, "MTCSInstrumentsConfig",
 
 
 ########################################################################################################################
-# MTCSParkPositionConfig
-########################################################################################################################
-MTCS_MAKE_CONFIG THISLIB, "MTCSParkPositionConfig",
-    items:
-        name    : { type: t_string, comment: "The name of the position (e.g. 'PARK')" }
-        axes    : { type: t_string, comment: "Name of the corresponding Axes position" }
-        doAxes  : { type: t_bool,   comment: "Change the Axes to the 'axes' position" }
-        m3      : { type: t_string, comment: "Name of the corresponding M3 position" }
-        doM3    : { type: t_bool,   comment: "Change M3 to the 'm3' position" }
-        dome    : { type: t_string, comment: "Name of the corresponding dome position" }
-        doDome  : { type: t_bool,   comment: "Change M3 to the 'm3' position" }
-
-########################################################################################################################
-# MTCSParkPositionsConfig
-########################################################################################################################
-MTCS_MAKE_CONFIG THISLIB, "MTCSParkPositionsConfig",
-    items:
-        position0     : { type: THISLIB.MTCSParkPositionConfig, comment : "Park position 0"   , expand: false }
-        position1     : { type: THISLIB.MTCSParkPositionConfig, comment : "Park position 1"   , expand: false }
-        position2     : { type: THISLIB.MTCSParkPositionConfig, comment : "Park position 2"   , expand: false }
-        position3     : { type: THISLIB.MTCSParkPositionConfig, comment : "Park position 3"   , expand: false }
-        position4     : { type: THISLIB.MTCSParkPositionConfig, comment : "Park position 4"   , expand: false }
-        position5     : { type: THISLIB.MTCSParkPositionConfig, comment : "Park position 5"   , expand: false }
-        position6     : { type: THISLIB.MTCSParkPositionConfig, comment : "Park position 6"   , expand: false }
-        position7     : { type: THISLIB.MTCSParkPositionConfig, comment : "Park position 7"   , expand: false }
-        position8     : { type: THISLIB.MTCSParkPositionConfig, comment : "Park position 8"   , expand: false }
-        position9     : { type: THISLIB.MTCSParkPositionConfig, comment : "Park position 9"   , expand: false }
-
-########################################################################################################################
 # MTCSEndOfNightStepConfig
 ########################################################################################################################
 MTCS_MAKE_CONFIG THISLIB, "MTCSEndOfNightStepConfig",
@@ -167,9 +138,6 @@ MTCS_MAKE_CONFIG THISLIB, "MTCSConfig",
             type: THISLIB.MTCSEndOfNightConfig
             comment: "Configure the instruments"
             expand: false
-        parkPositions:
-            type: THISLIB.MTCSParkPositionsConfig
-            comment: "Configure the park positions of the telescope (dome+telescope+m3+...)"
 
 
 ########################################################################################################################
@@ -180,14 +148,6 @@ MTCS_MAKE_PROCESS THISLIB, "MTCSChangeInstrumentProcess",
     arguments:
         name : { type: t_string, comment: "Name of the instrument" }
 
-
-########################################################################################################################
-# MTCSParkProcess
-########################################################################################################################
-MTCS_MAKE_PROCESS THISLIB, "MTCSParkProcess",
-    extends: COMMONLIB.BaseProcess
-    arguments:
-        name : { type: t_string, comment: "Name of the park position" }
 
 
 ########################################################################################################################
@@ -407,7 +367,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
                         busyStatus      : { type: COMMONLIB.BusyStatus }
                 processes:
                     attributes:
-                        startTracking   : { type: COMMONLIB.Process }
+                        syncWithAxes   : { type: COMMONLIB.Process }
         configManager:
             comment                     : "The config manager (to load/save/activate configuration data)"
             type                        : COMMONLIB.ConfigManager
@@ -431,7 +391,6 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
         stop                        : { type: COMMONLIB.Process                         , comment: "Stop the dome and telescope" }
         endOfNight                  : { type: COMMONLIB.Process                         , comment: "End of night" }
         changeInstrument            : { type: THISLIB.MTCSChangeInstrumentProcess       , comment: "Change the instrument" }
-        park                        : { type: THISLIB.MTCSParkProcess                   , comment: "Park the telescope (including Axes, Dome, M3, ...)" }
         point                       : { type: THISLIB.MTCSPointProcess                  , comment: "Point the telescope and dome to a new target" }
     calls:
         initialize:
@@ -448,10 +407,6 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
             isEnabled           : -> TRUE
         endOfNight:
             isEnabled           : -> TRUE
-        park:
-            isEnabled           : -> AND(self.parts.axes.statuses.busyStatus.idle,
-                                         self.parts.dome.statuses.busyStatus.idle,
-                                         self.parts.m3.statuses.busyStatus.idle)
         point:
             isEnabled           : -> AND(self.parts.axes.processes.point.statuses.enabledStatus.enabled,
                                          self.parts.dome.processes.syncWithAxes.statuses.enabledStatus.enabled)
@@ -495,7 +450,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
         dome:
             operatorStatus      : -> self.statuses.operatorStatus
             activityStatus      : -> self.statuses.activityStatus
-            aziTargetPos        : -> self.parts.axes.target.aziPos
+            aziTargetPos        : -> self.parts.axes.parts.azi.actPos
             safetyDomeShutter   : -> self.parts.safety.parts.domeShutter
             safetyDomeAccess    : -> self.parts.safety.parts.domeAccess
             safetyMotionBlocking: -> self.parts.safety.parts.motionBlocking
