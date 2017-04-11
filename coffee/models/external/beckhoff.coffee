@@ -208,12 +208,12 @@ beckhoff.ADD LIBRARY() "Tc2_MC2" : [
 ]
 
 
-beckhoff.ADD PLC_OPEN_ATTRIBUTE('OPC.UA.DA', '0') "OPC_UA_DEACTIVATE"
-beckhoff.ADD PLC_OPEN_ATTRIBUTE('OPC.UA.DA', '1') "OPC_UA_ACTIVATE"
-beckhoff.ADD PLC_OPEN_ATTRIBUTE('OPC.UA.DA.Access', '0') "OPC_UA_ACCESS"
-beckhoff.ADD PLC_OPEN_ATTRIBUTE('OPC.UA.DA.Access', '1') "OPC_UA_ACCESS_R"
-beckhoff.ADD PLC_OPEN_ATTRIBUTE('OPC.UA.DA.Access', '2') "OPC_UA_ACCESS_W"
-beckhoff.ADD PLC_OPEN_ATTRIBUTE('OPC.UA.DA.Access', '3') "OPC_UA_ACCESS_RW"
+beckhoff.ADD PLC_OPEN_ATTRIBUTE(symbol: 'OPC.UA.DA', value: '0') "OPC_UA_DEACTIVATE"
+beckhoff.ADD PLC_OPEN_ATTRIBUTE(symbol: 'OPC.UA.DA', value: '1') "OPC_UA_ACTIVATE"
+beckhoff.ADD PLC_OPEN_ATTRIBUTE(symbol: 'OPC.UA.DA.Access', value: '0') "OPC_UA_ACCESS"
+beckhoff.ADD PLC_OPEN_ATTRIBUTE(symbol: 'OPC.UA.DA.Access', value: '1') "OPC_UA_ACCESS_R"
+beckhoff.ADD PLC_OPEN_ATTRIBUTE(symbol: 'OPC.UA.DA.Access', value: '2') "OPC_UA_ACCESS_W"
+beckhoff.ADD PLC_OPEN_ATTRIBUTE(symbol: 'OPC.UA.DA.Access', value: '3') "OPC_UA_ACCESS_RW"
 
 
 
