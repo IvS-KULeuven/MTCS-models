@@ -171,6 +171,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "Dome",
         operatingStatus         : { comment: "Dome operating status (manual/auto)"}
         config                  : { comment: "The rotation config"}
       attributes:
+        isHomed                 : {type: t_bool}
         statuses:
           attributes:
             healthStatus        : { type: COMMONLIB.HealthStatus }
@@ -236,11 +237,13 @@ MTCS_MAKE_STATEMACHINE THISLIB, "Dome",
     moveKnownPosition:
         isEnabled               : -> AND(self.statuses.initializationStatus.initialized,
                                          self.statuses.busyStatus.idle,
-                                         self.statuses.poweredStatus.enabled)
+                                         self.statuses.poweredStatus.enabled,
+                                         self.parts.rotation.isHomed)
     syncWithAxes:
         isEnabled               : -> AND(self.statuses.initializationStatus.initialized,
                                          self.statuses.busyStatus.idle,
-                                         self.statuses.poweredStatus.enabled)
+                                         self.statuses.poweredStatus.enabled,
+                                         self.parts.rotation.isHomed)
     # parts
     shutter:
       initializationStatus      : -> self.statuses.initializationStatus
