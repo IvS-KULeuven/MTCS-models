@@ -292,6 +292,14 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeShutter",
     lowerTimeRemaining      : { type: COMMONLIB.Duration                , comment: "Estimated time remaining to open/close the lower panel" }
     isLowerMonitored        : { type: t_bool                            , comment: "TRUE if the lower shutter panel is being monitored" }
     noOfLowerAutoClosings   : { type: t_int16                           , comment: "The number of times that the lower panel has been closed automatically, by monitoring" }
+    
+    manualOpenUpper         : { type: t_bool          , address: "%I*"  , comment: "Manual operation: open upper switch" }
+    manualCloseUpper        : { type: t_bool          , address: "%I*"  , comment: "Manual operation: close upper switch" }
+    manualOpenLower         : { type: t_bool          , address: "%I*"  , comment: "Manual operation: open lower switch" }
+    manualCloseLower        : { type: t_bool          , address: "%I*"  , comment: "Manual operation: close lower switch" }
+    manualPumpOn            : { type: t_bool          , address: "%I*"  , comment: "Manual operation: pump ON" }
+    automaticOperation      : { type: t_bool          , address: "%I*"  , comment: "TRUE if switch is on Auto, FALSE if switch is Manual" }
+    
   references:
     initializationStatus    : { type: COMMONLIB.InitializationStatus    , comment: "Dome initialization status (initialized/initializing/...)"}
     operatorStatus          : { type: COMMONLIB.OperatorStatus          , comment: "MTCS operator (observer/tech)"}
@@ -471,7 +479,8 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeRotation",
                                                         self.parts.drive,
                                                         self.processes.reset,
                                                         self.processes.stop),
-                                    NOT(self.masterSlaveLagError))
+                                    NOT(self.masterSlaveLagError),
+                                    NOT(AND(NOT(self.isHomed), self.initializationStatus.initialized))
       hasWarning            : -> MTCS_SUMMARIZE_WARN(self.parts.masterAxis,
                                                      self.parts.slaveAxis,
                                                      self.parts.drive,

@@ -1088,6 +1088,10 @@ MTCS_MAKE_STATEMACHINE THISLIB, "BaseAxis",
             isEnabled                   : -> AND( self.isEnabled, self.statuses.busyStatus.idle )
         writeBoolParameter:
             isEnabled                   : -> AND( self.isEnabled, self.statuses.busyStatus.idle )
+        probeStart:
+            isEnabled                   : -> AND( self.isEnabled, self.statuses.busyStatus.idle )
+        probeAbort:
+            isEnabled                   : -> AND( self.isEnabled, self.statuses.busyStatus.idle )
 
 
 ########################################################################################################################
