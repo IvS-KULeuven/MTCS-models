@@ -103,18 +103,19 @@ MTCS_MAKE_CONFIG THISLIB, "DomeShutterConfig",
 MTCS_MAKE_CONFIG THISLIB, "DomeRotationConfig",
   typeOf: THISLIB.DomeConfig.rotation
   items:
-    maxMovingVelocity     : { type: t_double, comment: "Maximum velocity when moving absolute or relative, in degrees per second" }
-    maxMasterSlaveLag     : { type: t_double, comment: "Below this lag value (in degrees), the lag is considered not an error" }
-    torqueCoefficientV    : { type: t_double, comment: "Coefficient v in 'SlaveTorque = v * MasterVelo + a * MasterAcceleration" }
-    torqueCoefficientA    : { type: t_double, comment: "Coefficient a in 'SlaveTorque = v * MasterVelo + a * MasterAcceleration" }
-    homePosition          : { type: t_double, comment: "Azimuth position of the home sensor, in degrees" }
-    homingStage1Velocity  : { type: t_double, comment: "Velocity, in degrees per second, of the first homing stage" }
-    homingStage1MaxRange  : { type: t_double, comment: "Maximum position range, in degrees, of the first homing stage" }
-    homingStage2Velocity  : { type: t_double, comment: "Velocity, in degrees per second, of the second homing stage" }
-    homingStage2MaxRange  : { type: t_double, comment: "Maximum position range, in degrees, of the first homing stage" }
-    homingDoTwoStages     : { type: t_bool  , comment: "True for 2-stages homing, False for 1-stage homing." }
-    quickStopDeceleration : { type: t_double, comment: "Quick stop deceleration, in degrees/sec2"}
-    quickStopJerk         : { type: t_double, comment: "Quick stop jerk, in degrees/sec3"}
+    maxMovingVelocity             : { type: t_double, comment: "Maximum velocity when moving absolute or relative, in degrees per second" }
+    maxMasterSlaveLag             : { type: t_double, comment: "Below this lag value (in degrees), the lag is considered not an error" }
+    torqueCoefficientV            : { type: t_double, comment: "Coefficient v in 'SlaveTorque = v * MasterVelo + a * MasterAcceleration" }
+    torqueCoefficientA            : { type: t_double, comment: "Coefficient a in 'SlaveTorque = v * MasterVelo + a * MasterAcceleration" }
+    homePosition                  : { type: t_double, comment: "Azimuth position of the home sensor, in degrees" }
+    homingMoveOutOfSensorDistance : { type: t_double, comment: "If on the sensor, move this distance, in degrees" }
+    homingStage1Velocity          : { type: t_double, comment: "Velocity, in degrees per second, of the first homing stage" }
+    homingStage1Timeout           : { type: t_double, comment: "Timeout of the first homing stage, in seconds" }
+    homingStage2Velocity          : { type: t_double, comment: "Velocity, in degrees per second, of the second homing stage" }
+    homingStage2Timeout           : { type: t_double, comment: "Timeout of the second homing stage, in seconds" }
+    homingDoTwoStages             : { type: t_bool  , comment: "True for 2-stages homing, False for 1-stage homing." }
+    quickStopDeceleration         : { type: t_double, comment: "Quick stop deceleration, in degrees/sec2"}
+    quickStopJerk                 : { type: t_double, comment: "Quick stop jerk, in degrees/sec3"}
 
 
 ########################################################################################################################
@@ -292,6 +293,14 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeShutter",
     lowerTimeRemaining      : { type: COMMONLIB.Duration                , comment: "Estimated time remaining to open/close the lower panel" }
     isLowerMonitored        : { type: t_bool                            , comment: "TRUE if the lower shutter panel is being monitored" }
     noOfLowerAutoClosings   : { type: t_int16                           , comment: "The number of times that the lower panel has been closed automatically, by monitoring" }
+    
+    manualOpenUpper         : { type: t_bool          , address: "%I*"  , comment: "Manual operation: open upper switch" }
+    manualCloseUpper        : { type: t_bool          , address: "%I*"  , comment: "Manual operation: close upper switch" }
+    manualOpenLower         : { type: t_bool          , address: "%I*"  , comment: "Manual operation: open lower switch" }
+    manualCloseLower        : { type: t_bool          , address: "%I*"  , comment: "Manual operation: close lower switch" }
+    manualPumpOn            : { type: t_bool          , address: "%I*"  , comment: "Manual operation: pump ON" }
+    automaticOperation      : { type: t_bool          , address: "%I*"  , comment: "TRUE if switch is on Auto, FALSE if switch is Manual" }
+    
   references:
     initializationStatus    : { type: COMMONLIB.InitializationStatus    , comment: "Dome initialization status (initialized/initializing/...)"}
     operatorStatus          : { type: COMMONLIB.OperatorStatus          , comment: "MTCS operator (observer/tech)"}
@@ -471,7 +480,8 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeRotation",
                                                         self.parts.drive,
                                                         self.processes.reset,
                                                         self.processes.stop),
-                                    NOT(self.masterSlaveLagError))
+                                    NOT(self.masterSlaveLagError),
+                                    NOT(AND(NOT(self.isHomed), self.initializationStatus.initialized)))
       hasWarning            : -> MTCS_SUMMARIZE_WARN(self.parts.masterAxis,
                                                      self.parts.slaveAxis,
                                                      self.parts.drive,
