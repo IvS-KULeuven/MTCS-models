@@ -392,6 +392,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
         endOfNight                  : { type: COMMONLIB.Process                         , comment: "End of night" }
         changeInstrument            : { type: THISLIB.MTCSChangeInstrumentProcess       , comment: "Change the instrument" }
         point                       : { type: THISLIB.MTCSPointProcess                  , comment: "Point the telescope and dome to a new target" }
+        emergencyClose              : { type: COMMONLIB.Process                         , comment: "Close the dome and shutter asap" }
     calls:
         initialize:
             isEnabled           : -> NOT(self.statuses.initializationStatus.initializing)
@@ -420,6 +421,8 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
             isEnabled           : -> self.statuses.initializationStatus.initialized
         changeInstrument:
             isEnabled           : -> OR( self.statuses.initializationStatus.initialized, self.statuses.healthStatus.bad )
+        emergencyClose:
+            isEnabled           : -> TRUE  # too important, always enable
         cover:
             operatorStatus      : -> self.statuses.operatorStatus
             aziPos              : -> self.parts.axes.parts.azi.actPos
