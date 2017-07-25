@@ -171,6 +171,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "Dome",
         operatingStatus         : { comment: "Dome operating status (manual/auto)"}
         config                  : { comment: "The rotation config"}
       attributes:
+        isHomed                 : {type: t_bool}
         statuses:
           attributes:
             healthStatus        : { type: COMMONLIB.HealthStatus }
@@ -230,17 +231,21 @@ MTCS_MAKE_STATEMACHINE THISLIB, "Dome",
     stop:
       isEnabled                 : -> OR(self.statuses.busyStatus.busy, self.isTracking)
     startTracking:
-      isEnabled                 : -> AND(self.statuses.poweredStatus.enabled, NOT(self.isTracking))
+      isEnabled                 : -> AND(self.statuses.poweredStatus.enabled,
+                                         NOT(self.isTracking),
+                                         self.parts.rotation.isHomed)
     stopTracking:
       isEnabled                 : -> self.isTracking
     moveKnownPosition:
         isEnabled               : -> AND(self.statuses.initializationStatus.initialized,
                                          self.statuses.busyStatus.idle,
-                                         self.statuses.poweredStatus.enabled)
+                                         self.statuses.poweredStatus.enabled,
+                                         self.parts.rotation.isHomed)
     syncWithAxes:
         isEnabled               : -> AND(self.statuses.initializationStatus.initialized,
                                          self.statuses.busyStatus.idle,
-                                         self.statuses.poweredStatus.enabled)
+                                         self.statuses.poweredStatus.enabled,
+                                         self.parts.rotation.isHomed)
     # parts
     shutter:
       initializationStatus      : -> self.statuses.initializationStatus
@@ -266,8 +271,8 @@ MTCS_MAKE_STATEMACHINE THISLIB, "Dome",
                                                          self.parts.rotation,
                                                          self.parts.io)
       hasWarning                : -> MTCS_SUMMARIZE_WARN(self.parts.shutter,
-                                                         self.parts.rotation,
-                                                         self.parts.io)
+                                                           self.parts.rotation,
+                                                           self.parts.io)
     busyStatus:
       isBusy                    : -> MTCS_SUMMARIZE_BUSY(self.parts.shutter,
                                                          self.parts.rotation)
@@ -392,7 +397,8 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeShutter",
                                                           self.processes.upperOpen,
                                                           self.processes.upperClose ),
                                      AND(self.statuses.busyStatus.idle, self.statuses.lowerApertureStatus.partiallyOpen),
-                                     AND(self.statuses.busyStatus.idle, self.statuses.upperApertureStatus.partiallyOpen))
+                                     AND(self.statuses.busyStatus.idle, self.statuses.upperApertureStatus.partiallyOpen),
+                                     NOT(self.automaticOperation))
     busyStatus:
       isBusy                : -> MTCS_SUMMARIZE_BUSY( self.processes.reset,
                                                       self.processes.open,
