@@ -71,6 +71,9 @@ MTCS_MAKE_CONFIG THISLIB, "ServicesTimingConfig",
 
 MTCS_MAKE_CONFIG THISLIB, "ServicesMeteoConfig",
     items:
+        enableWeatherMonitoring:
+            type: t_bool
+            comment: "Enable weather monitoring and emergency closing"
         wetLimit:
             type: t_double
             comment: "Wet if (rainIntensity+hailIntrelaensity)>wetLimit"
