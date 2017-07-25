@@ -399,9 +399,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeShutter",
                                      AND(self.statuses.busyStatus.idle, self.statuses.lowerApertureStatus.partiallyOpen),
                                      AND(self.statuses.busyStatus.idle, self.statuses.upperApertureStatus.partiallyOpen),
                                      NOT(self.automaticOperation))
-
-
-busyStatus:
+    busyStatus:
       isBusy                : -> MTCS_SUMMARIZE_BUSY( self.processes.reset,
                                                       self.processes.open,
                                                       self.processes.close,
