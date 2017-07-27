@@ -229,7 +229,8 @@ MTCS_MAKE_STATEMACHINE THISLIB, "Dome",
       isEnabled                 : -> AND(self.statuses.initializationStatus.initialized,
                                          self.processes.powerOff.statuses.busyStatus.idle )
     stop:
-      isEnabled                 : -> OR(self.statuses.busyStatus.busy, self.isTracking)
+      isEnabled                 : -> OR(self.statuses.busyStatus.busy, self.isTracking, self.operatorStatus.tech)
+
     startTracking:
       isEnabled                 : -> AND(self.statuses.poweredStatus.enabled,
                                          NOT(self.isTracking),
@@ -457,7 +458,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeRotation",
     reset:
       isEnabled                 : -> self.statuses.busyStatus.idle
     stop:
-      isEnabled                 : -> self.statuses.busyStatus.busy
+      isEnabled                 : -> OR(self.statuses.busyStatus.busy, self.isTracking, self.operatorStatus.tech)
     moveAbsolute:
       isEnabled                 : -> AND(self.statuses.busyStatus.idle, self.statuses.poweredStatus.enabled)
     moveRelative:
@@ -487,8 +488,9 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeRotation",
                                                         self.processes.reset,
                                                         self.processes.stop),
                                     NOT(self.masterSlaveLagError),
-                                    NOT(AND(NOT(self.isHomed), self.initializationStatus.initialized)))
-      hasWarning            : -> MTCS_SUMMARIZE_WARN(self.parts.masterAxis,
+                                    OR(self.isHomed, NOT(self.initializationStatus.initialized)))
+#                                    NOT(AND(NOT(self.isHomed), self.initializationStatus.initialized)))
+hasWarning            : -> MTCS_SUMMARIZE_WARN(self.parts.masterAxis,
                                                      self.parts.slaveAxis,
                                                      self.parts.drive,
                                                      self.processes.reset,
