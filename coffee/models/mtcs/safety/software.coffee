@@ -556,7 +556,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "SafetyDomeAccess",
                                          self.processes.stopBypassing.statuses.busyStatus.busy )
         healthStatus:
             isGood              : -> NOT( OR( self.groupComError, self.groupFbError, self.groupOutError) )
-            hasWarning          : -> AND( OR(self.activityStatus.awake, self.activityStatus.moving), OR(self.personHasEntered, self.sensorsBypassedPermanently))
+            hasWarning          : -> OR( self.personHasEntered, self.sensorsBypassedPermanently )
         reset:
             isEnabled           : -> self.statuses.busyStatus.idle
         personHasLeft:

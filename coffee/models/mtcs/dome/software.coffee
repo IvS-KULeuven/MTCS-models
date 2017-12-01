@@ -489,9 +489,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeRotation",
                                                         self.processes.stop),
                                     NOT(self.masterSlaveLagError),
                                     OR(self.isHomed, NOT(self.initializationStatus.initialized)))
-
-#                                    NOT(AND(NOT(self.isHomed), self.initializationStatus.initialized)))
-hasWarning            : -> MTCS_SUMMARIZE_WARN(self.parts.masterAxis,
+      hasWarning            : -> MTCS_SUMMARIZE_WARN(self.parts.masterAxis,
                                                      self.parts.slaveAxis,
                                                      self.parts.drive,
                                                      self.processes.reset,
