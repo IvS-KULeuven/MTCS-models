@@ -208,12 +208,13 @@ MTCS_MAKE_STATEMACHINE THISLIB, "Dome",
   calls:
     # processes
     initialize:
-      isEnabled                 : -> OR(self.statuses.initializationStatus.shutdown,
-                                        self.statuses.initializationStatus.initializingFailed,
-                                        self.statuses.initializationStatus.initialized)
+      isEnabled                 : -> AND(NOT(self.statuses.initializationStatus.locked),
+                                         OR(self.statuses.initializationStatus.shutdown,
+                                            self.statuses.initializationStatus.initializingFailed,
+                                            self.statuses.initializationStatus.initialized))
     lock:
-      isEnabled                 : -> AND(self.operatorStatus.tech,
-                                         self.statuses.initializationStatus.initialized)
+      isEnabled                 : -> self.operatorStatus.tech
+      
     unlock:
       isEnabled                 : -> AND(self.operatorStatus.tech,
                                          self.statuses.initializationStatus.locked)
@@ -223,11 +224,12 @@ MTCS_MAKE_STATEMACHINE THISLIB, "Dome",
       isEnabled                 : -> AND(self.statuses.busyStatus.idle,
                                          self.statuses.initializationStatus.initialized)
     powerOn:
-      isEnabled                 : -> AND(self.statuses.initializationStatus.initialized,
-                                         self.processes.powerOn.statuses.busyStatus.idle )
+      isEnabled                 : -> AND(NOT(self.statuses.initializationStatus.locked),
+                                         self.statuses.initializationStatus.initialized,
+                                         self.processes.powerOn.statuses.busyStatus.idle)
     powerOff:
       isEnabled                 : -> AND(self.statuses.initializationStatus.initialized,
-                                         self.processes.powerOff.statuses.busyStatus.idle )
+                                         self.processes.powerOff.statuses.busyStatus.idle)
     stop:
       isEnabled                 : -> OR(self.statuses.busyStatus.busy, self.isTracking, self.operatorStatus.tech)
 
@@ -342,13 +344,14 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeShutter",
     reset:
       isEnabled             : -> TRUE
     open:
-      isEnabled             : -> OR(self.operatorStatus.tech, AND(self.statuses.busyStatus.idle, self.initializationStatus.initialized, OR(self.activityStatus.awake, self.activityStatus.moving) ) )
+      isEnabled             : -> AND(NOT(self.initializationStatus.locked),
+                                    (OR(self.operatorStatus.tech, AND(self.statuses.busyStatus.idle, self.initializationStatus.initialized, OR(self.activityStatus.awake, self.activityStatus.moving) ) ) ) )
     lowerOpen:
       isEnabled             : -> self.processes.open.isEnabled # same as processes.open
     upperOpen:
       isEnabled             : -> self.processes.open.isEnabled # same as processes.open
     close:
-      isEnabled             : -> AND(self.statuses.busyStatus.idle, self.initializationStatus.initialized)
+      isEnabled             : -> AND(NOT(self.initializationStatus.locked), self.statuses.busyStatus.idle, self.initializationStatus.initialized)
     lowerClose:
       isEnabled             : -> self.processes.close.isEnabled # same as processes.close
     upperClose:
@@ -466,16 +469,16 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeRotation",
     home:
       isEnabled                 : -> self.processes.moveAbsolute.isEnabled # same as moveAbsolute
     powerOn:
-      isEnabled                 : -> self.statuses.busyStatus.idle
+      isEnabled                 : -> AND(NOT(self.initializationStatus.locked), self.statuses.busyStatus.idle)
     powerOff:
       isEnabled                 : -> self.statuses.busyStatus.idle
     # parts
     masterAxis:
-      isEnabled                 : -> self.operatorStatus.tech
+      isEnabled                 : -> AND(NOT(self.initializationStatus.locked), self.operatorStatus.tech)
     slaveAxis:
-      isEnabled                 : -> self.operatorStatus.tech
+      isEnabled                 : -> AND(NOT(self.initializationStatus.locked), self.operatorStatus.tech)
     drive:
-      isEnabled                 : -> self.operatorStatus.tech
+      isEnabled                 : -> AND(NOT(self.initializationStatus.locked), self.operatorStatus.tech)
     # statuses
     poweredStatus:
       isEnabled             : -> AND(self.parts.masterAxis.statuses.poweredStatus.enabled,

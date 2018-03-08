@@ -659,7 +659,7 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Axes",
     parts:
         azi:
             comment                     : "The azimuth axis"
-            arguments:
+            arguments:            
                 isEnabled               : { comment: "Is control enabled?" }
                 id                      : { comment: "The axis ID" }
                 config                  : { comment: "The axis config" }
@@ -768,11 +768,12 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Axes",
     calls:
         # processes
         initialize:
-            isEnabled                   : -> OR(self.statuses.initializationStatus.shutdown,
-                                                self.statuses.initializationStatus.initializingFailed,
-                                                self.statuses.initializationStatus.initialized)
+            isEnabled                   : -> AND( NOT(self.statuses.initializationStatus.locked),
+                                                  OR(self.statuses.initializationStatus.shutdown,
+                                                     self.statuses.initializationStatus.initializingFailed,
+                                                     self.statuses.initializationStatus.initialized) )
         lock:
-            isEnabled                   : -> AND(self.operatorStatus.tech, self.statuses.initializationStatus.initialized)
+            isEnabled                   : -> self.operatorStatus.tech
         unlock:
             isEnabled                   : -> AND(self.operatorStatus.tech, self.statuses.initializationStatus.locked)
         changeOperatingState:
@@ -802,7 +803,8 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Axes",
                                                  self.statuses.busyStatus.idle,
                                                  self.statuses.poweredStatus.enabled)
         powerOn:
-            isEnabled                   : -> AND( self.statuses.initializationStatus.initialized,
+            isEnabled                   : -> AND( NOT(self.statuses.initializationStatus.locked),
+                                                  self.statuses.initializationStatus.initialized,
                                                   self.processes.powerOn.statuses.busyStatus.idle )
         powerOff:
             isEnabled                   : -> AND( self.statuses.initializationStatus.initialized,
@@ -916,7 +918,8 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Axes",
         io:
             isEnabled                   : -> self.operatorStatus.tech
         azi:
-            isEnabled                   : -> self.operatorStatus.tech
+            isEnabled                   : -> AND( NOT(self.statuses.initializationStatus.locked),
+                                                  self.operatorStatus.tech )
             id                          : -> THISLIB.AxesIds.AZI
             config                      : -> self.config.azi
             aziDriveChannel             : -> self.parts.io.parts.aziDrive.parts.channelA
@@ -924,19 +927,22 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Axes",
             aziMainDriveChannel         : -> self.parts.io.parts.aziDrive.parts.channelA # AZI drive channel = main drive channel
             ablMainDriveChannel         : -> self.parts.io.parts.ablDrive.parts.channelA # ABL drive channel = main drive channel
         ele:
-            isEnabled                   : -> self.operatorStatus.tech
+            isEnabled                   : -> AND( NOT(self.statuses.initializationStatus.locked),
+                                                  self.operatorStatus.tech )
             id                          : -> THISLIB.AxesIds.ELE
             config                      : -> self.config.ele
             driveChannel                : -> self.parts.io.parts.eleDrive.parts.channelA
             mainDriveChannel            : -> self.parts.io.parts.eleDrive.parts.channelA # ELE drive channel = main drive channel
         roc:
-            isEnabled                   : -> self.operatorStatus.tech
+            isEnabled                   : -> AND( NOT(self.statuses.initializationStatus.locked),
+                                                  self.operatorStatus.tech )
             id                          : -> THISLIB.AxesIds.ROC
             config                      : -> self.config.roc
             driveChannel                : -> self.parts.io.parts.aziDrive.parts.channelB
             mainDriveChannel            : -> self.parts.io.parts.aziDrive.parts.channelA
         ron:
-            isEnabled                   : -> self.operatorStatus.tech
+            isEnabled                   : -> AND( NOT(self.statuses.initializationStatus.locked),
+                                                  self.operatorStatus.tech )
             id                          : -> THISLIB.AxesIds.RON
             config                      : -> self.config.ron
             driveChannel                : -> self.parts.io.parts.ablDrive.parts.channelB
