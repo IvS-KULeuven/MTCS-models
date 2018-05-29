@@ -35,7 +35,8 @@ SAFETYLIB = safety_soft.mtcs_safety
 MTCS_MAKE_CONFIG THISLIB, "DomeConfig",
   items:
     shutter                 : { comment: "The config of the shutter mechanism" }
-    rotation                : { comment: "The config of the bottom panel set" }
+    rotation                : { comment: "The config of the rotation system" }
+    light                   : { comment: "The config of the light in the dome" }
     maxTrackingDistance     : { comment: "The maximum distance between telescope and dome while tracking",  type: t_double }
     trackingLoopTime        : { type: t_double, comment: "Loop time, in seconds, of the tracking." }
     knownPositions          : { comment: "The known positions of the dome" }
@@ -118,6 +119,18 @@ MTCS_MAKE_CONFIG THISLIB, "DomeRotationConfig",
     quickStopJerk                 : { type: t_double, comment: "Quick stop jerk, in degrees/sec3"}
 
 
+
+##########################################################################
+# DomeLightConfig
+##########################################################################
+
+MTCS_MAKE_CONFIG THISLIB, "DomeLightConfig",
+  typeOf: THISLIB.DomeConfig.light
+  items:
+    timeDomeLightOn             : { type: t_double, comment: "Time to keep the light on, in seconds" }
+    enableDomeLight             : { type: t_bool  , comment: "True for enabling the control of the light" }
+
+
 ########################################################################################################################
 # DomeMoveKnownPositionProcess
 ########################################################################################################################
@@ -177,6 +190,20 @@ MTCS_MAKE_STATEMACHINE THISLIB, "Dome",
             healthStatus        : { type: COMMONLIB.HealthStatus }
             busyStatus          : { type: COMMONLIB.BusyStatus }
             poweredStatus       : { type: COMMONLIB.PoweredStatus }
+    light:
+      comment                   : "Light in dome"
+      arguments:
+        initializationStatus    : { comment: "Dome initialization status (initialized/initializing/...)" }
+        operatorStatus          : { comment: "MTCS operator (observer/tech)" }
+        operatingStatus         : { comment: "Dome operating status (manual/auto)" }
+        activityStatus          : { comment: "Shared activity status"}
+        config                  : { comment: "The light config" }
+        isDomeLightON           : { comment: "True if the light inside the dome is ON" }
+      attributes:
+        statuses:
+          attributes:
+            healthStatus        : { type: COMMONLIB.HealthStatus }
+            busyStatus          : { type: COMMONLIB.BusyStatus }      
     io:
       comment                   : "EtherCAT devices"
       attributes:
@@ -262,6 +289,12 @@ MTCS_MAKE_STATEMACHINE THISLIB, "Dome",
       operatorStatus            : -> self.operatorStatus
       operatingStatus           : -> self.statuses.operatingStatus
       config                    : -> self.config.rotation
+    light:
+      initializationStatus      : -> self.statuses.initializationStatus
+      operatorStatus            : -> self.operatorStatus
+      operatingStatus           : -> self.statuses.operatingStatus
+      activityStatus            : -> self.activityStatus
+      config                    : -> self.config.light
     configManager:
       isEnabled                 : -> self.operatorStatus.tech
     # statuses
@@ -272,9 +305,12 @@ MTCS_MAKE_STATEMACHINE THISLIB, "Dome",
     healthStatus:
       isGood                    : -> MTCS_SUMMARIZE_GOOD(self.parts.shutter,
                                                          self.parts.rotation,
+                                                         self.parts.light,
                                                          self.parts.io)
+
       hasWarning                : -> MTCS_SUMMARIZE_WARN(self.parts.shutter,
                                                            self.parts.rotation,
+                                                           self.parts.light,
                                                            self.parts.io)
     busyStatus:
       isBusy                    : -> MTCS_SUMMARIZE_BUSY(self.parts.shutter,
@@ -344,14 +380,14 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeShutter",
     reset:
       isEnabled             : -> TRUE
     open:
-      isEnabled             : -> AND(NOT(self.initializationStatus.locked),
+      isEnabled             : -> AND(self.statuses.healthStatus.isGood, NOT(self.initializationStatus.locked), 
                                     (OR(self.operatorStatus.tech, AND(self.statuses.busyStatus.idle, self.initializationStatus.initialized, OR(self.activityStatus.awake, self.activityStatus.moving) ) ) ) )
     lowerOpen:
       isEnabled             : -> self.processes.open.isEnabled # same as processes.open
     upperOpen:
       isEnabled             : -> self.processes.open.isEnabled # same as processes.open
     close:
-      isEnabled             : -> AND(NOT(self.initializationStatus.locked), self.statuses.busyStatus.idle, self.initializationStatus.initialized)
+      isEnabled             : -> AND(self.statuses.healthStatus.isGood, NOT(self.initializationStatus.locked), self.statuses.busyStatus.idle, self.initializationStatus.initialized)
     lowerClose:
       isEnabled             : -> self.processes.close.isEnabled # same as processes.close
     upperClose:
@@ -504,6 +540,62 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeRotation",
                                                      self.processes.reset,
                                                      self.processes.stop)
 
+
+
+########################################################################################################################
+# DomeLight
+########################################################################################################################
+
+MTCS_MAKE_STATEMACHINE THISLIB, "DomeLight",
+  typeOf: THISLIB.DomeParts.light
+  variables:
+    switchOnSignal          : { type: t_bool                            , comment: "True if the light must be switched ON" }  
+    
+    switchOnInput           : { type: t_bool          , address: "%I*"  , comment: "External operation: switch ON" }
+    
+    isDomeLightON           : { type: t_bool                            , comment: "Flag to indicate if dome light is ON or OFF" }
+
+
+  references:
+    initializationStatus    : { type: COMMONLIB.InitializationStatus    , comment: "Dome initialization status (initialized/initializing/...)"}
+    operatorStatus          : { type: COMMONLIB.OperatorStatus          , comment: "MTCS operator (observer/tech)"}
+    operatingStatus         : { type: COMMONLIB.OperatingStatus         , comment: "Dome operating status (manual/auto)"}
+    activityStatus          : { type: COMMONLIB.ActivityStatus          , comment: "Shared activity status"}
+    config                  : { type: THISLIB.DomeLightConfig           , comment: "The light config"}
+  parts:
+    switchOnRelay           : { type: COMMONLIB.SimpleRelay             , comment: "Relay to switch on the light" }
+  statuses:
+    healthStatus            : { type: COMMONLIB.HealthStatus            , comment: "Health status"}
+    busyStatus              : { type: COMMONLIB.BusyStatus              , comment: "Busy status" }
+  processes:
+    reset                   : { type: COMMONLIB.Process                 , comment: "Reset errors" }
+    switchLightOn           : { type: COMMONLIB.Process                 , comment: "Turn On the light in the dome" }
+    switchLightOff          : { type: COMMONLIB.Process                 , comment: "Turn Off the light in the dome" }
+  calls:
+    # processes
+    reset:
+      isEnabled             : -> TRUE
+    switchLightOn:
+      isEnabled             : -> TRUE
+    switchLightOff:
+      isEnabled             : -> TRUE
+    # relays
+    switchOnRelay:
+      isEnabled             : -> self.operatorStatus.tech
+    # statuses
+    healthStatus:
+      isGood                : -> MTCS_SUMMARIZE_GOOD(self.processes.reset,
+                                                     self.processes.switchLightOn,
+                                                     self.processes.switchLightOff)
+      hasWarning            : -> OR(self.isDomeLightON, MTCS_SUMMARIZE_WARN(self.processes.reset,
+                                                                             self.processes.switchLightOn,
+                                                                             self.processes.switchLightOff))
+    busyStatus:
+      isBusy                : -> MTCS_SUMMARIZE_BUSY(self.processes.reset,
+                                                     self.processes.switchLightOn,
+                                                     self.processes.switchLightOff)
+
+
 ########################################################################################################################
 # DomeIO
 ########################################################################################################################
@@ -517,6 +609,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeIO",
     slot1       : { type: COMMONLIB.EtherCatDevice , comment: "Slot 1" }
     slot2       : { type: COMMONLIB.EtherCatDevice , comment: "Slot 2" }
     slot3       : { type: COMMONLIB.EtherCatDevice , comment: "Slot 3" }
+    slot4       : { type: COMMONLIB.EtherCatDevice , comment: "Slot 4" }    
     drive       : { type: COMMONLIB.EtherCatDevice , comment: "Drive" }
   calls:
     coupler:
@@ -531,6 +624,9 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeIO",
     slot3:
       id      : -> STRING("112A5") "id"
       typeId    : -> STRING("EL2904") "typeId"
+    slot4:
+      id      : -> STRING("DO:RO1") "id"
+      typeId    : -> STRING("EL2622") "typeId"
     drive:
       id      : -> STRING("10U1") "id"
       typeId    : -> STRING("AX5206") "typeId"
@@ -540,6 +636,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeIO",
                           self.parts.slot1,
                           self.parts.slot2,
                           self.parts.slot3,
+                          self.parts.slot4,
                           self.parts.drive )
 
 
