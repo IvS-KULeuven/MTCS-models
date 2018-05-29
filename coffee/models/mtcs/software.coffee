@@ -422,7 +422,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
         changeInstrument:
             isEnabled           : -> OR( self.statuses.initializationStatus.initialized, self.statuses.healthStatus.bad )
         emergencyClose:
-            isEnabled           : -> TRUE  # too important, always enable
+            isEnabled           : -> NOT(self.parts.dome.parts.shutter.statuses.apertureStatus.isClosed)
         cover:
             operatorStatus      : -> self.statuses.operatorStatus
             aziPos              : -> self.parts.axes.parts.azi.actPos
