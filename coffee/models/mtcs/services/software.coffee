@@ -43,8 +43,6 @@ MTCS_MAKE_ENUM THISLIB, "ServicesTimingTimeSource",
           "PTP_IEEE_1588" ]
 
 
-
-
 ########################################################################################################################
 # ServicesTimingConfig
 ########################################################################################################################
@@ -167,8 +165,6 @@ MTCS_MAKE_CONFIG THISLIB, "ServicesMeteoConfig",
             expand: false
 
 
-
-
 ########################################################################################################################
 # ServicesWestTemperatureTimeConfig
 ########################################################################################################################
@@ -247,6 +243,395 @@ MTCS_MAKE_CONFIG THISLIB, "ServicesWestConfig",
             comment: "The config for the temperature setpoint"
 
 
+########################################################################################################################
+# ServicesChillerControllerParameterAddress
+########################################################################################################################
+
+MTCS_MAKE_CONFIG THISLIB, "ServicesChillerControllerParameterAddresses",
+    comment: "Config about Modbus parameters addresses"  
+    items:
+        #Logical Area 1. Analog input. Read only. Words 16bits
+        waterTankTemperature:     { type: t_uint16, initial: 258, comment: "Water tank temperature" }
+        highPressureCircuit1:     { type: t_uint16, initial: 260, comment: "High pressure of circuit 1" }
+        highPressureCircuit2:     { type: t_uint16, initial: 262, comment: "High pressure of circuit 2" }
+        evaporatorOutTemp1:       { type: t_uint16, initial: 268, comment: "Evaporator out temperature 1" }
+        evaporatorOutTemp2:       { type: t_uint16, initial: 270, comment: "Evaporator out temperature 2" }
+        ambientTemperature:       { type: t_uint16, initial: 272, comment: "Ambient temperature" }
+        #Logical Area 2. Digital input. Read only. Words 16bits
+        digitalInputStatus1:      { type: t_uint16, initial: 512, comment: "Flow switch status" }
+        digitalInputStatus2:      { type: t_uint16, initial: 513, comment: "Digital input status 2" }
+        digitalInputStatus3:      { type: t_uint16, initial: 514, comment: "Digital input status 3" }
+        digitalInputStatus4:      { type: t_uint16, initial: 515, comment: "Digital input status 4" }
+        #Logical Area 3. Data. R/W. Words 16bits
+        setpoint:                 { type: t_uint16, initial: 768, comment: "Setpoint parameter address" }
+        minSetpoint:              { type: t_uint16, initial: 769, comment: "Minimal Setpoint parameter address" }
+        maxSetpoint:              { type: t_uint16, initial: 770, comment: "Maximal Setpoint parameter address" }
+        trippingBand:             { type: t_uint16, initial: 774, comment: "Tripping Band parameter address" }
+        #Logical Area 5. Unit Status. R/W. Words 16bits
+        unitStatus:               { type: t_uint16, initial: 1280, comment: "Unit Status parameter address" }
+        #Logical Area 8. Digital output status. Read only. Words 16bits
+        relayOutputStatus1:       { type: t_uint16, initial: 2048, comment: "Relay output status 1" }
+        relayOutputStatus2:       { type: t_uint16, initial: 2049, comment: "Relay output status 2" }
+        relayOutputStatus3:       { type: t_uint16, initial: 2050, comment: "Relay output status 3" }
+        relayOutputStatus4:       { type: t_uint16, initial: 2051, comment: "Relay output status 4" }
+        relayOutputStatus5:       { type: t_uint16, initial: 2052, comment: "Relay output status 5" }
+        relayOutputStatus6:       { type: t_uint16, initial: 2053, comment: "Relay output status 6" }
+        relayOutputStatus7:       { type: t_uint16, initial: 2054, comment: "Relay output status 7" }
+        #Logical Area 9. Analog output status. Read only. Words 16bits
+        AnalogOutputStatus1:      { type: t_uint16, initial: 2304, comment: "Fan Condenser1 Output" }
+        AnalogOutputStatus2:      { type: t_uint16, initial: 2306, comment: "Fan Condenser2 Output" }
+        #Logical Area 13. Alarm status. Read only. Words 16bits
+        alarmStatus1:             { type: t_uint16, initial: 3328, comment: "Alarm status 1" }
+        alarmStatus2:             { type: t_uint16, initial: 3329, comment: "Alarm status 2" }
+        alarmStatus3:             { type: t_uint16, initial: 3330, comment: "Alarm status 3" }
+        alarmStatus6:             { type: t_uint16, initial: 3333, comment: "Alarm status 6" }
+        alarmStatus7:             { type: t_uint16, initial: 3334, comment: "Alarm status 7" }
+        alarmStatus10:            { type: t_uint16, initial: 3337, comment: "Alarm status 10" }
+        alarmStatus11:            { type: t_uint16, initial: 3338, comment: "Alarm status 11" }
+        #Logical Area 14. Load hours. R/W. Words 16bits
+        hoursCompressor1:         { type: t_uint16, initial: 3584, comment: "Operation hours of compressor 1" }
+        hoursCompressor2:         { type: t_uint16, initial: 3585, comment: "Operation hours of compressor 2" }
+        hoursCompressor3:         { type: t_uint16, initial: 3586, comment: "Operation hours of compressor 3" }
+        hoursCompressor4:         { type: t_uint16, initial: 3587, comment: "Operation hours of compressor 4" }
+        hoursPump:                { type: t_uint16, initial: 3590, comment: "Operation hours of water pump" }         
+        #Logical Area 15. Alarms per hour. Read only. Words 16bits
+        alarmOilCompressor1:      { type: t_uint16, initial: 3840, comment: "Alarm oil Compressor 1" }
+        alarmOilCompressor2:      { type: t_uint16, initial: 3841, comment: "Alarm oil Compressor 2" }
+        alarmOilCompressor3:      { type: t_uint16, initial: 3842, comment: "Alarm oil Compressor 3" }
+        alarmOilCompressor4:      { type: t_uint16, initial: 3843, comment: "Alarm oil Compressor 4" }
+        alarmFanOverload:         { type: t_uint16, initial: 3846, comment: "Alarm fan overload" }
+        alarmColdSideFlowSwitch:  { type: t_uint16, initial: 3847, comment: "Alarm cold side flow switch" }
+        alarmHotSideFlowSwitch:   { type: t_uint16, initial: 3848, comment: "Alarm hot side flow switch" }
+        alarmCirc1LowTempPressDI: { type: t_uint16, initial: 3849, comment: "Alarm circuit 1 low temppress DI" }
+        alarmCirc2LowTempPressDI: { type: t_uint16, initial: 3850, comment: "Alarm circuit 2 low temppress DI" }
+        alarmCirc1LowTempPressPB: { type: t_uint16, initial: 3851, comment: "Alarm circuit 1 low temppress PB" }
+        alarmCirc2LowTempPressPB: { type: t_uint16, initial: 3852, comment: "Alarm circuit 2 low temppress PB" }
+
+########################################################################################################################
+# ServicesChillerControllerAlarmStatus1
+########################################################################################################################
+
+MTCS_MAKE_CONFIG THISLIB, "ServicesChillerControllerAlarmStatus1",
+    comment: "Alarm indicators at AlarmStatus1 register"
+    items:
+        bit0:        { type: t_string, initial: "'Probe8 (Evap2. Water Temperature)'"}
+        bit1:        { type: t_string, initial: "'Probe9 (Ambient Temperature)'"}
+        bit2:        { type: t_string, initial: "'Probe10 (Not used)'"}
+        bit3:        { type: t_string, initial: "'Probe11 (Not used)'"}
+        bit4:        { type: t_string, initial: "'Probe12 (Not used)'"}
+        bit5:        { type: t_string, initial: "'Compressor1 Maintenance'"}
+        bit6:        { type: t_string, initial: "'Compressor2 Maintenance'"}
+        bit7:        { type: t_string, initial: "'Compressor3 Maintenance'"}
+        bit8:        { type: t_string, initial: "'Alarm not defined'"}
+        bit9:        { type: t_string, initial: "'Probe1 (Not used)'"}
+        bit10:       { type: t_string, initial: "'Probe2 (Tank. Water Temperature)'"}
+        bit11:       { type: t_string, initial: "'Probe3 (High Pressure Cric1)'"}
+        bit12:       { type: t_string, initial: "'Probe4 (High Pressure Cric2)'"}
+        bit13:       { type: t_string, initial: "'Probe5 (Not used)'"}
+        bit14:       { type: t_string, initial: "'Probe6 (Not used)'"}
+        bit15:       { type: t_string, initial: "'Probe7 (Evap1. Water Temperature)'"}
+
+########################################################################################################################
+# ServicesChillerControllerAlarmStatus2
+########################################################################################################################
+
+MTCS_MAKE_CONFIG THISLIB, "ServicesChillerControllerAlarmStatus2",
+    comment: "Alarm indicators at AlarmStatus2 register"
+    items:
+        bit0:        { type: t_string, initial: "'Alarm not defined'"}
+        bit1:        { type: t_string, initial: "'Alarm not defined'"}
+        bit2:        { type: t_string, initial: "'Alarm not defined'"}
+        bit3:        { type: t_string, initial: "'Alarm not defined'"}
+        bit4:        { type: t_string, initial: "'Alarm not defined'"}
+        bit5:        { type: t_string, initial: "'Alarm not defined'"}
+        bit6:        { type: t_string, initial: "'Alarm not defined'"}
+        bit7:        { type: t_string, initial: "'Alarm not defined'"}       
+        bit8:        { type: t_string, initial: "'Compressor4 Maintenance'"}
+        bit9:        { type: t_string, initial: "'Alarm not defined'"}
+        bit10:       { type: t_string, initial: "'Alarm not defined'"}          
+        bit11:       { type: t_string, initial: "'Pump/delivery Fan Maintenance'"}
+        bit12:       { type: t_string, initial: "'Evaporator2 pump Maintenance'"}
+        bit13:       { type: t_string, initial: "'Condenser1 Pump Maintenance'"}
+        bit14:       { type: t_string, initial: "'Condenser2 Pump Maintenance'"}
+        bit15:       { type: t_string, initial: "'Alarm not defined'"}            
+
+########################################################################################################################
+# ServicesChillerControllerAlarmStatus3
+########################################################################################################################
+
+MTCS_MAKE_CONFIG THISLIB, "ServicesChillerControllerAlarmStatus3",
+    comment: "Alarm indicators at AlarmStatus3 register"
+    items:
+        bit0:        { type: t_string, initial: "'Alarm not defined'"}
+        bit1:        { type: t_string, initial: "'Alarm not defined'"}
+        bit2:        { type: t_string, initial: "'Alarm not defined'"}
+        bit3:        { type: t_string, initial: "'Alarm not defined'"}
+        bit4:        { type: t_string, initial: "'Alarm not defined'"}
+        bit5:        { type: t_string, initial: "'Alarm not defined'"}
+        bit6:        { type: t_string, initial: "'Alarm not defined'"}
+        bit7:        { type: t_string, initial: "'Alarm not defined'"}
+        bit8:        { type: t_string, initial: "'Circuit1 defrost'"}
+        bit9:        { type: t_string, initial: "'Circuit2 defrost'"}
+        bit10:       { type: t_string, initial: "'Network Frequency'"}
+        bit11:       { type: t_string, initial: "'Low Inlet Air Temperature'"}
+        bit12:       { type: t_string, initial: "'Alarm not defined'"}
+        bit13:       { type: t_string, initial: "'Alarm not defined'"}
+        bit14:       { type: t_string, initial: "'Evaporator Low Outlet Temperature'"}
+        bit15:       { type: t_string, initial: "'Evaporator High Outlet Temperature'"}
+
+########################################################################################################################
+# ServicesChillerControllerAlarmStatus6
+########################################################################################################################
+
+MTCS_MAKE_CONFIG THISLIB, "ServicesChillerControllerAlarmStatus6",
+    comment: "Alarm indicators at AlarmStatus6 register"
+    items:
+        bit0:        { type: t_string, initial: "'Compressor1 Thermal Overload'"}
+        bit1:        { type: t_string, initial: "'Compressor2 Thermal Overload'"}
+        bit2:        { type: t_string, initial: "'Compressor3 Thermal Overload'"}
+        bit3:        { type: t_string, initial: "'Compressor4 Thermal Overload'"}
+        bit4:        { type: t_string, initial: "'Alarm not defined'"}
+        bit5:        { type: t_string, initial: "'Alarm not defined'"}
+        bit6:        { type: t_string, initial: "'Circ1 Cond. Fan Thermal Overload'"}
+        bit7:        { type: t_string, initial: "'Circ2 Cond. Fan Thermal Overload'"}
+        bit8:        { type: t_string, initial: "'Alarm not defined'"}
+        bit9:        { type: t_string, initial: "'Alarm not defined'"}
+        bit10:       { type: t_string, initial: "'Compressor1 High Pressure'"}
+        bit11:       { type: t_string, initial: "'Compressor2 High Pressure'"}
+        bit12:       { type: t_string, initial: "'Compressor3 High Pressure'"}
+        bit13:       { type: t_string, initial: "'Compressor4 High Pressure'"}
+        bit14:       { type: t_string, initial: "'Alarm not defined'"}
+        bit15:       { type: t_string, initial: "'Alarm not defined'"}
+
+########################################################################################################################
+# ServicesChillerControllerAlarmStatus7
+########################################################################################################################
+
+MTCS_MAKE_CONFIG THISLIB, "ServicesChillerControllerAlarmStatus7",
+    comment: "Alarm indicators at AlarmStatus7 register"
+    items:
+        bit0:        { type: t_string, initial: "'Alarm not defined'"}
+        bit1:        { type: t_string, initial: "'Alarm not defined'"}
+        bit2:        { type: t_string, initial: "'Alarm not defined'"}
+        bit3:        { type: t_string, initial: "'Alarm not defined'"}
+        bit4:        { type: t_string, initial: "'Alarm not defined'"}
+        bit5:        { type: t_string, initial: "'Alarm not defined'"}
+        bit6:        { type: t_string, initial: "'Alarm not defined'"}
+        bit7:        { type: t_string, initial: "'Alarm not defined'"}
+        bit8:        { type: t_string, initial: "'Evap1 Water Pump Thermal Overload'"}
+        bit9:        { type: t_string, initial: "'Evap2 Water Pump Thermal Overload'"}
+        bit10:       { type: t_string, initial: "'Cond1 Pump Thermal Overload'"}
+        bit11:       { type: t_string, initial: "'Cond2 Pump Thermal Overload'"}
+        bit12:       { type: t_string, initial: "'Circ1 High Pressure Switch Tripped'"}
+        bit13:       { type: t_string, initial: "'Circ2 High Pressure Switch Tripped'"}
+        bit14:       { type: t_string, initial: "'Circ1 High Pressure Probe'"}
+        bit15:       { type: t_string, initial: "'Circ2 High Pressure Probe'"}
+
+########################################################################################################################
+# ServicesChillerControllerAlarmStatus10
+########################################################################################################################
+
+MTCS_MAKE_CONFIG THISLIB, "ServicesChillerControllerAlarmStatus10",
+    comment: "Alarm indicators at AlarmStatus10 register"
+    items:
+        bit0:        { type: t_string, initial: "'Hot Side Flow Switch'"}
+        bit1:        { type: t_string, initial: "'Cic1 Low Pressure Switch'"}
+        bit2:        { type: t_string, initial: "'Cic2 Low Pressure Switch'"}
+        bit3:        { type: t_string, initial: "'Cic1 Low Pressure Probe'"}
+        bit4:        { type: t_string, initial: "'Cic2 Low Pressure Probe'"}
+        bit5:        { type: t_string, initial: "'Circ1 Pump-Down at startup'"}
+        bit6:        { type: t_string, initial: "'Circ2 Pump-Down at startup'"}
+        bit7:        { type: t_string, initial: "'Circ1 Pump-Down at shutdown'"}
+        bit8:        { type: t_string, initial: "'Compressor1 Oil'"}
+        bit9:        { type: t_string, initial: "'Compressor2 Oil'"}
+        bit10:       { type: t_string, initial: "'Compressor3 Oil'"}
+        bit11:       { type: t_string, initial: "'Compressor4 Oil'"}
+        bit12:       { type: t_string, initial: "'Alarm not defined'"}
+        bit13:       { type: t_string, initial: "'Alarm not defined'"}
+        bit14:       { type: t_string, initial: "'Delivery Fan Thermal Overload'"}
+        bit15:       { type: t_string, initial: "'Cold Side Flow Switch'"}
+
+########################################################################################################################
+# ServicesChillerControllerAlarmStatus11
+########################################################################################################################
+
+MTCS_MAKE_CONFIG THISLIB, "ServicesChillerControllerAlarmStatus11",
+    comment: "Alarm indicators at AlarmStatus11 register"
+    items:
+        bit0:        { type: t_string, initial: "'Compressor4 Discharge High Temperature'"}
+        bit1:        { type: t_string, initial: "'Alarm not defined'"}
+        bit2:        { type: t_string, initial: "'Alarm not defined'"}
+        bit3:        { type: t_string, initial: "'General Alarm From Digital Input'"}
+        bit4:        { type: t_string, initial: "'Alarm not defined'"}
+        bit5:        { type: t_string, initial: "'Alarm not defined'"}
+        bit6:        { type: t_string, initial: "'Alarm not defined'"}
+        bit7:        { type: t_string, initial: "'Alarm not defined'"}
+        bit8:        { type: t_string, initial: "'Circ2 Pump-Down at shutdown'"}
+        bit9:        { type: t_string, initial: "'Circ1 Chiller Anti-freeze'"}
+        bit10:       { type: t_string, initial: "'Circ2 Chiller Anti-freeze'"}
+        bit11:       { type: t_string, initial: "'Circ1 Pump Anti-freeze'"}
+        bit12:       { type: t_string, initial: "'Circ2 Pump Anti-freeze'"}
+        bit13:       { type: t_string, initial: "'Compressor1 Discharge High Temperature'"}
+        bit14:       { type: t_string, initial: "'Compressor2 Discharge High Temperature'"}
+        bit15:       { type: t_string, initial: "'Compressor3 Discharge High Temperature'"}
+
+########################################################################################################################
+# ServicesChillerControllerBitwiseConfig
+########################################################################################################################
+
+MTCS_MAKE_CONFIG THISLIB, "ServicesChillerControllerBitwiseConfig",
+    comment: "Config about words and masks for bitwise actions"  
+    items:
+        #Words for masks and commands over Unit Status register. Words 16bits
+        statusOnMask:    { type: t_uint16, initial: int(0b0000001100000000), comment: "Word check if Chiller is ON" }
+        switchOnMask:    { type: t_uint16, initial: int(0b0000010000000100), comment: "Word to switch ON the Chiller" }
+        switchOffMask:   { type: t_uint16, initial: int(0b0000000000000001), comment: "Word to switch OFF the Chiller" }
+        resetAlarmMask:  { type: t_uint16, initial: int(0b0001000000010000), comment: "Word to reset Alarm" }
+        #Masks for bitwise checking in 16 bit registers
+        flowSwitchMask:  { type: t_uint16, initial: int(0b0000100000000000), comment: "Word to check if Flow switch is ON" }
+        alarmOnMask:     { type: t_uint16, initial: int(0b0000000100000001), comment: "Word to check if Alarm relay is ON" }
+        waterPumpOnMask: { type: t_uint16, initial: int(0b0000001000000010), comment: "Word to check if water Pump relay is ON" }
+        compressor1Mask: { type: t_uint16, initial: int(0b0010000000100000), comment: "Word to check if Compressor1 is ON" }    
+        compressor2Mask: { type: t_uint16, initial: int(0b0001000000010000), comment: "Word to check if Compressor2 is ON" }
+        compressor3Mask: { type: t_uint16, initial: int(0b0000100000001000), comment: "Word to check if Compressor3 is ON" }
+        compressor4Mask: { type: t_uint16, initial: int(0b0000010000000100), comment: "Word to check if Compressor4 is ON" }
+        #Masks for bitwise checking in 16 bit registers
+        bit0:        { type: t_uint16, initial: int(0b0000000000000001), comment: "Word mask to check bit0" }
+        bit1:        { type: t_uint16, initial: int(0b0000000000000010), comment: "Word mask to check bit1" }
+        bit2:        { type: t_uint16, initial: int(0b0000000000000100), comment: "Word mask to check bit2" }
+        bit3:        { type: t_uint16, initial: int(0b0000000000001000), comment: "Word mask to check bit3" }
+        bit4:        { type: t_uint16, initial: int(0b0000000000010000), comment: "Word mask to check bit4" }
+        bit5:        { type: t_uint16, initial: int(0b0000000000100000), comment: "Word mask to check bit5" }
+        bit6:        { type: t_uint16, initial: int(0b0000000001000000), comment: "Word mask to check bit6" }
+        bit7:        { type: t_uint16, initial: int(0b0000000010000000), comment: "Word mask to check bit7" }
+        bit8:        { type: t_uint16, initial: int(0b0000000100000000), comment: "Word mask to check bit8" }
+        bit9:        { type: t_uint16, initial: int(0b0000001000000000), comment: "Word mask to check bit9" }
+        bit10:       { type: t_uint16, initial: int(0b0000010000000000), comment: "Word mask to check bit10" }
+        bit11:       { type: t_uint16, initial: int(0b0000100000000000), comment: "Word mask to check bit11" }
+        bit12:       { type: t_uint16, initial: int(0b0001000000000000), comment: "Word mask to check bit12" }
+        bit13:       { type: t_uint16, initial: int(0b0010000000000000), comment: "Word mask to check bit13" }
+        bit14:       { type: t_uint16, initial: int(0b0100000000000000), comment: "Word mask to check bit14" }
+        bit15:       { type: t_uint16, initial: int(0b1000000000000000), comment: "Word mask to check bit15" }
+
+
+########################################################################################################################
+# ServicesChillerControllerAlarmStatusRegisters
+########################################################################################################################
+
+MTCS_MAKE_CONFIG THISLIB, "ServicesChillerControllerAlarmStatusRegisters",
+    comment: "Config about Alarm statuses registers"
+    items:
+        AlarmStatus1:
+            type: THISLIB.ServicesChillerControllerAlarmStatus1
+            comment: "Alarm indicators at AlarmStatus1 register"
+        AlarmStatus2:
+            type: THISLIB.ServicesChillerControllerAlarmStatus2
+            comment: "Alarm indicators at AlarmStatus2 register"
+        AlarmStatus3:
+            type: THISLIB.ServicesChillerControllerAlarmStatus3
+            comment: "Alarm indicators at AlarmStatus3 register"
+        AlarmStatus6:
+            type: THISLIB.ServicesChillerControllerAlarmStatus6
+            comment: "Alarm indicators at AlarmStatus6 register"
+        AlarmStatus7:
+            type: THISLIB.ServicesChillerControllerAlarmStatus7
+            comment: "Alarm indicators at AlarmStatus7 register"
+        AlarmStatus10:
+            type: THISLIB.ServicesChillerControllerAlarmStatus10
+            comment: "Alarm indicators at AlarmStatus10 register"
+        AlarmStatus11:
+            type: THISLIB.ServicesChillerControllerAlarmStatus11
+            comment: "Alarm indicators at AlarmStatus11 register"
+
+
+########################################################################################################################
+# ServicesChillerControllerVariables
+########################################################################################################################
+
+MTCS_MAKE_CONFIG THISLIB, "ServicesChillerControllerVariables",
+    items:
+        #Logical Area 3. Data. R/W. Words 16bits
+        setpoint:
+            type: t_double
+            comment: "Setpoint"
+        minSetpoint: 
+            type: t_double
+            comment: "Minimun setpoint"
+        maxSetpoint:
+            type: t_double
+            comment: "Maximal setpoint"
+        trippingBand:
+            type: t_double
+            comment: "Tripping band"     
+
+
+########################################################################################################################
+# ServicesChillerControllerConfig
+########################################################################################################################
+
+MTCS_MAKE_CONFIG THISLIB, "ServicesChillerControllerConfig",
+    items:
+        unitID:
+            type: t_uint8
+            comment: "The address or UnitID of the controller"
+        measurement:
+            type: COMMONLIB.MeasurementConfig
+            comment: "The measurement config"
+        warningMessage:
+            type: t_string
+            comment: "A warning message (empty = not shown)"
+        parameterAddresses:
+            type: THISLIB.ServicesChillerControllerParameterAddresses
+            comment: "Config about Modbus parameters addresses"
+        variables:
+            type: THISLIB.ServicesChillerControllerVariables
+            comment: "Config value for some parameters"
+        alarmRegisters:
+            type: THISLIB.ServicesChillerControllerAlarmStatusRegisters
+            comment: "Config about Alarm statuses registers"
+        bitwise:
+            type: THISLIB.ServicesChillerControllerBitwiseConfig
+            comment: "Config about words and masks for bitwise actions"
+
+########################################################################################################################
+# ServicesChillerConfig
+########################################################################################################################
+
+MTCS_MAKE_CONFIG THISLIB, "ServicesChillerConfig",
+    items:
+        updateSetpoint:
+            type: t_bool
+            comment: "True to automatically update the setpoint"
+        temperatureToChangeSetpoint:
+            type: t_double
+            comment: "Temperature to change Setpoint"   
+        summerSetpoint:
+            type: t_double
+            comment: "Temperature setpoint for summer"            
+        winterSetpoint:
+            type: t_double
+            comment: "Temperature setpoint for winter"
+        offsetSetpoint:
+            type: t_double
+            comment: "Setpoint = air temperature of meteo station + this offset (in degrees celsius)"
+        updateSetpointInterval:
+            type: t_double
+            comment: "Time interval to check ambient/setpoint temperature in seconds"
+        updateVariables:
+            type: t_bool
+            comment: "True to automatically update the setpoint"
+        pollingMeasuresInterval:
+            type: t_double
+            comment: "Time between bus measurement reads in seconds"
+        pollingConfigInterval:
+            type: t_double
+            comment: "Time between bus config variables reads in seconds"
+        pollingAlarmsInterval:
+            type: t_double
+            comment: "Time between bus alarm registers reads in seconds"
+        chillerMainController:
+            type: THISLIB.ServicesChillerControllerConfig
+            comment: "The Chiller controller config"
 
 ########################################################################################################################
 # ServicesConfig
@@ -264,8 +649,9 @@ MTCS_MAKE_CONFIG THISLIB, "ServicesConfig",
         west:
             type: THISLIB.ServicesWestConfig
             comment: "West config"
-
-
+        chiller:
+            type: THISLIB.ServicesChillerConfig
+            comment: "Chiller config"
 
 ########################################################################################################################
 # Services
@@ -309,6 +695,16 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Services",
                 statuses:
                     attributes:
                         healthStatus    : { type: COMMONLIB.HealthStatus }       
+        chiller:
+            comment                     : "Chiller service"
+            arguments:
+                operatorStatus          : {}
+                config                  : {}
+                airTemperature          : {}
+            attributes:
+                statuses:
+                    attributes:
+                        healthStatus    : { type: COMMONLIB.HealthStatus }
         io:
             comment                     : "I/O modules"
             attributes:
@@ -345,10 +741,12 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Services",
             isGood                      : -> MTCS_SUMMARIZE_GOOD(self.parts.timing, 
                                                                  self.parts.meteo,
                                                                  self.parts.west,
+                                                                 self.parts.chiller,
                                                                  self.parts.io)
             hasWarning                  : -> MTCS_SUMMARIZE_WARN(self.parts.timing, 
                                                                  self.parts.meteo,
                                                                  self.parts.west,
+                                                                 self.parts.chiller,
                                                                  self.parts.io)
         busyStatus:
             isBusy                      : -> self.statuses.initializationStatus.initializing
@@ -364,7 +762,10 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Services",
             config                      : -> self.config.west
             airTemperature              : -> self.parts.meteo.airTemperature
             domeApertureStatus          : -> self.domeApertureStatus
-
+        chiller:
+            operatorStatus              : -> self.operatorStatus
+            config                      : -> self.config.chiller
+            airTemperature              : -> self.parts.meteo.airTemperature
 
 ########################################################################################################################
 # ServicesTiming
@@ -688,9 +1089,6 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesMeteo",
                                                 self.referenceVoltage
                                         )
 
-
-
-
 ########################################################################################################################
 # ServicesWestController
 ########################################################################################################################
@@ -792,6 +1190,152 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesWest",
             config                  : -> self.config.oilHeatExchangerTemperature
             bus                     : -> self.parts.bus
 
+########################################################################################################################
+# ServicesChillerController
+########################################################################################################################
+MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesChillerController",
+    variables :
+        isEnabled            : { type: t_bool , comment: "Are the processes enabled?" }
+        chillerOn            : { type: t_bool, comment: "The unit status, TRUE = Chiller is ON" }
+        resetAlarmRegisters  : { type: t_bool, comment: "Flag to reset all active alarms"}
+        #Logical Area 3. Data. R/W. Words 16bits
+        setpoint             : { type: COMMONLIB.QuantityValue, comment: "The setpoint" }
+        minSetpoint          : { type: COMMONLIB.QuantityValue, comment: "The minimun setpoint" }
+        maxSetpoint          : { type: COMMONLIB.QuantityValue, comment: "The maximal setpoint" }
+        trippingBand         : { type: COMMONLIB.QuantityValue, comment: "The tripping band" }
+        #Logical Area 5. Unit Status. R/W. Words 16bits
+        unitStatus           : { type: COMMONLIB.QuantityValue, comment: "The unit status" }        
+        #Logical Area 14. Load hours. R/W. Words 16bits
+        hoursCompressor1     : { type: COMMONLIB.QuantityValue, comment: "Operation hours of compressor 1" }
+        hoursCompressor2     : { type: COMMONLIB.QuantityValue, comment: "Operation hours of compressor 2" }
+        hoursCompressor3     : { type: COMMONLIB.QuantityValue, comment: "Operation hours of compressor 3" }
+        hoursCompressor4     : { type: COMMONLIB.QuantityValue, comment: "Operation hours of compressor 4" }
+        hoursPump            : { type: COMMONLIB.QuantityValue, comment: "Operation hours of water pump" }
+            
+    variables_read_only:
+        invalidData          : { type: t_bool                 , comment: "True if there is invalid data"}
+        #Logical Area 1. Analog input. Read only. Words 16bits
+        waterTankTemperature : { type: COMMONLIB.QuantityValue, comment: "Water tank temperature" }
+        highPressureCircuit1 : { type: COMMONLIB.QuantityValue, comment: "High pressure of circuit 1" }
+        highPressureCircuit2 : { type: COMMONLIB.QuantityValue, comment: "High pressure of circuit 2" }
+        evaporatorOutTemp1   : { type: COMMONLIB.QuantityValue, comment: "Evaporator out temperature 1" }
+        evaporatorOutTemp2   : { type: COMMONLIB.QuantityValue, comment: "Evaporator out temperature 2" }
+        ambientTemperature   : { type: COMMONLIB.QuantityValue, comment: "Ambient temperature" }
+        #Logical Area 2. Digital input. Read only. Words 16bits
+        flowSwitchStatus     : { type: t_bool, comment: "Flow switch status. Digital Input Status 1" }
+        digitalInputStatus2  : { type: t_bool, comment: "Digital input status 2" }
+        digitalInputStatus3  : { type: t_bool, comment: "Digital input status 3" }
+        digitalInputStatus4  : { type: t_bool, comment: "Digital input status 4" }
+        #Logical Area 8. Digital output status. Read only. Words 16bits
+        alarmRelayOutput     : { type: t_bool, comment: "Alarm output relay output status 1" }
+        waterPumpRelayOutput : { type: t_bool, comment: "Water pump output relay output status 1" }
+        relayOutputStatus2   : { type: t_bool, comment: "Relay output status 2" }
+        relayOutputStatus3   : { type: t_bool, comment: "Relay output status 3" }
+        compressorStatus1    : { type: t_bool, comment: "Compressor 1 status. ON/OFF" }
+        compressorStatus2    : { type: t_bool, comment: "Compressor 2 status. ON/OFF" }
+        compressorStatus3    : { type: t_bool, comment: "Compressor 3 status. ON/OFF" }
+        compressorStatus4    : { type: t_bool, comment: "Compressor 4 status. ON/OFF" }
+        #Logical Area 9. Analog output status. Read only. Words 16bits
+        fanCondenser1Output  : { type: COMMONLIB.QuantityValue, comment: "Fan condenser 1 analog output 1" }
+        fanCondenser2Output  : { type: COMMONLIB.QuantityValue, comment: "Fan condenser 2 analog output 2" }
+        #Logical Area 13. Alarm status. Read only. Words 16bits
+        alarmStatus1         : { type: COMMONLIB.QuantityValue, comment: "Alarms bitwise register" }
+        alarmStatus2         : { type: COMMONLIB.QuantityValue, comment: "Alarms bitwise register" }
+        alarmStatus3         : { type: COMMONLIB.QuantityValue, comment: "Alarms bitwise register" }
+        alarmStatus6         : { type: COMMONLIB.QuantityValue, comment: "Alarms bitwise register" }
+        alarmStatus7         : { type: COMMONLIB.QuantityValue, comment: "Alarms bitwise register" }
+        alarmStatus10        : { type: COMMONLIB.QuantityValue, comment: "Alarms bitwise register" }
+        alarmStatus11        : { type: COMMONLIB.QuantityValue, comment: "Alarms bitwise register" }
+        #Logical Area 15. Alarms per hour. Read only. Words 16bits
+        alarmOilCompressor1  : { type: COMMONLIB.QuantityValue, comment: "Alarms per hour. Oil Compressor 1" }
+        alarmOilCompressor2  : { type: COMMONLIB.QuantityValue, comment: "Alarms per hour. Oil Compressor 2" }
+        alarmOilCompressor3  : { type: COMMONLIB.QuantityValue, comment: "Alarms per hour. Oil Compressor 3" }
+        alarmOilCompressor4  : { type: COMMONLIB.QuantityValue, comment: "Alarms per hour. Oil Compressedor 4" }
+        alarmFanOverload     : { type: COMMONLIB.QuantityValue, comment: "Alarms per hour. Fan overload" }
+        alarmColdSideFlowSwitch   : { type: COMMONLIB.QuantityValue, comment: "Alarms per hour. ColdSideFlowSwitch" }
+        alarmHotSideFlowSwitch    : { type: COMMONLIB.QuantityValue, comment: "Alarms per hour. HotSideFlowSwitch " }
+        alarmCirc1LowTempPressDI  : { type: COMMONLIB.QuantityValue, comment: "Alarms per hour. Circ1LowTempPressDI" }
+        alarmCirc2LowTempPressDI  : { type: COMMONLIB.QuantityValue, comment: "Alarms per hour. Circ1LowTempPressPB" }
+        alarmCirc1LowTempPressPB  : { type: COMMONLIB.QuantityValue, comment: "Alarms per hour. Circ1LowTempPressPB" }
+        alarmCirc2LowTempPressPB  : { type: COMMONLIB.QuantityValue, comment: "Alarms per hour. Circ2LowTempPressPB" }
+    references:
+        config           : { type: THISLIB.ServicesChillerControllerConfig, comment: "A small config only for Chiller controller" }
+        bus              : { type: COMMONLIB.ModbusRTUBus, comment: "The shared Modbus RTU bus" }
+    processes:
+        updateConfigVariables     : { type: COMMONLIB.Process, comment: "Read the Config variables"}
+        updateMeasureVariables    : { type: COMMONLIB.Process, comment: "Read the Measurement variables"}
+        updateAlarmRegisters      : { type: COMMONLIB.Process, comment: "Read the Alarm registers"}
+        writeSetpoint             : { type: COMMONLIB.ChangeSetpointProcess, comment: "Write the setpoint"}
+        switchChillerON           : { type: COMMONLIB.Process, comment: "Switch ON the Chiller"}
+        switchChillerOFF          : { type: COMMONLIB.Process, comment: "Switch OFF the Chiller"}
+        resetAlarms               : { type: COMMONLIB.Process, comment: "Reset all activated alarms"}
+    statuses:
+        healthStatus     : { type: COMMONLIB.HealthStatus        , comment: "Is the data valid and within range?" }
+        alarmStatus      : { type: COMMONLIB.HiHiLoLoAlarmStatus , comment: "Alarm status"}
+    calls:
+        alarmStatus:
+            superState   : -> self.config.measurement.enabled
+            config       : -> self.config.measurement.alarms
+            value        : -> self.waterTankTemperature.value
+        healthStatus:
+            superState   : -> self.config.measurement.enabled
+            isGood       : -> NOT( OR(self.invalidData,
+                                      self.alarmRelayOutput,
+                                      self.statuses.alarmStatus.hiHi,
+                                      self.statuses.alarmStatus.loLo))
+            hasWarning   : -> OR( NOT(self.chillerOn),
+                                  self.flowSwitchStatus,
+                                  self.statuses.alarmStatus.hi,
+                                  self.statuses.alarmStatus.lo )
+        updateConfigVariables:
+            isEnabled    : -> self.isEnabled
+        updateMeasureVariables:
+            isEnabled    : -> self.isEnabled
+        updateAlarmRegisters:
+            isEnabled    : -> self.isEnabled
+        writeSetpoint:
+            isEnabled    : -> self.isEnabled
+        switchChillerON:
+            isEnabled    : -> self.isEnabled
+        switchChillerOFF:
+            isEnabled    : -> self.isEnabled
+        resetAlarms:
+            isEnabled    : -> self.isEnabled
+
+
+########################################################################################################################
+# ServicesChiller
+########################################################################################################################
+MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesChiller",
+    typeOf                          : [ THISLIB.ServicesParts.chiller ]
+    variables:
+        {}
+    references:
+        operatorStatus              : { type: COMMONLIB.OperatorStatus          , comment: "Shared operator status" }
+        config                      : { type: THISLIB.ServicesChillerConfig        , comment: "The config" }
+        airTemperature              : { type: THISLIB.ServicesMeteoMeasurement  , comment: "Air temperature" }
+    statuses:
+        healthStatus                : { type: COMMONLIB.HealthStatus      , comment: "Is the Chiller in healthy state (good) or not (bad)" }
+        operatingStatus             : { type: COMMONLIB.OperatingStatus   , comment: "Is the Chiller being polled (auto) or not (manual)?" }
+    parts:
+        bus                         : { type: COMMONLIB.ModbusRTUBus         , comment: "The shared Modbus RTU bus" }
+        chillerMainController       : { type: THISLIB.ServicesChillerController , comment: "The Chiller controller to control the water temperature" }
+    processes:
+        changeOperatingState        : { type: COMMONLIB.ChangeOperatingStateProcess   , comment: "Change the operating state (e.g. AUTO, MANUAL, ...)" }
+    calls:
+        operatingStatus:
+            {}
+        changeOperatingState:
+            isEnabled               : -> self.operatorStatus.tech
+        healthStatus:
+            isGood                  : -> self.parts.chillerMainController.statuses.healthStatus.isGood
+            hasWarning              : -> self.parts.chillerMainController.statuses.healthStatus.hasWarning
+        bus:
+            isEnabled               : -> AND(self.operatorStatus.tech, self.statuses.operatingStatus.manual)
+        chillerMainController:
+            isEnabled               : -> self.parts.bus.isEnabled
+            config                  : -> self.config.chillerMainController
+            bus                     : -> self.parts.bus
 
 ########################################################################################################################
 # ServicesIO
