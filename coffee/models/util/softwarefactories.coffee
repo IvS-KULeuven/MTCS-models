@@ -343,6 +343,22 @@ softwarefactories.ADD PLC_FB() "MkBaseStateMachine" : ( ns, sm_name, args ) -> [
                         name : -> STRING(part._name) "name"
                         buffer : -> $.$._log.subBuffer
                     ) "call_#{part._name}"
+        # New feature added by JPP. Logging the processes
+        if self.processes?
+            for process in self.processes.attributes
+                # add a _log method in case one wasn't defined already
+                if not process._log?
+                    process.ADD iec61131.hasMethodInstance iec61131.MethodInstance "_log" : [
+                        HAS VAR_IN() 'name'
+                        HAS VAR_IN_OUT() 'buffer'
+                    ]
+                processName = "processes.#{process._name}"
+                implementationArg.push CALL(
+                    calls: process._log
+                    assigns:
+                        name : -> STRING(processName) "name"
+                        buffer : -> $.$._log.subBuffer
+                    ) "call_#{process._name}"
 
         if self.statuses?
             if self.statuses.healthStatus?
