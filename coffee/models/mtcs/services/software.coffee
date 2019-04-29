@@ -196,26 +196,120 @@ MTCS_MAKE_CONFIG THISLIB, "ServicesWestTemperatureUpdateConfig",
 
 
 ########################################################################################################################
+# ServicesWestParametersAddressesConfig
+########################################################################################################################
+
+MTCS_MAKE_CONFIG THISLIB, "ServicesWestParametersAddressesConfig",
+    comment: "Config about Modbus parameters addresses"  
+    items:
+        #Bit parameters addresses
+        communicationWriteStatus:     { type: t_uint16, initial: 1, comment: "Communication Write Status" }
+        manualControl:                { type: t_uint16, initial: 2, comment: "Manual control" }
+        selfTune:                     { type: t_uint16, initial: 3, comment: "Activate SelfTune" }
+        preTune:                      { type: t_uint16, initial: 4, comment: "Activate PreTune" }
+        alarm1Status:                 { type: t_uint16, initial: 5, comment: "Alarm 1 status" }
+        alarm2Status:                 { type: t_uint16, initial: 6, comment: "Alarm 2 status" }
+        setpointRampling:             { type: t_uint16, initial: 7, comment: "Setpoint ramping" }
+        loopAlarmStatus:              { type: t_uint16, initial: 10, comment: "Loop alarm status" }
+        loopAlarm:                    { type: t_uint16, initial: 12, comment: "Loop alarm" }
+        digitalInput2:                { type: t_uint16, initial: 13, comment: "State Option B digital input" }
+        #Word parameters addresses
+        processVariable:              { type: t_uint16, initial: 1, comment: "Process Variable" }
+        setpoint:                     { type: t_uint16, initial: 2, comment: "Setpoint" }
+        outputPower:                  { type: t_uint16, initial: 3, comment: "Power percentage" }
+        desviation:                   { type: t_uint16, initial: 4, comment: "Difference ProcessVariable and Setpoint" }
+        primaryProportionalBand:      { type: t_uint16, initial: 6, comment: "Primary Proportional band PB" }
+        directActing:                 { type: t_uint16, initial: 7, comment: "Direct reverse acting" }
+        resetTime:                    { type: t_uint16, initial: 8, comment: "Reset Time. Integral time constant" }
+        rate:                         { type: t_uint16, initial: 9, comment: "Rate. Derivative time constant" }
+        output1ClycleTime:            { type: t_uint16, initial: 10, comment: "Output 1 cycle time in seconds" }
+        scaleRangeLowerLimit:         { type: t_uint16, initial: 11, comment: "Lower Limit of input range" }
+        scaleRangeUpperLimit:         { type: t_uint16, initial: 12, comment: "Upper Limit of input range" }
+        alarm1Value:                  { type: t_uint16, initial: 13, comment: "Alarm 1 active at this level" }
+        alarm2Value:                  { type: t_uint16, initial: 14, comment: "Alarm 2 active at this level" }
+        manualReset:                  { type: t_uint16, initial: 15, comment: "Bias value in percentage" }
+        deadbandOverlap:              { type: t_uint16, initial: 16, comment: "Deadband and Overlap percentage" }
+        onOffDiferential:             { type: t_uint16, initial: 17, comment: "Input span for ON/OFF differential" }
+        decimalPointPosition:         { type: t_uint16, initial: 18, comment: "Decimal point position" }
+        output2ClycleTime:            { type: t_uint16, initial: 19, comment: "Output 2 cycle time in seconds" }
+        primaryOutputPowerLimit:      { type: t_uint16, initial: 20, comment: "Safety power limit in porcentage" }
+        actualSetpoint:               { type: t_uint16, initial: 21, comment: "Current Setpoint value (ramping)" }
+        setpointUpperLimit:           { type: t_uint16, initial: 22, comment: "Setpoint upper limit" }
+        setpointLowerLimit:           { type: t_uint16, initial: 23, comment: "Setpoint lower limit" }
+        setpointRampRate:             { type: t_uint16, initial: 24, comment: "Setpoint ramp rate" }
+        inputFilterTimeContant:       { type: t_uint16, initial: 25, comment: "Input Filter time contant" }
+        processValueOffset:           { type: t_uint16, initial: 26, comment: "Process Value offset" }
+        alarm1Hysteresis:             { type: t_uint16, initial: 32, comment: "Alarm 1 hysteresis in percentage" }
+        alarm2Hysteresis:             { type: t_uint16, initial: 33, comment: "Alarm 2 hysteresis in percentage" }
+
+
+########################################################################################################################
+# ServicesWestControllerVariables
+########################################################################################################################
+
+MTCS_MAKE_CONFIG THISLIB, "ServicesWestControllerVariables",
+    comment: "Configuration parameters"  
+    items:
+        setpoint:
+            type: t_double
+            comment: "Setpoint"
+        defaultSetpoint:
+            type: t_double
+            comment: "Default setpoint"
+        minSetpoint: 
+            type: t_double
+            comment: "Minimun setpoint"
+        maxSetpoint:
+            type: t_double
+            comment: "Maximal setpoint"
+        processValueOffset:
+            type: t_double
+            comment: "Offset process varible"
+        differentialOnOff:
+            type: t_double
+            comment: "On/Off differential"
+        alarmValue:
+            type: t_double
+            comment: "Alarm value"
+        inputFilterTimeConstant:
+            type: t_double
+            comment: "Input filter time constant"
+        cycleTime:
+            type: t_double
+            comment: "Cycle time for control loop"                
+        proportionalBand:
+            type: t_uint16
+            comment: "Proportional constant"
+        resetTime:
+            type: t_uint16
+            comment: "Integral time constant"
+        rate:
+            type: t_uint16
+            comment: "Dervative time constant"
+
+
+########################################################################################################################
 # ServicesWestControllerConfig
 ########################################################################################################################
 
 MTCS_MAKE_CONFIG THISLIB, "ServicesWestControllerConfig",
     items:
-        address:
+        unitID:
             type: t_uint8
-            comment: "The address of the controller"
-        measurement:
-            type: COMMONLIB.MeasurementConfig
-            comment: "The measurement config"
+            comment: "The address or UnitID of the controller"
         update:
             type: t_bool
             comment: "True to automatically update the setpoint"
-        updateMinimumSetpoint:
-            type: t_double
-            comment: "Minimum setpoint when the PLC updates the value"
         warningMessage:
             type: t_string
             comment: "A warning message (empty = not shown)"
+        measurement:
+            type: COMMONLIB.MeasurementConfig
+            comment: "The measurement config"
+        variables:
+            type: THISLIB.ServicesWestControllerVariables
+            comment: "Configuration parameters"
+
 
 ########################################################################################################################
 # ServicesWestConfig
@@ -223,9 +317,30 @@ MTCS_MAKE_CONFIG THISLIB, "ServicesWestControllerConfig",
 
 MTCS_MAKE_CONFIG THISLIB, "ServicesWestConfig",
     items:
-        pollingInterval :
+        updateProcessVariables:
+            type: t_bool
+            comment: "True to automatically update process variables"
+        updateVariablesPollingInterval :
             type: t_double
             comment: "Time between bus reads in seconds"
+        domeTempControl:
+            type: t_bool
+            comment: "True to automatically update dome temperatures"
+        domeTempCycleTime :
+            type: t_double
+            comment: "Time between bus checks in seconds"
+        hydraulicsTempControl:
+            type: t_bool
+            comment: "True to enable PID controller for hydraulics temperatures"
+        hydraulicsTempCycleTime :
+            type: t_double
+            comment: "Cycle time for PID Controller in seconds"
+        hydraulicsProportionalConstantKP :
+            type: t_double
+            comment: "Proportional constant (Kp) for PID Controller "
+        hydraulicsIntegralConstantTn :
+            type: t_double
+            comment: "Integral constant (Tn) for PID Controller in seconds"
         domeTemperature:
             type: THISLIB.ServicesWestControllerConfig
             comment: "The address of the Dome temperature controller"
@@ -238,10 +353,15 @@ MTCS_MAKE_CONFIG THISLIB, "ServicesWestConfig",
         oilHeatExchangerTemperature:
             type: THISLIB.ServicesWestControllerConfig
             comment: "The address of the oil heat exchanger temperature controller"
+        serversRoomTemperature:
+            type: THISLIB.ServicesWestControllerConfig
+            comment: "The address of the servers room temperature controller"
+        parameterAddresses:
+            type: THISLIB.ServicesWestParametersAddressesConfig
+            comment: "Config about Modbus parameters addresses"
         temperatureUpdate:
             type: THISLIB.ServicesWestTemperatureUpdateConfig
             comment: "The config for the temperature setpoint"
-
 
 ########################################################################################################################
 # ServicesChillerControllerParameterAddress
@@ -1094,22 +1214,49 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesMeteo",
 ########################################################################################################################
 MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesWestController",
     variables:
-        isEnabled       : { type: t_bool, comment: "Are the processes enabled?" }
-        unit            : { type: COMMONLIB.Units }
+        isEnabled           : { type: t_bool, comment: "Are the processes enabled?" }
+        manualControl       : { type: t_bool, comment: "Controller switched to manualControl" }
+        unit                : { type: COMMONLIB.Units }
+        setpoint            : { type: COMMONLIB.QuantityValue, comment: "The current setpoint" }
+        defaultSetpoint     : { type: COMMONLIB.QuantityValue, comment: "The default setpoint" }
+        minSetpoint         : { type: COMMONLIB.QuantityValue, comment: "The minimun setpoint" }
+        maxSetpoint         : { type: COMMONLIB.QuantityValue, comment: "The maximal setpoint" }
+        offset              : { type: COMMONLIB.QuantityValue, comment: "Offset internally added to Process Value" }
+        differentialOnOff   : { type: COMMONLIB.QuantityValue, comment: "Differential band for On/Off" }
+        alarmValue          : { type: COMMONLIB.QuantityValue, comment: "Alarm value from setpoint" }
+        inputFilter         : { type: COMMONLIB.QuantityValue, comment: "Input input filter time constant" }
+        cycleTime           : { type: COMMONLIB.QuantityValue, comment: "Cycle time for control loop" }
+        proportionalBand    : { type: COMMONLIB.QuantityValue, comment: "Proportional band constant" }
+        resetTime           : { type: COMMONLIB.QuantityValue, comment: "Integral time constant" }
+        rate                : { type: COMMONLIB.QuantityValue, comment: "Derivative time constant" }
+        outputPower         : { type: COMMONLIB.QuantityValue, comment: "The Output power in percentage" }
+
     variables_read_only:
-        invalidData     : { type: t_bool                 , comment: "True if there is invalid data"}
-        processValue    : { type: COMMONLIB.QuantityValue, comment: "The process value" }
-        outputPower     : { type: COMMONLIB.QuantityValue, comment: "The output power" }
-        setpoint        : { type: COMMONLIB.QuantityValue, comment: "The setpoint" }
+        invalidData         : { type: t_bool                 , comment: "True if there is invalid data"}
+        processValue        : { type: COMMONLIB.QuantityValue, comment: "The Process value" }
+        alarmActivated      : { type: t_bool                 , comment: "True if controller alarm is activated"}
+
     references:
-        config          : { type: THISLIB.ServicesWestControllerConfig, comment: "A small config only for a single WEST controller" }
-        bus             : { type: COMMONLIB.ModbusRTUBus         , comment: "The shared Modbus RTU bus" }
+        config              : { type: THISLIB.ServicesWestControllerConfig, comment: "A small config only for a single WEST controller" }
+        bus                 : { type: COMMONLIB.ModbusRTUBus         , comment: "The shared Modbus RTU bus" }
+
     processes:
-        update          : { type: COMMONLIB.Process, comment: "Read the process value"}
-        writeSetpoint   : { type: COMMONLIB.ChangeSetpointProcess, comment: "Write the setpoint"}
+        updateProcessVariables    : { type: COMMONLIB.Process, comment: "Read process variables"}
+        updateConfigVariables     : { type: COMMONLIB.Process, comment: "Read config variables"}
+        writeSetpoint             : { type: COMMONLIB.ChangeSetpointProcess, comment: "Write the setpoint"}
+        writeOffset               : { type: COMMONLIB.ChangeParameterProcess, comment: "Set an internal offset to Process Value"}
+        writeProportinalBand      : { type: COMMONLIB.ChangeParameterProcess, comment: "Set the Proportinal band constant"}
+        writeResetTime            : { type: COMMONLIB.ChangeParameterProcess, comment: "Set the Integral time constant"}
+        writeRate                 : { type: COMMONLIB.ChangeParameterProcess, comment: "Set the Derivative time constant"}
+        switchToManual            : { type: COMMONLIB.Process, comment: "Switch controller to Manual"}
+        switchToAuto              : { type: COMMONLIB.Process, comment: "Switch controller to Auto"}
+        writeOutputPower          : { type: COMMONLIB.ChangeParameterProcess, comment: "Set a specific output power"}
+        writeConfigToController   : { type: COMMONLIB.Process, comment: "Write saved config to Controller"}
+
     statuses:
         healthStatus        : { type: COMMONLIB.HealthStatus        , comment: "Is the data valid and within range?" }
         alarmStatus         : { type: COMMONLIB.HiHiLoLoAlarmStatus , comment: "Alarm status"}
+
     calls:
         alarmStatus:
             superState   : -> self.config.measurement.enabled
@@ -1122,12 +1269,28 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesWestController",
                                       self.statuses.alarmStatus.loLo))
             hasWarning   : -> OR( self.statuses.alarmStatus.hi,
                                   self.statuses.alarmStatus.lo )
-        update:
+        updateProcessVariables:
+            isEnabled:  -> self.isEnabled
+        updateConfigVariables:
             isEnabled:  -> self.isEnabled
         writeSetpoint:
             isEnabled:  -> self.isEnabled
-
-
+        writeOffset:
+            isEnabled:  -> self.isEnabled
+        writeProportinalBand:
+            isEnabled:  -> self.isEnabled
+        writeResetTime:
+            isEnabled:  -> self.isEnabled
+        writeRate:
+            isEnabled:  -> self.isEnabled
+        switchToManual:
+            isEnabled:  -> self.isEnabled
+        switchToAuto:
+            isEnabled:  -> self.isEnabled
+        writeOutputPower:
+            isEnabled:  -> self.isEnabled
+        writeConfigToController:
+            isEnabled:  -> self.isEnabled
 
 ########################################################################################################################
 # ServicesWest
@@ -1151,6 +1314,7 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesWest",
         firstFloorTemperature       : { type: THISLIB.ServicesWestController , comment: "The West controller at the first floor to control the temperature" }
         pumpsRoomTemperature        : { type: THISLIB.ServicesWestController , comment: "The West controller at the pumps room to control the temperature" }
         oilHeatExchangerTemperature : { type: THISLIB.ServicesWestController , comment: "The West controller at the heat exchanger to control the oil temperature" }
+        serversRoomTemperature     : { type: THISLIB.ServicesWestController , comment: "The West controller at the servers room to control the temperature" }
     processes:
         changeOperatingState        : { type: COMMONLIB.ChangeOperatingStateProcess   , comment: "Change the operating state (e.g. AUTO, MANUAL, ...)" }
     calls:
@@ -1162,11 +1326,13 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesWest",
             isGood                  : -> MTCS_SUMMARIZE_GOOD(self.parts.domeTemperature,
                                                              self.parts.firstFloorTemperature,
                                                              self.parts.pumpsRoomTemperature,
-                                                             self.parts.oilHeatExchangerTemperature)
+                                                             self.parts.oilHeatExchangerTemperature,
+                                                             self.parts.serversRoomTemperature)
             hasWarning              : -> MTCS_SUMMARIZE_WARN(self.parts.domeTemperature,
                                                              self.parts.firstFloorTemperature,
                                                              self.parts.pumpsRoomTemperature,
-                                                             self.parts.oilHeatExchangerTemperature)
+                                                             self.parts.oilHeatExchangerTemperature,
+                                                             self.parts.serversRoomTemperature)
         bus:
             isEnabled               : -> AND(self.operatorStatus.tech, self.statuses.operatingStatus.manual)
         domeTemperature:
@@ -1188,6 +1354,11 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesWest",
             isEnabled               : -> self.parts.bus.isEnabled
             unit                    : -> COMMONLIB.Units.DEGREES_CELSIUS
             config                  : -> self.config.oilHeatExchangerTemperature
+            bus                     : -> self.parts.bus
+        serversRoomTemperature:
+            isEnabled               : -> self.parts.bus.isEnabled
+            unit                    : -> COMMONLIB.Units.DEGREES_CELSIUS
+            config                  : -> self.config.serversRoomTemperature
             bus                     : -> self.parts.bus
 
 ########################################################################################################################

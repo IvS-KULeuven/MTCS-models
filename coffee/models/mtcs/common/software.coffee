@@ -869,6 +869,14 @@ MTCS_MAKE_PROCESS THISLIB, "ChangeSetpointProcess",
     arguments:
         setpoint     : { type: t_double, comment: "New setpoint value" }
 
+########################################################################################################################
+# ChangeParameterProcess
+########################################################################################################################
+MTCS_MAKE_PROCESS THISLIB, "ChangeParameterProcess",
+    extends: THISLIB.BaseProcess
+    arguments:
+        parameter     : { type: t_double, comment: "New parameter value" }
+
 
 ########################################################################################################################
 # McMoveAbsoluteProcess
