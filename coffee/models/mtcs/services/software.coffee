@@ -374,9 +374,12 @@ MTCS_MAKE_CONFIG THISLIB, "ServicesChillerControllerParameterAddresses",
         waterTankTemperature:     { type: t_uint16, initial: 258, comment: "Water tank temperature" }
         highPressureCircuit1:     { type: t_uint16, initial: 260, comment: "High pressure of circuit 1" }
         highPressureCircuit2:     { type: t_uint16, initial: 262, comment: "High pressure of circuit 2" }
+        chillerCurrentInput:      { type: t_uint16, initial: 264, comment: "Chiller current input" }
+        waterPumpCurrentInput:    { type: t_uint16, initial: 266, comment: "Water pump current input" }        
         evaporatorOutTemp1:       { type: t_uint16, initial: 268, comment: "Evaporator out temperature 1" }
         evaporatorOutTemp2:       { type: t_uint16, initial: 270, comment: "Evaporator out temperature 2" }
         ambientTemperature:       { type: t_uint16, initial: 272, comment: "Ambient temperature" }
+        waterPumpChassisTemp:     { type: t_uint16, initial: 274, comment: "Water Pump chassis temperature" }        
         #Logical Area 2. Digital input. Read only. Words 16bits
         digitalInputStatus1:      { type: t_uint16, initial: 512, comment: "Flow switch status" }
         digitalInputStatus2:      { type: t_uint16, initial: 513, comment: "Digital input status 2" }
@@ -694,10 +697,19 @@ MTCS_MAKE_CONFIG THISLIB, "ServicesChillerControllerConfig",
         unitID:
             type: t_uint8
             comment: "The address or UnitID of the controller"
-        measurement:
+        waterTankTemperatureMeasurement:
             type: COMMONLIB.MeasurementConfig
-            comment: "The measurement config"
-        warningMessage:
+            comment: "The WaterTank measurement config"
+        warningMessageWaterTemperatureMeasurement:
+            type: t_string
+            comment: "A warning message (empty = not shown)"
+        waterPumpSupervisorMeasurement:
+            type: COMMONLIB.MeasurementConfig
+            comment: "The WaterPump supervisor measurement config"
+        messageWaterPumpSupervisorMeasurement:
+            type: t_string
+            comment: "A message to be shown on config tab"
+        warningMessageWaterPumpSupervisorMeasurement:
             type: t_string
             comment: "A warning message (empty = not shown)"
         parameterAddresses:
@@ -1310,7 +1322,7 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesWest",
         operatingStatus             : { type: COMMONLIB.OperatingStatus   , comment: "Are the WESTs being polled (auto) or not (manual)?" }
     parts:
         bus                         : { type: COMMONLIB.ModbusRTUBus         , comment: "The shared Modbus RTU bus" }
-        domeTemperature             : { type: THISLIB.ServicesWestController , comment: "The West controller at the dome to control the temperature " }
+        domeTemperature             : { type: THISLIB.ServicesWestController , comment: "The West coparts.chillerMainController.parts.chillerMainControllerntroller at the dome to control the temperature " }
         firstFloorTemperature       : { type: THISLIB.ServicesWestController , comment: "The West controller at the first floor to control the temperature" }
         pumpsRoomTemperature        : { type: THISLIB.ServicesWestController , comment: "The West controller at the pumps room to control the temperature" }
         oilHeatExchangerTemperature : { type: THISLIB.ServicesWestController , comment: "The West controller at the heat exchanger to control the oil temperature" }
@@ -1389,9 +1401,12 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesChillerController",
         waterTankTemperature : { type: COMMONLIB.QuantityValue, comment: "Water tank temperature" }
         highPressureCircuit1 : { type: COMMONLIB.QuantityValue, comment: "High pressure of circuit 1" }
         highPressureCircuit2 : { type: COMMONLIB.QuantityValue, comment: "High pressure of circuit 2" }
+        chillerCurrentInput  : { type: COMMONLIB.QuantityValue, comment: "Chiller current input" }
+        waterPumpCurrentInput: { type: COMMONLIB.QuantityValue, comment: "Water pump current input" }
         evaporatorOutTemp1   : { type: COMMONLIB.QuantityValue, comment: "Evaporator out temperature 1" }
-        evaporatorOutTemp2   : { type: COMMONLIB.QuantityValue, comment: "Evaporator out temperature 2" }
+        evaporatorOutTemp2   : { type: COMMONLIB.QuantityValue, comment: "EvaporwaterTankTemperatureMeasurementator out temperature 2" }
         ambientTemperature   : { type: COMMONLIB.QuantityValue, comment: "Ambient temperature" }
+        waterPumpChassisTemp : { type: COMMONLIB.QuantityValue, comment: "Water Pump chassis temperature" }
         #Logical Area 2. Digital input. Read only. Words 16bits
         flowSwitchStatus     : { type: t_bool, comment: "Flow switch status. Digital Input Status 1" }
         digitalInputStatus2  : { type: t_bool, comment: "Digital input status 2" }
@@ -1441,23 +1456,33 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesChillerController",
         switchChillerOFF          : { type: COMMONLIB.Process, comment: "Switch OFF the Chiller"}
         resetAlarms               : { type: COMMONLIB.Process, comment: "Reset all activated alarms"}
     statuses:
-        healthStatus     : { type: COMMONLIB.HealthStatus        , comment: "Is the data valid and within range?" }
-        alarmStatus      : { type: COMMONLIB.HiHiLoLoAlarmStatus , comment: "Alarm status"}
+        healthStatus                      : { type: COMMONLIB.HealthStatus        , comment: "Is the data valid and within range?" }
+        alarmStatusWatertemperature       : { type: COMMONLIB.HiHiLoLoAlarmStatus , comment: "Alarm status about Water temperature"}
+        alarmStatusWaterPumpSupervisor    : { type: COMMONLIB.HiHiLoLoAlarmStatus , comment: "Alarm status about WaterPump supervisor"}
     calls:
-        alarmStatus:
-            superState   : -> self.config.measurement.enabled
-            config       : -> self.config.measurement.alarms
+        alarmStatusWatertemperature:
+            superState   : -> self.config.waterTankTemperatureMeasurement.enabled
+            config       : -> self.config.waterTankTemperatureMeasurement.alarms
             value        : -> self.waterTankTemperature.value
+        alarmStatusWaterPumpSupervisor:
+            superState   : -> self.config.waterPumpSupervisorMeasurement.enabled           
+            config       : -> self.config.waterPumpSupervisorMeasurement.alarms
+            value        : -> self.waterPumpCurrentInput.value
         healthStatus:
-            superState   : -> self.config.measurement.enabled
+            superState   : -> AND(self.config.waterTankTemperatureMeasurement.enabled,
+                                  self.config.waterPumpSupervisorMeasurement.enabled)
             isGood       : -> NOT( OR(self.invalidData,
                                       self.alarmRelayOutput,
-                                      self.statuses.alarmStatus.hiHi,
-                                      self.statuses.alarmStatus.loLo))
+                                      self.statuses.alarmStatusWatertemperature.hiHi,
+                                      self.statuses.alarmStatusWatertemperature.loLo,
+                                      self.statuses.alarmStatusWaterPumpSupervisor.hiHi,
+                                      self.statuses.alarmStatusWaterPumpSupervisor.loLo))
             hasWarning   : -> OR( NOT(self.chillerOn),
                                   self.flowSwitchStatus,
-                                  self.statuses.alarmStatus.hi,
-                                  self.statuses.alarmStatus.lo )
+                                  self.statuses.alarmStatusWatertemperature.hi,
+                                  self.statuses.alarmStatusWatertemperature.lo,
+                                  self.statuses.alarmStatusWaterPumpSupervisor.hi,
+                                  self.statuses.alarmStatusWaterPumpSupervisor.lo)
         updateConfigVariables:
             isEnabled    : -> self.isEnabled
         updateMeasureVariables:
