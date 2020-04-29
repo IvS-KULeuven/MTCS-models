@@ -2054,6 +2054,19 @@ MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusWriteRegisterProcess",
         value        : { type: t_int16  , comment: "Value to write on the register" }
     variables:
         errorId      : { type: t_int16, comment: "Error Id. Modbus error code" }
+
+########################################################################################################################
+# ModbusRTUBusDiagnosticsProcess
+########################################################################################################################
+MTCS_MAKE_PROCESS THISLIB, "ModbusRTUBusDiagnosticsProcess",
+    extends: THISLIB.BaseProcess
+    arguments:
+        unitID       : { type: t_uint8  , comment: "Modbus station address (1..247)"}
+        subFunction  : { type: t_uint16 , comment: "Modbus subFunction code"}
+        subData      : { type: t_int16  , comment: "Modbus data for subFunction " }
+    variables:
+        value        : { type: t_int16, comment: "Value of the register" }
+        errorId      : { type: t_int16, comment: "Error Id. Modbus error code" }
         
 ########################################################################################################################
 # ModbusRTUBus
@@ -2067,7 +2080,8 @@ MTCS_MAKE_STATEMACHINE THISLIB, "ModbusRTUBus",
         readCoil       : { type: THISLIB.ModbusRTUBusReadCoilProcess, comment: "Read coil" }
         writeCoil      : { type: THISLIB.ModbusRTUBusWriteCoilProcess, comment: "Write coil" }
         readRegister   : { type: THISLIB.ModbusRTUBusReadRegisterProcess, comment: "Read register" }
-        writeRegister  : { type: THISLIB.ModbusRTUBusWriteRegisterProcess, comment: "Write register" }    
+        writeRegister  : { type: THISLIB.ModbusRTUBusWriteRegisterProcess, comment: "Write register" } 
+        diagnostics    : { type: THISLIB.ModbusRTUBusDiagnosticsProcess, comment: "Diagnostics" } 
     statuses:
         busyStatus      : { type: THISLIB.BusyStatus            , comment: "Is the config manager in a busy state?" }
     calls:
@@ -2075,7 +2089,8 @@ MTCS_MAKE_STATEMACHINE THISLIB, "ModbusRTUBus",
             isBusy      : -> OR( self.processes.readCoil.statuses.busyStatus.busy,
                                  self.processes.writeCoil.statuses.busyStatus.busy,
                                  self.processes.readRegister.statuses.busyStatus.busy,
-                                 self.processes.writeRegister.statuses.busyStatus.busy )        
+                                 self.processes.writeRegister.statuses.busyStatus.busy,
+                                 self.processes.diagnostics.statuses.busyStatus.busy )        
         readCoil:
             isEnabled  : -> AND( self.isEnabled, self.statuses.busyStatus.idle )
         writeCoil:
@@ -2083,6 +2098,8 @@ MTCS_MAKE_STATEMACHINE THISLIB, "ModbusRTUBus",
         readRegister:
             isEnabled  : -> AND( self.isEnabled, self.statuses.busyStatus.idle )
         writeRegister:
+            isEnabled  : -> AND( self.isEnabled, self.statuses.busyStatus.idle )
+        diagnostics:
             isEnabled  : -> AND( self.isEnabled, self.statuses.busyStatus.idle )
 
 
