@@ -127,6 +127,26 @@ MTCS_MAKE_CONFIG THISLIB, "MTCSEndOfNightConfig",
 
 
 ########################################################################################################################
+# MTCSRemoteOperationConfig
+########################################################################################################################
+MTCS_MAKE_CONFIG THISLIB, "MTCSRemoteOperationConfig",
+    items:
+        defaultOperationgMode          : { type: t_bool   , comment: "Default Operation Mode False=LOCAL True=REMOTE" }
+        watchdogMocsActivityEnable     : { type: t_bool   , comment: "Enable the watchdog for MOCS activity" }
+        watchdogMocsActivityTime1      : { type: t_double , comment: "The watchdog timer time for MOCS 1" }
+        watchdogMocsActivityTime2      : { type: t_double , comment: "The watchdog timer time for MOCS 2" }
+        warningMocsTime1               : { type: t_double , comment: "The warning timer time for MOCS 1" }
+        warningMocsTime2               : { type: t_double , comment: "The warning timer time for MOCS 2" }
+        watchdogRemoteConnectionEnable : { type: t_bool   , comment: "Enable the watchdog for remote connection" }
+        watchdogRemoteConnectionTime   : { type: t_double , comment: "The watchdog timer time for remote connection" }
+        warningRemoteConnectionTime    : { type: t_double , comment: "The warning timer time for remote connection" }
+        watchdogConnectionPortEnable   : { type: t_bool   , comment: "Enable the watchdog for connection Port" }
+        watchdogConnectionPortTime     : { type: t_double , comment: "The watchdog timer time for connection Port" }
+        warningConnectionPortTime      : { type: t_double , comment: "The warning timer time for connection Port" }
+        remoteConnectionPortNumber     : { type: t_double , comment: "The port number for remote connection" }
+
+
+########################################################################################################################
 # MTCSConfig
 ########################################################################################################################
 MTCS_MAKE_CONFIG THISLIB, "MTCSConfig",
@@ -138,6 +158,9 @@ MTCS_MAKE_CONFIG THISLIB, "MTCSConfig",
             type: THISLIB.MTCSEndOfNightConfig
             comment: "Configure the instruments"
             expand: false
+        remoteOperation:
+            type: THISLIB.MTCSRemoteOperationConfig
+            comment: "Configure the remote operation"
 
 
 ########################################################################################################################
@@ -147,7 +170,6 @@ MTCS_MAKE_PROCESS THISLIB, "MTCSChangeInstrumentProcess",
     extends: COMMONLIB.BaseProcess
     arguments:
         name : { type: t_string, comment: "Name of the instrument" }
-
 
 
 ########################################################################################################################
@@ -178,12 +200,28 @@ MTCS_MAKE_PROCESS THISLIB, "MTCSPointProcess",
         # dome
         doDomeTracking      : { type: t_bool   , initial: true  , comment: "True to enable dome tracking" }
 
+
+########################################################################################################################
+# MTCSMocsObservationProcess
+########################################################################################################################
+MTCS_MAKE_PROCESS THISLIB, "MTCSMocsObservationProcess",
+    extends: COMMONLIB.BaseProcess
+    arguments:
+        status : { type: t_bool, comment: "True to notify that there is an observation running" }
+
+
+
 ########################################################################################################################
 # MTCS
 ########################################################################################################################
 MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
     variables:
         editableConfig              : { type: THISLIB.MTCSConfig                        , comment: "Editable configuration of the MTCS" , expand: false }
+        remoteOperationEnable       : { type: t_bool                                    , comment: "True to Remote operation enabled" }
+        mocsObservationStatus       : { type: t_bool                                    , comment: "True to notify that there is an observation running" }
+        remoteConnectionStatus      : { type: t_bool                                    , comment: "True to notify that there is a remote connection" }
+        remoteconnectionPortStatus  : { type: t_bool                                    , comment: "True to notify that there is a connection port established" }
+        
     variables_read_only:
         noOfFailedOperatorChanges   : { type: t_uint16                                  , comment: "How many times has a wrong password been entered?"}
         activeInstrument            : { type: COMMONLIB.InstrumentConfig                , comment: "Config of the currently active instrument (depending on M3 and possibly derotator) *if* isInstrumentActive is TRUE" , expand: false}
@@ -191,6 +229,8 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
         activeInstrumentName        : { type: t_string                                  , comment: "Name of the currently active instrument" }
         isInstrumentActive          : { type: t_bool                                    , comment: "Is an instrument currently active (i.e. is M3 static at a known position?)"}
         config                      : { type: THISLIB.MTCSConfig                        , comment: "Active configuration of the ServicesTiming subsystem" }
+        remoteConnectionWarningFlag : { type: t_bool                                    , comment: "Warning flag in case of remote connections is lost for a while"}
+        remoteMocsWarningFlag       : { type: t_bool                                    , comment: "Warning flag in case of there is no MOCS activity for a while"}
     parts:
         telemetry:
             type : TELEMETRYLIB.Telemetry
@@ -378,6 +418,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
         operatorStatus              : { type: COMMONLIB.OperatorStatus }
         passwordHealthStatus        : { type: COMMONLIB.HealthStatus }
         activityStatus              : { type: COMMONLIB.ActivityStatus }
+        operatingModeStatus         : { type: COMMONLIB.OperatingModeStatus }
     processes:
         initialize                  : { type: COMMONLIB.Process                         , comment: "Start initializing the whole MTCS" }
         lock                        : { type: COMMONLIB.Process                         , comment: "Lock the whole MTCS" }
@@ -393,6 +434,11 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
         changeInstrument            : { type: THISLIB.MTCSChangeInstrumentProcess       , comment: "Change the instrument" }
         point                       : { type: THISLIB.MTCSPointProcess                  , comment: "Point the telescope and dome to a new target" }
         emergencyClose              : { type: COMMONLIB.Process                         , comment: "Close the dome and shutter asap" }
+        changeOperatingMode         : { type: COMMONLIB.ChangeOperatingModeStateProcess , comment: "Change the operating mode (e.g. LOCAL, REMOTE, ...)" }
+        mocsObservation             : { type: THISLIB.MTCSMocsObservationProcess        , comment: "Notifications about MOCS observation status" }
+        remoteConnectionCheck       : { type: COMMONLIB.Process                         , comment: "Remote connection checking" }
+        remoteConnectionPortCheck   : { type: COMMONLIB.Process                         , comment: "Remote connection port checking" }
+        resetWatchdogTimer          : { type: COMMONLIB.Process                         , comment: "Reset the watchdog timer" }        
     calls:
         initialize:
             isEnabled           : -> NOT(self.statuses.initializationStatus.initializing)
@@ -423,6 +469,16 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
             isEnabled           : -> OR( self.statuses.initializationStatus.initialized, self.statuses.healthStatus.bad )
         emergencyClose:
             isEnabled           : -> NOT(self.parts.dome.parts.shutter.statuses.apertureStatus.isClosed)
+        changeOperatingMode:
+            isEnabled           : -> self.statuses.operatorStatus.tech
+        mocsObservation:
+            isEnabled           : -> TRUE
+        remoteConnectionCheck:
+            isEnabled           : -> TRUE
+        remoteConnectionPortCheck:
+            isEnabled           : -> TRUE           
+        resetWatchdogTimer:
+            isEnabled           : -> TRUE
         cover:
             operatorStatus      : -> self.statuses.operatorStatus
             aziPos              : -> self.parts.axes.parts.azi.actPos
@@ -458,7 +514,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "MTCS",
             safetyDomeAccess    : -> self.parts.safety.parts.domeAccess
             safetyMotionBlocking: -> self.parts.safety.parts.motionBlocking
         configManager:
-            isEnabled           : -> self.statuses.operatorStatus.tech
+           isEnabled           : -> self.statuses.operatorStatus.tech
         activityStatus:
             superState          : -> OR(self.statuses.initializationStatus.initialized, self.statuses.initializationStatus.initializingFailed)
             isAwake             : -> OR( EQ( self.parts.hydraulics.pumpsState, HYDRAULICSLIB.HydraulicsPumpsStates.RUNNING ), self.parts.axes.statuses.poweredStatus.enabled)
