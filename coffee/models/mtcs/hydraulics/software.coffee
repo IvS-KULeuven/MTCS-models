@@ -57,15 +57,15 @@ MTCS_MAKE_ENUM THISLIB, "HydraulicsPumpsStates",
 
 MTCS_MAKE_CONFIG THISLIB, "HydraulicsConfig",
     items:
-        top                 : { comment: "Top side settings" }
-        bottom              : { comment: "Bottom side settings" }
-        controlCycleTime    : { type: t_double                      , comment: "Cycle time in seconds of the control loop (old system: 60.0)" }
-        controlHysteresis   : { type: t_double                      , comment: "Don't change the frequency setpoint if the error is below this value (in Hz) (old system: 1.0)" }
-        buildUpPressureTime : { type: t_double                      , comment: "Time in seconds during startup, when the pumps must run at maxFrequency" }
-        bearingTemperature  : { type: COMMONLIB.MeasurementConfig   , comment: "Oil temperature measured at the bearing" }
-        stoppingTime        : { type: t_double                      , comment: "Time in seconds during stopping" }
-        pumpsPowerOnTIme    : { type: t_double                      , comment: "Time in seconds to wait while powering on" }
-        pumpsPowerOffTIme   : { type: t_double                      , comment: "Time in seconds to wait while powering off" }
+        top                            : { comment: "Top side settings" }
+        bottom                         : { comment: "Bottom side settings" }
+        controlCycleTime               : { type: t_double                      , comment: "Cycle time in seconds of the control loop (old system: 60.0)" }
+        controlHysteresis              : { type: t_double                      , comment: "Don't change the frequency setpoint if the error is below this value (in Hz) (old system: 1.0)" }
+        buildUpPressureTime            : { type: t_double                      , comment: "Time in seconds during startup, when the pumps must run at maxFrequency" }
+        bearingTemperature             : { type: COMMONLIB.MeasurementConfig   , comment: "Oil temperature measured at the bearing" }
+        stoppingTime                   : { type: t_double                      , comment: "Time in seconds during stopping" }
+        pumpsPowerOnTIme               : { type: t_double                      , comment: "Time in seconds to wait while powering on" }
+        pumpsPowerOffTIme              : { type: t_double                      , comment: "Time in seconds to wait while powering off" }
 
 
 ########################################################################################################################
@@ -106,7 +106,7 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Hydraulics",
         config                          : { type: THISLIB.HydraulicsConfig          , comment: "Active configuration of the Hydraulics subsystem" }
         bearingTemperature              : { type: COMMONLIB.TemperatureMeasurement  , comment: "Temperature measured at the bearing" }
     parts:
-        circulationPumpRelay                      : { type: COMMONLIB.SimpleRelay             , comment: "Relay to power on/off the circulation pump" }
+        circulationPumpRelay            : { type: COMMONLIB.SimpleRelay             , comment: "Relay to power on/off the circulation pump" }
         pumpsPowerRelay                 : { type: COMMONLIB.SimpleRelay             , comment: "Relay to power on/off the pumps" }
         top:
             comment                     : "Top side"
@@ -179,8 +179,8 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Hydraulics",
                                                                     self.processes.unlock,
                                                                     self.processes.changeOperatingState,
                                                                     self.safetyHydraulics),
-                                                self.circulationFilterGOK
-                                                self.circulationFilterDOK
+                                                self.circulationFilterGOK,
+                                                self.circulationFilterDOK,
                                                 NOT( self.oilLevelTooHigh ),
                                                 NOT( EQ( self.pumpsState, THISLIB.HydraulicsPumpsStates.ERROR )) )
             hasWarning                  : -> OR(
@@ -189,7 +189,9 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "Hydraulics",
                                                                     self.processes.initialize,
                                                                     self.processes.lock,
                                                                     self.processes.unlock,
-                                                                    self.processes.changeOperatingState )
+                                                                    self.processes.changeOperatingState ),
+                                                self.bearingTemperature.statuses.healthStatus.hasWarning,
+                                                self.bearingTemperature.statuses.healthStatus.bad,
                                                 EQ( self.pumpsState, THISLIB.HydraulicsPumpsStates.MANUAL ))
         busyStatus:
             isBusy                      : -> OR(self.statuses.initializationStatus.initializing,

@@ -392,6 +392,7 @@ MTCS_MAKE_CONFIG THISLIB, "ServicesChillerControllerParameterAddresses",
         trippingBand:             { type: t_uint16, initial: 774, comment: "Tripping Band parameter address" }
         #Logical Area 5. Unit Status. R/W. Words 16bits
         unitStatus:               { type: t_uint16, initial: 1280, comment: "Unit Status parameter address" }
+        unitControllerReset:      { type: t_uint16, initial: 1282, comment: "Unit Controlelr reset parameter address" }
         #Logical Area 8. Digital output status. Read only. Words 16bits
         relayOutputStatus1:       { type: t_uint16, initial: 2048, comment: "Relay output status 1" }
         relayOutputStatus2:       { type: t_uint16, initial: 2049, comment: "Relay output status 2" }
@@ -609,6 +610,7 @@ MTCS_MAKE_CONFIG THISLIB, "ServicesChillerControllerBitwiseConfig",
         statusOnMask:    { type: t_uint16, initial: int(0b0000001100000000), comment: "Word check if Chiller is ON" }
         switchOnMask:    { type: t_uint16, initial: int(0b0000010000000100), comment: "Word to switch ON the Chiller" }
         switchOffMask:   { type: t_uint16, initial: int(0b0000000000000001), comment: "Word to switch OFF the Chiller" }
+        resetUnitMask:   { type: t_uint16, initial: int(0b0000000010000000), comment: "Word to reset controller Unit" }
         resetAlarmMask:  { type: t_uint16, initial: int(0b0001000000010000), comment: "Word to reset Alarm" }
         #Masks for bitwise checking in 16 bit registers
         flowSwitchMask:  { type: t_uint16, initial: int(0b0000100000000000), comment: "Word to check if Flow switch is ON" }
@@ -1387,7 +1389,8 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesChillerController",
         maxSetpoint          : { type: COMMONLIB.QuantityValue, comment: "The maximal setpoint" }
         trippingBand         : { type: COMMONLIB.QuantityValue, comment: "The tripping band" }
         #Logical Area 5. Unit Status. R/W. Words 16bits
-        unitStatus           : { type: COMMONLIB.QuantityValue, comment: "The unit status" }        
+        unitStatus           : { type: COMMONLIB.QuantityValue, comment: "The unit status" }
+        unitResetRegister    : { type: COMMONLIB.QuantityValue, comment: "The unit reset register" }
         #Logical Area 14. Load hours. R/W. Words 16bits
         hoursCompressor1     : { type: COMMONLIB.QuantityValue, comment: "Operation hours of compressor 1" }
         hoursCompressor2     : { type: COMMONLIB.QuantityValue, comment: "Operation hours of compressor 2" }
@@ -1454,6 +1457,7 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesChillerController",
         writeSetpoint             : { type: COMMONLIB.ChangeSetpointProcess, comment: "Write the setpoint"}
         switchChillerON           : { type: COMMONLIB.Process, comment: "Switch ON the Chiller"}
         switchChillerOFF          : { type: COMMONLIB.Process, comment: "Switch OFF the Chiller"}
+        resetUnitController       : { type: COMMONLIB.Process, comment: "Reset Unit controller of the Chiller"}
         resetAlarms               : { type: COMMONLIB.Process, comment: "Reset all activated alarms"}
     statuses:
         healthStatus                      : { type: COMMONLIB.HealthStatus        , comment: "Is the data valid and within range?" }
