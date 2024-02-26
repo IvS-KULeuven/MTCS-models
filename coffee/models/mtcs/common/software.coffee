@@ -375,6 +375,10 @@ MTCS_MAKE_CONFIG THISLIB, "MeasurementConfig",
         enabled:
             type: t_bool
             comment: "Is the quantity being measured? (Can be false e.g. if the sensor is deliberately not connected (yet).)"
+        gain:
+            type: t_double
+            comment: "Gain to be applied to the measured value (default: 1 = no gain)"
+            initial: double(1.0)
         offset:
             type: t_double
             comment: "Offset to be added to the measured value (default: 0 = no offset)"
@@ -1765,15 +1769,13 @@ MTCS_MAKE_STATEMACHINE THISLIB, "RelativeHumidityMeasurement",
             value        : -> self.average.percent.value
         healthStatus:
             superState   : -> self.statuses.enabledStatus.enabled
-            isGood       : -> NOT( OR(self.error,
-                                      self.underrange,
-                                      self.overrange,
-                                      self.statuses.alarmStatus.hiHi,
-                                      self.statuses.alarmStatus.loLo))
+            isGood       : -> NOT( OR( AND(self.error, OR(self.underrange, self.overrange)),
+                                       self.statuses.alarmStatus.hiHi,
+                                       self.statuses.alarmStatus.loLo))
             hasWarning   : -> OR( self.statuses.alarmStatus.hi,
                                   self.statuses.alarmStatus.lo )
         actual:
-            newFractionValue : -> SUM(MUL(self.rawValue, self.conversionFactor), self.config.offset)
+            newFractionValue : -> SUM(MUL(MUL(self.rawValue, self.conversionFactor),self.config.gain), self.config.offset)
 
 ########################################################################################################################
 # ForceMeasurement

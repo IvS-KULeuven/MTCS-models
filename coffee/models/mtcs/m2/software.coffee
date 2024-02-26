@@ -491,6 +491,9 @@ MTCS_MAKE_CONFIG THISLIB, "M2AxisGeneralConfig",
         timeout:
             comment: "Timeout for a movement, in seconds (for Z-axis: at low speed)"
             type:    t_double
+        verifyPositionOnInitialization:
+            comment: "Verify the fixed positions (and adjust them if they fall out of the tolerance) during the Initialization procedure"
+            type:    t_bool
 
 
 ########################################################################################################################
