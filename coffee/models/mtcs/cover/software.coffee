@@ -204,7 +204,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "Cover",
     abort:
       isEnabled       : -> self.parts.apertureProcedure.statuses.busyStatus.busy
     reset:
-      isEnabled       : -> AND(self.statuses.initializationStatus.initialized,
+      isEnabled       : -> AND(NOT(OR(self.statuses.initializationStatus.shutdown, self.statuses.initializationStatus.locked)),
                                EQ(self.parts.apertureProcedure.state, THISLIB.CoverApertureProcedureStates.ERROR))
     top:
       initializationStatus  : -> self.statuses.initializationStatus

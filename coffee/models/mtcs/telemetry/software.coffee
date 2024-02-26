@@ -311,7 +311,7 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "TelemetryDewpoint",
         healthStatus:
             superState      : -> self.statuses.enabledStatus.enabled
             isGood          : -> NOT( OR(self.temperature.error,
-                                         self.relativeHumidity.error,
+                                         self.relativeHumidity.statuses.healthStatus.bad,
                                          self.statuses.alarmStatus.hiHi,
                                          self.statuses.alarmStatus.loLo))
             hasWarning      : -> OR( self.statuses.alarmStatus.hi,
