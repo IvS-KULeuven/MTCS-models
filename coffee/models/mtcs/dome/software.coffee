@@ -81,21 +81,23 @@ MTCS_MAKE_CONFIG THISLIB, "DomeKnownPositionsConfig",
 MTCS_MAKE_CONFIG THISLIB, "DomeShutterConfig",
   typeOf: THISLIB.DomeConfig.shutter
   items:
-    wirelessPolling         : { type: t_double, comment: "Polling frequency of the wireless I/O device, in seconds. Negative value = no polling." }
-    wirelessIpAddress       : { type: t_string, comment: "IP address of the wireless I/O device" }
-    wirelessPort            : { type: t_uint16, comment: "Port of the wireless I/O device" }
-    wirelessUnitID          : { type: t_uint8 , comment: "Unit ID the wireless I/O device" }
-    wirelessTimeoutSeconds  : { type: t_double, comment: "The timeout of a single command. Does not lead to an error (yet), because we still retry."}
-    wirelessRetriesSeconds  : { type: t_double, comment: "The total timeout of the retries. If no valid data is received after this time, then we consider the shutters in error." }
-    upperEstimatedOpenTime  : { type: t_double, comment: "Estimated opening time of the upper panel, in seconds"}
-    upperEstimatedCloseTime : { type: t_double, comment: "Estimated closing time of the upper panel, in seconds"}
-    lowerEstimatedOpenTime  : { type: t_double, comment: "Estimated opening time of the lower panel, in seconds"}
-    lowerEstimatedCloseTime : { type: t_double, comment: "Estimated closing time of the lower panel, in seconds"}
-    lowerOpenTimeout        : { type: t_double, comment: "Opening timeout of the lower panel, in seconds"}
-    lowerCloseTimeout       : { type: t_double, comment: "Closing timeout of the lower panel, in seconds"}
-    upperOpenTimeout        : { type: t_double, comment: "Opening timeout of the upper panel, in seconds"}
-    upperCloseTimeout       : { type: t_double, comment: "Closing timeout of the upper panel, in seconds"}
-    timeAfterStop           : { type: t_double, comment: "Time to wait after a stop command, in seconds"}
+    wirelessPolling             : { type: t_double, comment: "Polling frequency of the wireless I/O device, in seconds. Negative value = no polling." }
+    wirelessIpAddress           : { type: t_string, comment: "IP address of the wireless I/O device" }
+    wirelessPort                : { type: t_uint16, comment: "Port of the wireless I/O device" }
+    wirelessUnitID              : { type: t_uint8 , comment: "Unit ID the wireless I/O device" }
+    wirelessTimeoutSeconds      : { type: t_double, comment: "The timeout of a single command. Does not lead to an error (yet), because we still retry."}
+    wirelessRetriesSeconds      : { type: t_double, comment: "The total timeout of the retries. If no valid data is received after this time, then we consider the shutters in error." }
+    upperEstimatedOpenTime      : { type: t_double, comment: "Estimated opening time of the upper panel, in seconds"}
+    upperEstimatedCloseTime     : { type: t_double, comment: "Estimated closing time of the upper panel, in seconds"}
+    lowerEstimatedOpenTime      : { type: t_double, comment: "Estimated opening time of the lower panel, in seconds"}
+    lowerEstimatedCloseTime     : { type: t_double, comment: "Estimated closing time of the lower panel, in seconds"}
+    lowerOpenTimeout            : { type: t_double, comment: "Opening timeout of the lower panel, in seconds"}
+    lowerCloseTimeout           : { type: t_double, comment: "Closing timeout of the lower panel, in seconds"}
+    upperOpenTimeout            : { type: t_double, comment: "Opening timeout of the upper panel, in seconds"}
+    upperCloseTimeout           : { type: t_double, comment: "Closing timeout of the upper panel, in seconds"}
+    upperOpenRangeLimitByTime   : { type: t_bool, comment: "Limit the apperture range of the upper panel by time, True to enable"}
+    upperOpenRangeLimitTime     : { type: t_double, comment: "Time to set the apperture limit, in seconds"}
+    timeAfterStop               : { type: t_double, comment: "Time to wait after a stop command, in seconds"}
 
 ##########################################################################
 # DomeRotationConfig
@@ -337,6 +339,7 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeShutter",
     lowerTimeRemaining      : { type: COMMONLIB.Duration                , comment: "Estimated time remaining to open/close the lower panel" }
     isLowerMonitored        : { type: t_bool                            , comment: "TRUE if the lower shutter panel is being monitored" }
     noOfLowerAutoClosings   : { type: t_int16                           , comment: "The number of times that the lower panel has been closed automatically, by monitoring" }
+    upperOpenRangeLimitFlag : { type: t_bool                            , comment: "Flag for the openning range limit when it is controlled by time" }
     
     manualOpenUpper         : { type: t_bool          , address: "%I*"  , comment: "Manual operation: open upper switch" }
     manualCloseUpper        : { type: t_bool          , address: "%I*"  , comment: "Manual operation: close upper switch" }
@@ -410,12 +413,12 @@ MTCS_MAKE_STATEMACHINE THISLIB, "DomeShutter",
       isClosed              : -> self.lowerClosedSignal
     upperApertureStatus:
       superState            : -> NOT(OR(self.wirelessTimeout,self.wirelessError))
-      isOpen                : -> self.upperOpenSignal
+      isOpen                : -> OR(self.upperOpenSignal , AND(self.config.upperOpenRangeLimitByTime , self.upperOpenRangeLimitFlag))
       isClosed              : -> self.upperClosedSignal
     apertureStatus:
       superState            : -> NOT(OR(self.wirelessTimeout,self.wirelessError))
-      isOpen                : -> AND(self.statuses.lowerApertureStatus.open     , self.statuses.upperApertureStatus.open )
-      isClosed              : -> AND(self.statuses.lowerApertureStatus.closed   , self.statuses.upperApertureStatus.closed )
+      isOpen                : -> AND(self.statuses.lowerApertureStatus.open , self.statuses.upperApertureStatus.open ),
+      isClosed              : -> AND(self.statuses.lowerApertureStatus.closed , self.statuses.upperApertureStatus.closed )
     healthStatus:
       isGood                : -> AND(
                                     NOT(OR(self.wirelessTimeout,self.wirelessError)),
