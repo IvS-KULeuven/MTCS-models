@@ -381,17 +381,20 @@ MTCS_MAKE_CONFIG THISLIB, "ServicesChillerControllerParameterAddresses",
         ambientTemperature:       { type: t_uint16, initial: 272, comment: "Ambient temperature" }
         waterPumpChassisTemp:     { type: t_uint16, initial: 274, comment: "Water Pump chassis temperature" }        
         #Logical Area 2. Digital input. Read only. Words 16bits
-        digitalInputStatus1:      { type: t_uint16, initial: 512, comment: "Flow switch status" }
-        digitalInputStatus2:      { type: t_uint16, initial: 513, comment: "Digital input status 2" }
-        digitalInputStatus3:      { type: t_uint16, initial: 514, comment: "Digital input status 3" }
-        digitalInputStatus4:      { type: t_uint16, initial: 515, comment: "Digital input status 4" }
+        digitalInputStatus1:      { type: t_uint16, initial: 512, comment: "Digital input status 1st" }
+        digitalInputStatus2:      { type: t_uint16, initial: 513, comment: "Digital input status 2nd" }
+        digitalInputStatus3:      { type: t_uint16, initial: 514, comment: "Digital input status 3rd" }
+        digitalInputStatus4:      { type: t_uint16, initial: 515, comment: "Digital input status 4th" }
         #Logical Area 3. Data. R/W. Words 16bits
         setpoint:                 { type: t_uint16, initial: 768, comment: "Setpoint parameter address" }
         minSetpoint:              { type: t_uint16, initial: 769, comment: "Minimal Setpoint parameter address" }
         maxSetpoint:              { type: t_uint16, initial: 770, comment: "Maximal Setpoint parameter address" }
         trippingBand:             { type: t_uint16, initial: 774, comment: "Tripping Band parameter address" }
+        #Logical Area 4. Configuration. R/W. Words 16bits
+        FanCondensingCircuits:    { type: t_uint16, initial: 959, comment: "Number of fan condensing circuits parameter address" }
         #Logical Area 5. Unit Status. R/W. Words 16bits
         unitStatus:               { type: t_uint16, initial: 1280, comment: "Unit Status parameter address" }
+        unitCircuitsStatus:       { type: t_uint16, initial: 1281, comment: "Unit Circuits status parameter address" }
         unitControllerReset:      { type: t_uint16, initial: 1282, comment: "Unit Controlelr reset parameter address" }
         #Logical Area 8. Digital output status. Read only. Words 16bits
         relayOutputStatus1:       { type: t_uint16, initial: 2048, comment: "Relay output status 1" }
@@ -620,6 +623,22 @@ MTCS_MAKE_CONFIG THISLIB, "ServicesChillerControllerBitwiseConfig",
         compressor2Mask: { type: t_uint16, initial: int(0b0001000000010000), comment: "Word to check if Compressor2 is ON" }
         compressor3Mask: { type: t_uint16, initial: int(0b0000100000001000), comment: "Word to check if Compressor3 is ON" }
         compressor4Mask: { type: t_uint16, initial: int(0b0000010000000100), comment: "Word to check if Compressor4 is ON" }
+        circ1CondFanOverMask: { type: t_uint16, initial: int(0b1000000000000000), comment: "Word to check if Circ1 condensing fan overload" }
+        circ2CondFanOverMask: { type: t_uint16, initial: int(0b0000000000000001), comment: "Word to check if Circ2 condensing fan overload" }
+        CondFanComOverMask:   { type: t_uint16, initial: int(0b0000000000000010), comment: "Word to check if Circ2 condensing fan overload" }
+        #Words for masks and commands over Unit Status II register. Words 16bits
+        disableCirc1Mask: { type: t_uint16, initial: int(0b0100000001000000), comment: "Word to disable Circuit 1" }
+        disableCirc2Mask: { type: t_uint16, initial: int(0b1000000010000000), comment: "Word to disable Circuit 2" }
+        disableComp1Mask: { type: t_uint16, initial: int(0b0000000100000001), comment: "Word to disable Compressor 1" }
+        disableComp2Mask: { type: t_uint16, initial: int(0b0000001000000010), comment: "Word to disable Compressor 2" }
+        disableComp3Mask: { type: t_uint16, initial: int(0b0000010000000100), comment: "Word to disable Compressor 3" }
+        disableComp4Mask: { type: t_uint16, initial: int(0b0000100000001000), comment: "Word to disable Compressor 4" }
+        enableCirc1Mask:  { type: t_uint16, initial: int(0b0000000001000000), comment: "Word to enable Circuit 1" }
+        enableCirc2Mask:  { type: t_uint16, initial: int(0b0000000010000000), comment: "Word to enable Circuit 2" }
+        enableComp1Mask:  { type: t_uint16, initial: int(0b0000000000000001), comment: "Word to enable Compressor 1" }
+        enableComp2Mask:  { type: t_uint16, initial: int(0b0000000000000010), comment: "Word to enable Compressor 2" }
+        enableComp3Mask:  { type: t_uint16, initial: int(0b0000000000000100), comment: "Word to enable Compressor 3" }
+        enableComp4Mask:  { type: t_uint16, initial: int(0b0000000000001000), comment: "Word to enable Compressor 4" }
         #Masks for bitwise checking in 16 bit registers
         bit0:        { type: t_uint16, initial: int(0b0000000000000001), comment: "Word mask to check bit0" }
         bit1:        { type: t_uint16, initial: int(0b0000000000000010), comment: "Word mask to check bit1" }
@@ -1388,9 +1407,13 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesChillerController",
         minSetpoint          : { type: COMMONLIB.QuantityValue, comment: "The minimun setpoint" }
         maxSetpoint          : { type: COMMONLIB.QuantityValue, comment: "The maximal setpoint" }
         trippingBand         : { type: COMMONLIB.QuantityValue, comment: "The tripping band" }
+        #Logical Area 4. Configuration. R/W. Words 16bits
+        condensingFanCircuits : { type: COMMONLIB.QuantityValue, comment: "Condensing Fan circuits" }
+        condensingFanOpStatus : { type: t_bool, comment: "Condensing Fan Op status True=Single / False=Dual" }
         #Logical Area 5. Unit Status. R/W. Words 16bits
         unitStatus           : { type: COMMONLIB.QuantityValue, comment: "The unit status" }
         unitResetRegister    : { type: COMMONLIB.QuantityValue, comment: "The unit reset register" }
+        unitStatusII         : { type: COMMONLIB.QuantityValue, comment: "The unit status II" }
         #Logical Area 14. Load hours. R/W. Words 16bits
         hoursCompressor1     : { type: COMMONLIB.QuantityValue, comment: "Operation hours of compressor 1" }
         hoursCompressor2     : { type: COMMONLIB.QuantityValue, comment: "Operation hours of compressor 2" }
@@ -1415,6 +1438,9 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesChillerController",
         digitalInputStatus2  : { type: t_bool, comment: "Digital input status 2" }
         digitalInputStatus3  : { type: t_bool, comment: "Digital input status 3" }
         digitalInputStatus4  : { type: t_bool, comment: "Digital input status 4" }
+        circ1CondFanOverStatus : { type: t_bool, comment: "Circ1 condensing fan overload. Digital input status 15" }
+        circ2CondFanOverStatus : { type: t_bool, comment: "Circ2 condensing fan overload. Digital input status 16" }
+        condFanComOverStatus   : { type: t_bool, comment: "Condensing fan common overload. Digital input status 17" }
         #Logical Area 8. Digital output status. Read only. Words 16bits
         alarmRelayOutput     : { type: t_bool, comment: "Alarm output relay output status 1" }
         waterPumpRelayOutput : { type: t_bool, comment: "Water pump output relay output status 1" }
@@ -1424,6 +1450,13 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesChillerController",
         compressorStatus2    : { type: t_bool, comment: "Compressor 2 status. ON/OFF" }
         compressorStatus3    : { type: t_bool, comment: "Compressor 3 status. ON/OFF" }
         compressorStatus4    : { type: t_bool, comment: "Compressor 4 status. ON/OFF" }
+        #Logical Area 5. Unit Status II. Words 16bits
+        circuit1Disabled      : { type: t_bool, comment: "Circuit 1 disabled" }
+        circuit2Disabled      : { type: t_bool, comment: "Circuit 2 disabled" }
+        compressor1Disabled   : { type: t_bool, comment: "Compressor 1 disabled" }
+        compressor2Disabled   : { type: t_bool, comment: "Compressor 2 disabled" }
+        compressor3Disabled   : { type: t_bool, comment: "Compressor 3 disabled" }
+        compressor4Disabled   : { type: t_bool, comment: "Compressor 4 disabled" }
         #Logical Area 9. Analog output status. Read only. Words 16bits
         fanCondenser1Output  : { type: COMMONLIB.QuantityValue, comment: "Fan condenser 1 analog output 1" }
         fanCondenser2Output  : { type: COMMONLIB.QuantityValue, comment: "Fan condenser 2 analog output 2" }
@@ -1459,6 +1492,20 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesChillerController",
         switchChillerOFF          : { type: COMMONLIB.Process, comment: "Switch OFF the Chiller"}
         resetUnitController       : { type: COMMONLIB.Process, comment: "Reset Unit controller of the Chiller"}
         resetAlarms               : { type: COMMONLIB.Process, comment: "Reset all activated alarms"}
+        disableCircuit1           : { type: COMMONLIB.Process, comment: "Disable the Circuit 1"}
+        disableCircuit2           : { type: COMMONLIB.Process, comment: "Disable the Circuit 2"}
+        enableCircuit1            : { type: COMMONLIB.Process, comment: "Enable the Circuit 1"}
+        enableCircuit2            : { type: COMMONLIB.Process, comment: "Enable the Circuit 2"}
+        disableCompressor1        : { type: COMMONLIB.Process, comment: "Disable the Compressor 1"}
+        disableCompressor2        : { type: COMMONLIB.Process, comment: "Disable the Compressor 2"}
+        disableCompressor3        : { type: COMMONLIB.Process, comment: "Disable the Compressor 3"}
+        disableCompressor4        : { type: COMMONLIB.Process, comment: "Disable the Compressor 4"}
+        enableCompressor1         : { type: COMMONLIB.Process, comment: "Enable the Compressor 1"}
+        enableCompressor2         : { type: COMMONLIB.Process, comment: "Enable the Compressor 2"}
+        enableCompressor3         : { type: COMMONLIB.Process, comment: "Enable the Compressor 3"}
+        enableCompressor4         : { type: COMMONLIB.Process, comment: "Enable the Compressor 4"}
+        setCondFansSingleOp       : { type: COMMONLIB.Process, comment: "Set Condensing Fans to Single operation"}
+        setCondFansDualOp         : { type: COMMONLIB.Process, comment: "Set Condensing Fans to Dual operation"}
     statuses:
         healthStatus                      : { type: COMMONLIB.HealthStatus        , comment: "Is the data valid and within range?" }
         alarmStatusWatertemperature       : { type: COMMONLIB.HiHiLoLoAlarmStatus , comment: "Alarm status about Water temperature"}
@@ -1483,6 +1530,14 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesChillerController",
                                       self.statuses.alarmStatusWaterPumpSupervisor.loLo))
             hasWarning   : -> OR( NOT(self.chillerOn),
                                   self.flowSwitchStatus,
+                                  self.circ1CondFanOverStatus,
+                                  self.circ2CondFanOverStatus,
+                                  self.circuit1Disabled,
+                                  self.circuit2Disabled,
+                                  self.compressor1Disabled,
+                                  self.compressor2Disabled,
+                                  self.compressor3Disabled,
+                                  self.compressor4Disabled,
                                   self.statuses.alarmStatusWatertemperature.hi,
                                   self.statuses.alarmStatusWatertemperature.lo,
                                   self.statuses.alarmStatusWaterPumpSupervisor.hi,
@@ -1501,7 +1556,36 @@ MTCS_MAKE_STATEMACHINE THISLIB,  "ServicesChillerController",
             isEnabled    : -> self.isEnabled
         resetAlarms:
             isEnabled    : -> self.isEnabled
-
+        resetUnitController:
+            isEnabled    : -> self.isEnabled
+        disableCircuit1:
+            isEnabled    : -> self.isEnabled
+        disableCircuit2:
+            isEnabled    : -> self.isEnabled
+        enableCircuit1:
+            isEnabled    : -> self.isEnabled
+        enableCircuit2:
+            isEnabled    : -> self.isEnabled
+        disableCompressor1:
+            isEnabled    : -> self.isEnabled
+        disableCompressor2:
+            isEnabled    : -> self.isEnabled
+        disableCompressor3:
+            isEnabled    : -> self.isEnabled
+        disableCompressor4:
+            isEnabled    : -> self.isEnabled
+        enableCompressor1:
+            isEnabled    : -> self.isEnabled
+        enableCompressor2:
+            isEnabled    : -> self.isEnabled
+        enableCompressor3:
+            isEnabled    : -> self.isEnabled
+        enableCompressor4:
+            isEnabled    : -> self.isEnabled
+        setCondFansSingleOp:
+            isEnabled    : -> self.isEnabled
+        setCondFansDualOp:
+            isEnabled    : -> self.isEnabled
 
 ########################################################################################################################
 # ServicesChiller
